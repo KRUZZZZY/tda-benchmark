@@ -1,0 +1,30 @@
+# Minimal test config for end-to-end verification.
+datasets:
+  - name: sphere_torus
+    path: data/tda/synthetic/sphere_torus_X.npy
+    labels: data/tda/synthetic/sphere_torus_y.npy
+    modality: point_cloud
+    max_samples: 60
+    subsample_points: 100
+
+filtrations:
+  - name: vietoris_rips
+    homology_dimensions: [0, 1]
+
+vectorizations:
+  - name: persistence_image
+    sigma: 0.1
+    n_bins: 20
+
+classifiers:
+  - name: svm_rbf
+
+evaluation:
+  cv_folds: 3
+  scoring: accuracy
+  random_seed: 42
+  repetitions: 1
+
+output:
+  db_path: data/tda/test_results.db
+  log_level: INFO

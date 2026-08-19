@@ -1,0 +1,44 @@
+# Focused sweep — get key numbers for paper expansion.
+# MNIST binary classification with cubical + VR.
+# ECG200 with all 7 vectorizers.
+datasets:
+  - name: mnist_01
+    path: data/tda/images/mnist_01_X.npy
+    labels: data/tda/images/mnist_01_y.npy
+    modality: image
+    max_samples: 400
+  - name: ecg200
+    path: data/tda/ucr/ecg200_X.npy
+    labels: data/tda/ucr/ecg200_y.npy
+    modality: time_series
+    takens_dimension: 3
+    takens_delay: 1
+
+filtrations:
+  - name: cubical
+    homology_dimensions: [0, 1]
+  - name: vietoris_rips
+    homology_dimensions: [0, 1]
+
+vectorizations:
+  - name: persistence_image
+    sigma: 0.1
+    n_bins: 20
+  - name: persistence_landscape
+    n_layers: 3
+    n_bins: 50
+  - name: persistence_statistics
+
+classifiers:
+  - name: svm_rbf
+  - name: random_forest
+
+evaluation:
+  cv_folds: 5
+  scoring: accuracy
+  random_seed: 42
+  repetitions: 1
+
+output:
+  db_path: data/tda/focused_results.db
+  log_level: INFO

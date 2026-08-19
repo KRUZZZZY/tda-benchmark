@@ -1,0 +1,47 @@
+# TDA Pipeline Benchmark — default configuration.
+# Defines which datasets, filtrations, vectorizations, and classifiers
+# to sweep. Edit to expand or constrain the combinatorial space.
+
+datasets:
+  - name: sphere_torus
+    path: data/tda/synthetic/sphere_torus_X.npy
+    labels: data/tda/synthetic/sphere_torus_y.npy
+    modality: point_cloud
+    max_samples: 200
+    subsample_points: 100
+    description: "Synthetic sphere (β=1,0,1) vs torus (β=1,2,1)"
+  - name: ecg200
+    path: data/tda/ucr/ecg200_X.npy
+    labels: data/tda/ucr/ecg200_y.npy
+    modality: time_series
+    takens_dimension: 3
+    takens_delay: 1
+    description: "ECG200 arrhythmia — 200 samples × 96 timesteps"
+
+filtrations:
+  - name: vietoris_rips
+    homology_dimensions: [0, 1]
+  - name: weak_alpha
+    homology_dimensions: [0, 1]
+
+vectorizations:
+  - name: persistence_image
+    sigma: 0.1
+    n_bins: 20
+  - name: persistence_landscape
+    n_layers: 3
+    n_bins: 50
+
+classifiers:
+  - name: svm_rbf
+  - name: random_forest
+
+evaluation:
+  cv_folds: 5
+  scoring: accuracy
+  random_seed: 42
+  repetitions: 1
+
+output:
+  db_path: data/tda/results.db
+  log_level: INFO

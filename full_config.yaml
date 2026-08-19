@@ -1,0 +1,63 @@
+# Full benchmark sweep — noise variants + diverse pipeline combinations.
+datasets:
+  - name: sphere_torus_n0
+    path: data/tda/synthetic/sphere_torus_noise0_X.npy
+    labels: data/tda/synthetic/sphere_torus_noise0_y.npy
+    modality: point_cloud
+    description: "Sphere vs Torus — clean (σ=0)"
+  - name: sphere_torus_n5
+    path: data/tda/synthetic/sphere_torus_noise5_X.npy
+    labels: data/tda/synthetic/sphere_torus_noise5_y.npy
+    modality: point_cloud
+    description: "Sphere vs Torus — mild noise (σ=0.05)"
+  - name: sphere_torus_n15
+    path: data/tda/synthetic/sphere_torus_noise15_X.npy
+    labels: data/tda/synthetic/sphere_torus_noise15_y.npy
+    modality: point_cloud
+    description: "Sphere vs Torus — moderate noise (σ=0.15)"
+  - name: sphere_torus_n30
+    path: data/tda/synthetic/sphere_torus_noise30_X.npy
+    labels: data/tda/synthetic/sphere_torus_noise30_y.npy
+    modality: point_cloud
+    description: "Sphere vs Torus — heavy noise (σ=0.30)"
+  - name: ecg200
+    path: data/tda/ucr/ecg200_X.npy
+    labels: data/tda/ucr/ecg200_y.npy
+    modality: time_series
+    takens_dimension: 3
+    takens_delay: 1
+    description: "ECG200 arrhythmia — 200 samples"
+
+filtrations:
+  - name: vietoris_rips
+    homology_dimensions: [0, 1]
+  - name: weak_alpha
+    homology_dimensions: [0, 1]
+  - name: sparse_rips
+    homology_dimensions: [0, 1]
+    epsilon: 0.3
+
+vectorizations:
+  - name: persistence_image
+    sigma: 0.1
+    n_bins: 20
+  - name: persistence_landscape
+    n_layers: 3
+    n_bins: 50
+  - name: betti_curve
+    n_bins: 50
+
+classifiers:
+  - name: svm_rbf
+  - name: random_forest
+  - name: logistic
+
+evaluation:
+  cv_folds: 5
+  scoring: accuracy
+  random_seed: 42
+  repetitions: 1
+
+output:
+  db_path: data/tda/full_results.db
+  log_level: WARNING
