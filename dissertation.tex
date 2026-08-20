@@ -124,39 +124,31 @@
 
 Persistent homology classification pipelines have three stages ---
 filtration, vectorization, and classifier --- each with multiple
-available methods. Which stage matters most? The literature's most
-widely cited answer, from Conti et al.\ \cite{conti2022}, is that filtration
-choice dominates: switching filtrations on MNIST images swung
-accuracy from 18\% to 94\%. We show that this finding does not
-generalise. On ECG200 time series with Takens embedding,
-vectorization choice dominates classification accuracy with a
-marginal range of 6.1 percentage points (across 7 vectorizers,
-95\% CI [4.8, 7.4]), while filtration choice contributes only
-0.7pp (across 4 filtrations, 95\% CI [0.2, 1.1]).
-Pipeline-stage importance in TDA classification is modality-dependent.
-The sweep comprised 4 filtrations, 7 vectorizers, and 4 classifiers
-(the framework is extensible to 7 filtrations, 11 vectorizers, and 4
-classifiers via YAML-only changes).
-
-We demonstrate this on one synthetic (sphere/torus at four noise
-levels) and two real-world datasets (ECG200, MNIST binary), with
-616 completed configurations (of 672 possible; 56 excluded where
-the point-cloud filtrations Weak Alpha and Sparse Rips are
-incompatible with image data). The topological signal on
-sphere/torus point clouds survives Gaussian noise up to $\sigma = 0.30$
-at 99.85\% mean accuracy across the 112 configurations at that level:
-classification accuracy survives noise levels where the stability
-bound's worst-case guarantee would permit degradation, and the
-$\Betti_1 = 0$ vs.\ $\Betti_1 = 2$ distinction remains classifiable.
-On MNIST, cubical filtration outperforms Vietoris-Rips
-by 1.8 percentage points (98.0\% vs.\ 96.25\%), confirming that
-filtration choice matters for image data. The Alpha complex is
-3--21\% faster than Vietoris-Rips at identical accuracy on
-100-point 3D clouds under the giotto-tda implementation. Simple
-persistence statistics match kernel-based vectorizers on real data
-despite requiring zero hyperparameters. All code, configuration, and
-result schemas are provided; 616 completed configurations across
-6 dataset instances, 4 filtrations, 7 vectorizers, and 4 classifiers.
+available methods. Which stage matters most? Benchmarking all three
+stages simultaneously in a controlled factorial sweep --- 616
+configurations across 6 dataset instances, 4 filtrations, 7
+vectorizers, and 4 classifiers (56 runs failed where point-cloud
+filtrations are incompatible with image data) --- we find that the
+vectorization stage dominates classification-accuracy variance on both
+real datasets: on ECG200 time series (Takens-embedded) it has a
+marginal range of 6.09pp across 7 vectorizers (95\% CI [5.84, 6.34];
+$\eta^2 = 0.217$) versus 0.70pp for filtration (95\% CI [0.35, 1.04]),
+and on binary MNIST it again leads (3.22pp; $\eta^2 = 0.302$) while
+the filtration effect is modest (cubical 98.0\% vs.\ Vietoris--Rips
+96.25\% best of family, 1.75pp). A second time series, ECG5000,
+replicates the hierarchy (24.89pp vs.\ 3.60pp). These results
+complement, rather than refute, the image-data case study of Conti et
+al.\ \cite{conti2022}, whose 18\%--94\% range measured their own
+cubical-binary against improved-filtration pipelines on 10-class MNIST.
+On scale-matched genus-1 versus genus-2 synthetic point clouds, norm
+features classify at chance (48--58\%) while the TDA pipeline sustains
+95.83\% accuracy at $\sigma = 0.30$ --- the noise robustness is
+topology-specific. Measured bottleneck distances (max $d_B = 0.434$ vs.\
+the corrected bound $2\sigma\sqrt{2\ln n} \approx 1.83$ at
+$\sigma=0.30$) confirm the stability bound is conservative. The
+framework is YAML-configurable and extensible to 7 filtrations, 11
+vectorizers, and 4 classifiers; all code, configuration, and result
+schemas are provided.
 
 \end{abstract}
 
@@ -186,20 +178,29 @@ and death of topological features as a scale parameter varies.
 Practitioners face a combinatorial problem: the TDA classification
 pipeline has three stages --- filtration, vectorization, and
 classification --- each with 5--15 available methods (surveys:
-Hatwar and Thangaraj \cite{hatwar2026}). The literature's
-most widely cited answer to ``which stage matters most?'' comes from
-Conti et al.\ \cite{conti2022}, who showed that filtration choice on MNIST
-images can swing accuracy from 18\% to 94\% --- a finding that has
-been interpreted as a general principle: ``filtration dominates.''
+Hatwar and Thangaraj \cite{hatwar2026}). The literature's most cited answer to ``which stage matters most?''
+comes from Conti et al.\ \cite{conti2022}, who showed that filtration
+choice on MNIST images can be catastrophic: accuracy ranged from 18\%
+(their cubical pipeline) to 94\% (improved filtrations), under 10-split
+cross-validation with grid search. That study has sometimes been read
+as a general principle --- ``filtration dominates'' --- although the
+authors themselves did not claim one.
 
-This paper argues that principle does not generalise. Pipeline-stage
-importance is modality-dependent. We demonstrate this using a modular
-benchmarking framework that varies all three pipeline stages
-simultaneously in a controlled factorial sweep: 6 dataset instances
-$\times$ 4 filtrations (Vietoris-Rips, Alpha, Sparse Rips, Cubical)
-$\times$ 7 vectorizers $\times$ 4 classifiers --- 672 possible, 616
-completed (56 excluded where point-cloud filtrations are incompatible
-with image data). The framework is extensible to 7 filtrations, 11
+This paper asks the same question across two real datasets of
+different modalities and finds that vectorization is the dominant
+stage on both: ECG200 time series and binary MNIST. On ECG200,
+vectorization moves accuracy by 6.09pp (95\% CI [5.84, 6.34]) versus
+0.70pp for filtration (95\% CI [0.35, 1.04]); on binary MNIST the
+vectorizer range (3.22pp) is twice the filtration range (1.65pp), and
+cubical beats Vietoris-Rips by $\sim$1.75pp best-of-family. Filtration
+effects are dataset-specific and modest on binary MNIST, not the
+governing stage. We demonstrate this using a modular benchmarking
+framework that varies all three pipeline stages simultaneously in a
+controlled factorial sweep: 6 dataset instances $\times$ 4 filtrations
+(Vietoris-Rips, weak Alpha, Sparse Rips, Cubical) $\times$ 7
+vectorizers $\times$ 4 classifiers --- 672 possible, 616 completed
+(56 runs failed (\texttt{weak\_alpha}/\texttt{sparse\_rips} on MNIST)
+and were excluded). The framework is extensible to 7 filtrations, 11
 vectorizers, and 4 classifiers via YAML-only configuration changes;
 standardised harnesses of this kind are the direction the community
 has moved towards \cite{telyatnikov2024}.
@@ -241,30 +242,53 @@ through three stages:
 \section{Contributions}
 % ────────────────────────────────────────────────────────────
 
-This paper demonstrates that pipeline-stage importance in TDA
-classification is modality-dependent, using a modular benchmarking
-framework built for that purpose. Specifically:
+This paper contributes a reproducible factorial benchmark framework
+and two case studies that use it to locate the dominant pipeline
+stage. Specifically:
 
 \begin{enumerate}
-  \item \textbf{Finding.} On ECG200 time series with Takens embedding,
-    vectorization dominates classification accuracy (6.1pp marginal
-    range across 7 vectorizers, 95\% CI [4.8, 7.4]) while filtration
-    is statistically neutral (0.7pp across 4 filtrations,
-    95\% CI [0.2, 1.1]).
-    This qualifies the widely cited claim that filtration always
-    dominates --- that finding holds for image data but does not
-    generalise. Pipeline-stage importance is fundamentally
-    modality-dependent.
-  \item \textbf{Framework.} The finding was produced by a benchmarking
-    framework that varies all three pipeline stages simultaneously:
-    4 filtrations, 7 vectorizers, and 4 classifiers executed in a
-    616-configuration factorial sweep (of 672 possible; 56 exclusions
-    where point-cloud filtrations are incompatible with image data),
-    with YAML-driven configuration
-    and normalised SQLite storage. The framework is extensible to
-    7 filtrations, 11 vectorizers, and 4 classifiers via YAML-only
-    changes. Full configuration and schema in Appendices~A--B; code
+  \item \textbf{Framework.} A benchmarking framework that varies all
+    three pipeline stages simultaneously: 4 filtrations, 7
+    vectorizers, and 4 classifiers executed in a 616-configuration
+    factorial sweep (of 672 possible; 56 runs failed
+    (\path{weak_alpha}/\path{sparse_rips} on MNIST) and were
+    excluded), with YAML-driven configuration and normalised SQLite
+    storage. The framework is extensible to 7 filtrations, 11
+    vectorizers, and 4 classifiers via YAML-only changes. Full
+    configuration and schema in Appendices~A--B; code
     implementations in Appendix~C.
+  \item \textbf{Verified finding: vectorization dominates.} On ECG200
+    time series with Takens embedding, vectorization dominates
+    classification accuracy: a 6.09pp marginal range across 7
+    vectorizers (95\% CI [5.84, 6.34]), versus 0.70pp across 4
+    filtrations (95\% CI [0.35, 1.04]; small but statistically
+    non-zero) and 3.18pp across 4 classifiers (95\% CI [2.57,
+    3.78]), with the ordering vectorizer $>$ classifier $>$
+    filtration stable across all five cross-validation repetitions.
+    On binary MNIST the vectorizer again dominates (marginal range
+    3.22pp versus 1.65pp for filtration), and cubical beats
+    Vietoris-Rips by $\sim$1.75pp best-of-family (98.0\% vs.\
+    96.25\%); a second time-series dataset (ECG5000) replicates the
+    hierarchy (24.89pp versus 3.60pp). Filtration effects are
+    dataset-specific and modest on binary MNIST, not the governing
+    stage. Conti et al.'s MNIST case study (18\% with their cubical
+    pipeline to 94\% with improved filtrations, 10-class, grid
+    search) is a complementary demonstration that a badly-matched
+    filtration can be catastrophic on images; it does not establish a
+    general law.
+  \item \textbf{Matched-scale synthetic evidence.} On synthetic
+    genus-1 versus genus-2 point clouds whose radial norm
+    distributions are quantile-matched, norm features classify at
+    chance (48--58\%) while the TDA pipeline sustains 95.83\%
+    accuracy at $\sigma = 0.30$ noise --- the noise robustness is
+    topology-specific, not an artefact of the scale difference
+    between the sphere and torus geometries.
+  \item \textbf{Stability-bound confirmation.} Measured bottleneck
+    distances between clean and noisy diagrams (max $d_B = 0.434$
+    over 80 cloud/dimension pairs) sit well below the corrected
+    worst-case bound $d_B \le 2\sigma\sqrt{2\ln n}$ ($\approx 1.83$
+    at $\sigma = 0.30$, $n = 100$), confirming the bound is
+    conservative in practice.
 \end{enumerate}
 
 \noindent Chapter~2 develops the mathematical machinery needed to
@@ -367,6 +391,16 @@ $A_\varepsilon(X) \simeq \bigcup_i \overline{B}_{\varepsilon/2}(x_i)$.
 In $\R^3$, the Alpha complex is a subcomplex of the Delaunay
 triangulation with $O(n^2)$ simplices, compared to $O(n^3)$ for the
 full Rips complex.
+
+\begin{remark}
+The benchmark executes giotto-tda's \texttt{WeakAlphaPersistence},
+which builds a subcomplex approximation of the full Alpha complex
+rather than the complex itself. The Nerve-Theorem homotopy guarantee
+below applies to the full complex; for the executed approximation we
+verify empirically in \S4.3 that the full GUDHI Alpha complex
+reproduces weak-alpha classification accuracy (mean difference
+0.0--0.8pp) at 2--5$\times$ the runtime cost.
+\end{remark}
 
 \textbf{Sparse Rips complex.} A subsampled approximation of VR that
 retains only a sparse subset of edges and higher simplices, designed
@@ -532,17 +566,29 @@ diagram --- essential for any pipeline handling noisy data.
 \end{theorem}
 
 This theorem is applied in \S4.2: for $n$ points with additive
-Gaussian noise $\eta_i \sim \mathcal{N}(0, \sigma^2 I_3)$, the
-expected maximum perturbation is $\E[\max_i \|\eta_i\|] \approx
-\sigma\sqrt{2\log n}$ (via extreme value theory). With high
-probability the Gromov-Hausdorff distance is bounded by
-$O(\sigma\sqrt{\log n})$, so the bottleneck distance between
-clean and noisy diagrams is at most $O(\sigma\sqrt{\log n})$.
-For $n=100$ (points per cloud after subsampling) and
-$\sigma=0.15$, this gives $d_B \lesssim 0.46$; at $\sigma=0.30$,
-$d_B \lesssim 0.91$. We compare
-this bound against the observed persistence ranges of the torus's
-$\Betti_1$ features.
+Gaussian noise $\eta_i \sim \mathcal{N}(0, \sigma^2 I_3)$, extreme
+value theory gives $\E[\max_i \|\eta_i\|] \approx
+\sigma\sqrt{2\ln n}$. With high probability the noisy cloud lies
+within Gromov--Hausdorff distance $O(\sigma\sqrt{\ln n})$ of the
+clean one, so by Theorem~\ref{thm:stability} the bottleneck distance
+between clean and noisy diagrams satisfies
+\begin{equation}
+  d_B\bigl(\Dgm_k(X),\, \Dgm_k(X + \eta)\bigr)
+  \;\lesssim\; 2\,\sigma\sqrt{2\ln n}.
+  \label{eq:db_bound}
+\end{equation}
+The factor~2 inherited from the stability theorem is essential: for
+$n = 100$ (points per cloud after subsampling),
+$2\,\sigma\sqrt{2\ln 100} \approx 0.92$ at $\sigma = 0.15$ and
+$\approx 1.83$ at $\sigma = 0.30$ --- a factor of two larger than
+the bound one would write down by omitting it. Measured bottleneck
+distances between clean and noisy diagrams (ripser diagrams, GUDHI
+bottleneck implementation; 80 cloud/dimension pairs; \S4.2) are far
+below this: at $\sigma=0.15$ the mean is 0.144 and the maximum 0.300;
+at $\sigma=0.30$ the maximum is 0.434. The torus $H_1$ diagrams move
+by $d_B$ on average 0.283 at $\sigma=0.30$ --- below the measured
+$H_1$ persistence range [0.608, 1.156] --- so the features
+comfortably survive the perturbation.
 
 % ────────────────────────────────────────────────────────────
 \section{Vectorization Methods}
@@ -557,8 +603,10 @@ Sulowska \cite{sulowska2026}.
 
 Persistence diagrams are multisets of variable cardinality. To use
 them with standard classifiers, we must map each diagram to a
-fixed-length vector in a normed space. We present four methods,
-ordered by increasing complexity.
+fixed-length vector in a normed space. We present the seven methods
+executed in the sweep: the four classical representations below,
+followed by three widely used alternatives (Silhouette, Amplitude,
+and Persistence Entropy).
 
 \paragraph{Persistence Statistics.}
 For each homology dimension $k$, compute the mean, standard
@@ -623,10 +671,49 @@ is a 2D Gaussian kernel. Evaluating $\rho$ on an $n_{\text{bins}}
 \times n_{\text{bins}}$ grid yields $n_{\text{bins}}^2$ features per
 homology dimension.
 
+\paragraph{Silhouette} \cite{chazal2014}.
+The silhouette of a diagram weights the landscape tent functions of
+\eqref{eq:tent} by persistence and normalises:
+\begin{equation}
+  \phi_{\Dgm_k}(t) = \frac{\sum_{p \in \Dgm_k}
+  w(p)\,\Lambda_p(t)}{\sum_{p \in \Dgm_k} w(p)},
+  \qquad w(p) = \pers(p)^q,
+  \label{eq:silhouette}
+\end{equation}
+with $q = 1$ in our configuration; evaluating $\phi$ at
+$n_{\text{bins}}$ points yields $n_{\text{bins}}$ features per
+homology dimension. Silhouette is the top-performing vectorizer on
+ECG200 (\S4.1).
+
+\paragraph{Amplitude}.
+The amplitude of a diagram is its distance to the empty diagram in a
+diagram metric:
+\begin{equation}
+  A(\Dgm_k) = d\bigl(\Dgm_k, \Delta\bigr),
+  \label{eq:amplitude}
+\end{equation}
+with the bottleneck distance of \eqref{eq:bottleneck} in our
+configuration --- one scalar per homology dimension and the fastest
+vectorizer in the sweep. On ECG200 it is among the weaker
+representations (\S4.1), an early hint that representation capacity
+is dataset-dependent.
+
+\paragraph{Persistence Entropy} \cite{rucco2016}.
+For a diagram with persistences $\pers_i = \death_i - \birth_i$,
+normalise $q_i = \pers_i / \sum_j \pers_j$ and define
+\begin{equation}
+  E(\Dgm_k) = -\sum_i q_i \log q_i,
+  \label{eq:entropy}
+\end{equation}
+one scalar per homology dimension measuring how concentrated the
+persistence mass is. Entropy is the weakest vectorizer on ECG200
+(marginal 69.3\%, \S4.1): information content is not monotone in
+representational simplicity.
+
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.85\textwidth]{figures/fig_vectorization_comparison.pdf}
-  \caption{The four vectorization methods applied to one diagram.}
+  \caption{The four classical vectorization methods applied to one diagram.}
   \label{fig:vectorization_comparison}
 \end{figure}
 
@@ -640,26 +727,32 @@ executed in Chapter~4:
 
 \begin{itemize}
   \item \textbf{Simplicial complex size} (\S2.1--\S2.2): VR's
-    $O(n^3)$ 2-simplex count versus Alpha's $O(n^2)$ drives the
+    $O(n^3)$ 2-simplex count versus weak Alpha's $O(n^2)$ drives the
     3--21\% wall-clock speed gap measured in \S4.3. The Nerve
-    Theorem guarantees that Alpha's speed advantage does not cost
-    geometric fidelity.
-  \item \textbf{Filtration choice} (\S2.2): VR, Alpha, Sparse Rips,
+    Theorem guarantees that the full Alpha complex's speed advantage
+    does not cost geometric fidelity; the executed
+    \texttt{WeakAlphaPersistence} is an approximation of that
+    complex, and \S4.3 verifies it matches full-complex accuracy.
+  \item \textbf{Filtration choice} (\S2.2): VR, weak Alpha, Sparse Rips,
     and Cubical constitute the four filtrations varied in the
     factorial sweep of \S4.1.
   \item \textbf{Persistence and stability} (\S2.3--\S2.4): The
-    probabilistic bound $d_B \lesssim \sigma\sqrt{2\log n}$ predicts
-    that $\sigma = 0.15$ noise perturbs diagrams by $\lesssim 0.46$,
-    while torus $\Betti_1$ features have persistences of the order of
-    $0.4$--$1.2$ (measured). \S4.2 confirms that classification
-    survives this perturbation.
+    corrected bound of \eqref{eq:db_bound}, $d_B \lesssim
+    2\sigma\sqrt{2\ln n}$, predicts that $\sigma = 0.15$ noise
+    perturbs diagrams by $\lesssim 0.92$ (and $\sigma=0.30$ by
+    $\lesssim 1.83$), while torus $\Betti_1$ features have measured
+    top-2 persistence range [0.608, 1.156] (ripser on the shipped
+    clouds). \S4.2 confirms that classification survives this
+    perturbation (measured $d_B$: max 0.300 at $\sigma=0.15$, max
+    0.434 at $\sigma=0.30$).
   \item \textbf{Vectorization} (\S2.5): Persistence Statistics,
-    Betti Curves, Landscapes, and Images constitute the four
-    vectorizers varied in \S4.1, spanning the complexity spectrum
-    from zero-parameter to kernel-based.
+    Betti Curves, Landscapes, Images, Silhouette, Amplitude, and
+    Persistence Entropy constitute the seven vectorizers varied in
+    \S4.1, spanning the complexity spectrum from zero-parameter to
+    kernel-based.
   \item \textbf{Classifiers} (\S3.1): Logistic Regression (linear
-    baseline), SVM-RBF, and Random Forest constitute the three
-    classifiers in the sweep. \S4.1 tests whether non-linear
+    baseline), SVM-RBF, SVM-linear, and Random Forest constitute the
+    four classifiers in the sweep. \S4.1 tests whether non-linear
     classifiers add value after vectorization.
 \end{itemize}
 
@@ -716,7 +809,7 @@ where:
     WeakAlphaPersistence, SparseRipsPersistence, or
     CubicalPersistence transformers.
   \item \textbf{Vec}. Maps $\mathcal{D}$ to a vector
-    $v \in \R^d$ via one of the four methods in \S2.5. Global grid
+    $v \in \R^d$ via one of the seven methods in \S2.5. Global grid
     bounds ($\birth_{\min}, \birth_{\max}$, $\pers_{\max}$) are
     computed on the training fold only and applied to the test fold
     without re-fitting, preventing cross-validation data leakage.
@@ -773,16 +866,30 @@ The \texttt{PipelineRunner} iterates the Cartesian product of all
 choices, runs stratified 5-fold cross-validation, and stores
 per-fold metrics (accuracy, F1, precision, recall) in a normalised
 SQLite database (Appendix~B) with a config snapshot for
-reproducibility. 95\% CIs use $\bar{x} \pm t_{0.025,
-n_{\text{folds}}-1} \cdot s / \sqrt{n_{\text{folds}}}$.
-Significance testing uses Wilcoxon signed-rank tests (paired across
-CV folds), appropriate for non-normal fold-accuracy distributions at
-small $n$. Adding a new filtration, vectorizer, or dataset requires
-editing only the YAML file; adding a fundamentally new component
-type (e.g., learned vectorizers) requires new factory code.
+reproducibility. Reported 95\% CIs are computed from repeated
+cross-validation (5 repetitions of stratified 5-fold CV, independent
+splits seeded 43--47): per-stage marginal ranges are computed within
+each repetition, and the CI is
+$\bar{x} \pm t_{0.025, n_{\text{reps}}-1} \cdot s /
+\sqrt{n_{\text{reps}}}$ over the five repetition-level estimates,
+which captures the between-split variance directly;
+per-configuration intervals use the Nadeau--Bengio corrected
+resampled estimator $\mathrm{SE}^2 = (1/(kr) + n_2/n_1)\, s^2$ over
+the $kr = 25$ fold accuracies. Per-configuration accuracy varies
+across repetitions with mean SD 1.09pp (max 3.11pp), so single-split
+point estimates are noisy. Stage dominance is quantified primarily
+by an $\eta^2$ variance decomposition --- a main-effects-only
+three-way ANOVA over per-config means and over fold-level
+accuracies, with $F$-tests (Table~\ref{tab:eta2} in \S4.1). No
+paired Wilcoxon tests are used: CV folds are not independent
+replicates, and with $n = 5$ pairs the smallest achievable two-sided
+$p$-value is $0.0625$. Adding a new filtration, vectorizer, or
+dataset requires editing only the YAML file; adding a fundamentally
+new component type (e.g., learned vectorizers) requires new factory
+code.
 
 \noindent Chapter~4 presents the empirical results of this sweep
-across five datasets and three analytical cuts.
+across six dataset instances and three analytical cuts.
 
 \newpage
 
@@ -794,13 +901,13 @@ across five datasets and three analytical cuts.
 
 One benchmark sweep, four analytical cuts. The sweep comprises
 616 completed configurations from a full factorial of 6 dataset
-instances $\times$ 4 filtrations (Vietoris-Rips, Alpha, Sparse Rips,
+instances $\times$ 4 filtrations (Vietoris-Rips, weak Alpha, Sparse Rips,
 Cubical) $\times$ 7 vectorizers (Persistence Image, Persistence
 Landscape, Betti Curve, Persistence Statistics, Silhouette, Amplitude,
 Persistence Entropy) $\times$ 4 classifiers (SVM-RBF, SVM-linear,
-Random Forest, Logistic Regression) --- 672 possible, 56 excluded
-where the point-cloud filtrations Weak Alpha and Sparse Rips are
-incompatible with image data. All
+Random Forest, Logistic Regression) --- 672 possible, 56 runs failed
+(\texttt{weak\_alpha}/\texttt{sparse\_rips} on MNIST) and were
+excluded. All
 filtrations computed $H_0$ and $H_1$ homology. All configurations
 used stratified 5-fold cross-validation (base seed 42; the CV split uses seed 42 + repetition, and subsampling is seeded deterministically per dataset via CRC32).
 Point clouds were generated at 100 points per cloud (200 samples
@@ -812,25 +919,46 @@ sphere/torus point clouds at four noise levels
 ($\sigma \in \{0.00, 0.05, 0.15, 0.30\}$; $n=200$ per level;
 100 points per cloud after uniform random subsampling; $\Betti_1 = 0$ vs.\ $2$), and
 ECG200 heartbeat recordings (normal vs.\ myocardial infarction;
-$n=200$; 96 timesteps, Takens-embedded to $94 \times 3$ point clouds
-with $d=3, \tau=1$). ECG200 is a UCR archive benchmark where
-classical non-topological classifiers (Euclidean 1-NN, DTW) achieve
-81--88\% accuracy; our pipeline's best TDA configuration (83.0\%
-with cubical filtration + Silhouette + Random Forest) approaches
-this range, demonstrating that TDA features can be competitive
-with classical methods when the right pipeline is chosen. The
-sweep focuses on internal TDA-pipeline comparisons, not competition
-with classical baselines.
+$n=200$; 96 timesteps, Takens-embedded to $94 \times 3$ arrays
+with $d=3, \tau=1$; interpreted as point clouds by Vietoris-Rips,
+weak Alpha, and Sparse Rips, and as a $94 \times 3$ pixel grid by
+CubicalPersistence --- the latter is \emph{not} a point-cloud
+filtration; see the disclosure below). ECG200 is a UCR archive
+benchmark. Under the same 5-fold CV protocol, raw-signal baselines
+(logistic regression 85.5\%, random forest 85.0\%) beat our best
+TDA configuration (83.0\%); we therefore do \emph{not} claim that
+TDA features are competitive with classical methods on this dataset
+--- the sweep is an internal TDA-pipeline comparison (measured
+baselines are reported in \S4.1). Note also that ECG200 is
+energy-normalised: the sum of squares of every record is constant
+(95.00 across all 200 signals), so the trivial-separator concern
+that would attach to an un-normalised signal does not apply to the
+executed data. Finally, the paper's headline 83.0\% configuration
+(cubical + Silhouette + Random Forest) is a single-split point
+estimate: by repeated-CV mean it ranks fourth (79.6\%, SD 1.98pp),
+while cubical + Persistence Image + Random Forest is best in 4 of 5
+repetitions (83.2\%; \S4.1). As a robustness check, re-running the
+ECG200 analysis without the cubical filtration leaves the hierarchy
+intact: the best non-cubical configuration (Vietoris-Rips +
+Persistence Entropy + Random Forest) reaches 79.5\%, with vectorizer
+range 6.58pp versus filtration 0.34pp (\S4.1). The sweep focuses on
+internal TDA-pipeline comparisons, not competition with classical
+baselines.
 
 \noindent\textbf{MNIST binary.} To test image-specific filtrations,
 a binary subset of MNIST (digits 0 vs.\ 1; $n=400$; 200 per class;
 $28 \times 28$ greyscale) was evaluated with both cubical and
 Vietoris-Rips filtrations. Cubical filtration achieved 98.0\%
 accuracy (with Betti Curves + Logistic Regression), versus 96.25\%
-for the best VR configuration. This confirms the modality-dependence
-thesis: on image data, filtration choice \emph{does} matter
-(cubical $>$ VR by $\sim$1.8pp), consistent with Conti et al.'s
-finding of a much larger gap on full 10-class MNIST.
+for the best VR configuration: a $\sim$1.75pp best-of-family gap.
+The marginal analysis of \S4.1 shows, however, that the vectorizer
+moves accuracy more than the filtration on this dataset (3.22pp
+versus 1.65pp): filtration effects are dataset-specific and modest
+on binary MNIST, not the governing stage. This is consistent with
+Conti et al.'s demonstration that a badly-matched filtration can be
+catastrophic at scale (18\% to 94\% on 10-class MNIST under grid
+search) --- but the effect is much smaller on our binary subset,
+where even the worst filtration remains informative.
 
 % ────────────────────────────────────────────────────────────
 \begin{table}[H]
@@ -862,46 +990,69 @@ finding of a much larger gap on full 10-class MNIST.
 
 Which pipeline stage contributes the largest variance? For each
 stage, we marginalise over the other two and compute the range of
-marginal accuracies, with 95\% CIs and Wilcoxon signed-rank $p$-values
-to test whether the range exceeds sampling noise.
+marginal accuracies from the repeated-CV means (five independent
+splits, seeds 43--47), with 95\% CIs over the five per-split ranges,
+and decompose the variance with an $\eta^2$ analysis (fold-level
+$F$-tests) to test whether the range exceeds sampling noise.
 
 \begin{table}[H]
   \centering
-  \caption{Marginal accuracy by pipeline stage on ECG200.}
+  \caption{Marginal accuracy by pipeline stage on ECG200
+  (repeated CV, 5 repetitions).}
   \label{tab:stage_impact}
   \begin{tabular}{lcccc}
     \toprule
     Stage & Top Performer & Marg.\ Acc. & Range (95\% CI) & $p$-value \\
     \midrule
-    Filtration & Cubical & 73.7\% & 0.66pp [0.18, 1.14] & — \\
-    Vectorizer & Silhouette & 75.4\% & 6.13pp [4.82, 7.44] & — \\
-    Classifier & Random Forest & 75.6\% & 3.39pp [2.15, 4.63] & — \\
+    Filtration & Cubical & 73.4\% & 0.70pp [0.35, 1.04] & 0.81 \\
+    Vectorizer & Landscapes & 75.1\% & 6.09pp [5.84, 6.34] & $5\times10^{-12}$ \\
+    Classifier & Random Forest & 75.2\% & 3.18pp [2.57, 3.78] & $1\times10^{-6}$ \\
     \bottomrule
   \end{tabular}
 
   \vspace{0.2cm}
-  \footnotesize{All $p$-values are reported descriptively; no multiplicity
-    correction is applied across the three stage comparisons.}
+  \footnotesize{Ranges, CIs, and marginal accuracies are repeated-CV
+    values (means across five independent splits, seeds 43--47): the
+    range is the mean over repetitions of the per-split marginal
+    range, with a 95\% $t$-interval across the five per-split ranges.
+    $p$-values are $F$-test $p$-values from the fold-level three-way
+    ANOVA (main effects only; Table~\ref{tab:eta2}), not paired
+    Wilcoxon tests. No multiplicity correction is applied across the
+    three stage comparisons.}
 \end{table}
 
-Vectorization dominates: its range (6.13pp across 7 vectorizers)
-is an order of magnitude larger than filtration (0.66pp across 4
-filtrations). The top-performing vectorizer, Silhouette, achieves
-75.4\% marginal accuracy versus 69.3\% for Persistence Entropy
-(the weakest). Cubical filtration leads at 73.7\%, with Sparse Rips (73.3\%)
-and Vietoris-Rips (73.3\%) within 0.02pp of each other and Weak Alpha
-(73.0\%) 0.3pp lower.
+Vectorization dominates: its range (6.09pp across 7 vectorizers)
+is an order of magnitude larger than filtration (0.70pp across 4
+filtrations), and the ordering vectorizer $>$ classifier $>$
+filtration was stable across all five CV repetitions. The variance
+decomposition of Table~\ref{tab:eta2} is the primary evidence for
+this ordering: on ECG200 the vectorizer explains 21.7\% of the
+per-config variance (fold-level 10.6\%), the classifier 9.8\%
+(4.8\%), and the filtration 0.3\% (0.1\%). The top-performing
+vectorizer, Persistence Landscapes, achieves 75.1\% marginal
+accuracy versus 69.2\% for Persistence Entropy (the weakest).
+Cubical filtration leads at 73.4\%, with Vietoris-Rips (73.1\%) and
+Sparse Rips (73.0\%) within 0.03pp of each other and Weak Alpha
+(72.8\%) 0.6pp lower.
 
 \textbf{Simple versus complex.} Persistence Statistics matches
-kernel-based methods on ECG200: its marginal accuracy (75.2\%) is
-comparable to Persistence Landscapes (74.7\%), with Statistics
-slightly ahead (+0.5pp across the 16 filtration--classifier cells;
-Statistics wins 11 of 16). Statistics versus Images (73.3\%)
-is also not distinguishable. On MNIST binary, Persistence Statistics reaches 95.9\% marginal
-accuracy, within 2.1pp of the best configuration overall (Cubical +
-Betti Curve + Logistic Regression at 98.0\%, Table~\ref{tab:pareto}). All comparisons
-are descriptive; the sample of one dataset and five folds is too
-small for reliable significance testing.
+kernel-based methods on ECG200: its marginal accuracy (74.8\%) is
+within 0.3pp of Persistence Landscapes (75.1\%), and the two split
+the 16 filtration--classifier cells (Statistics wins 8 of 16).
+Statistics likewise leads Persistence Images (72.9\%). On MNIST
+binary, Persistence Statistics reaches 95.9\% marginal accuracy,
+within 2.1pp of the best configuration overall (Cubical + Betti
+Curve + Logistic Regression at 98.0\%, Table~\ref{tab:pareto}).
+
+The evidence base remains small ($n = 3$ real datasets: two time
+series and one image, with the repeated-CV verification covering
+ECG200 only), and the corrected intervals above should not be read
+as licence for fine-grained ranking: per-configuration accuracy
+varies by 1.09pp on average across the five splits (maximum 3.11pp;
+50 of 112 configurations exceed 1pp), so single-split point
+estimates --- including the 83.0\% best configuration of
+Table~\ref{tab:pareto}, whose repeated-CV mean is 79.6\% --- carry
+$\pm$1--3pp of split-to-split noise.
 \begin{figure}[H]
   \centering
 \includegraphics[width=\textwidth]{figures/fig_stage_impact.pdf}
@@ -914,6 +1065,127 @@ configurations achieve $\ge 99.5\%$ accuracy (mean 99.99\%). No
 stage dominates --- the signal is strong enough that every pipeline
 separates it nearly perfectly.
 
+\textbf{MNIST binary marginal analysis.} The same marginal
+decomposition applied to binary MNIST gives a vectorizer range of
+3.22pp versus a filtration range of 1.65pp: vectorization is the
+larger stage even on image data. Filtration effects are real but
+modest --- cubical beats Vietoris-Rips by $\sim$1.75pp best-of-family
+--- while the vectorizer moves accuracy roughly twice as much.
+Table~\ref{tab:eta2} reports the complementary variance
+decomposition ($\eta^2$: the proportion of accuracy variance
+explained by each stage): on ECG200 the vectorizer explains 0.217 of
+the variance versus 0.098 for the classifier and 0.003 for the
+filtration; on MNIST the vectorizer again leads (0.302) over the
+filtration (0.166). Both analyses agree: vectorization is the
+dominant stage on both real datasets, and filtration effects are
+dataset-specific and modest.
+
+\begin{table}[H]
+  \centering
+  \caption{$\eta^2$ variance decomposition of classification accuracy
+  by pipeline stage. Per-config panel: classic
+  $\eta^2 = \mathrm{SS}_{\text{stage}}/\mathrm{SS}_{\text{total}}$ over
+  per-configuration means (one observation per configuration).
+  Fold-level panel: main-effects-only three-way ANOVA over the fold
+  accuracies of the single-split sweep, with classic $\eta^2$ and
+  $F$-tests.}
+  \label{tab:eta2}
+  \footnotesize
+  \begin{tabular}{llcccccc}
+    \toprule
+    Dataset & Stage & \multicolumn{3}{c}{Per-config means} &
+    \multicolumn{3}{c}{Fold-level} \\
+    \cmidrule(lr){3-5}\cmidrule(lr){6-8}
+    & & $\eta^2$ & $F$ & $p$ & $\eta^2$ & $F$ & $p$ \\
+    \midrule
+    ECG200 & Filtration & 0.003 & 0.15 & 0.93 & 0.001 & 0.32 & 0.81 \\
+    ECG200 & Vectorizer & 0.217 & 5.26 & $9.7\times10^{-5}$ & 0.106 & 11.41 & $4.9\times10^{-12}$ \\
+    ECG200 & Classifier & 0.098 & 4.75 & 0.004 & 0.048 & 10.31 & $1.3\times10^{-6}$ \\
+    \addlinespace
+    MNIST 0/1 & Filtration & 0.166 & 15.83 & $2.5\times10^{-4}$ & 0.061 & 20.47 & $9.1\times10^{-6}$ \\
+    MNIST 0/1 & Vectorizer & 0.302 & 4.80 & $7.3\times10^{-4}$ & 0.111 & 6.21 & $4.1\times10^{-6}$ \\
+    MNIST 0/1 & Classifier & 0.061 & 1.95 & 0.135 & 0.023 & 2.52 & 0.058 \\
+    \addlinespace
+    Sphere/Torus ($\sigma{=}0.00$) & Filtration & 0.009 & 0.41 & 0.748 & 0.002 & 0.34 & 0.793 \\
+    Sphere/Torus ($\sigma{=}0.00$) & Vectorizer & 0.165 & 3.67 & 0.002 & 0.032 & 3.10 & 0.005 \\
+    Sphere/Torus ($\sigma{=}0.00$) & Classifier & 0.083 & 3.67 & 0.015 & 0.016 & 3.10 & 0.026 \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{0.2cm}
+  \footnotesize{Per-config scope: $N = 112$ (ECG200, sphere/torus) or
+    $56$ (MNIST) configurations; fold-level scope: $N = 560$ or $280$
+    fold accuracies. Degrees of freedom: filtration $3$ (MNIST $1$),
+    vectorizer $6$, classifier $3$. The repeated-CV analysis of
+    Table~\ref{tab:stage_impact} corroborates the ECG200 ordering.}
+\end{table}
+
+\textbf{Repeated cross-validation.} Because single-split point
+estimates are noisy (per-configuration SD across repetitions
+averages 1.09pp, max 3.11pp), the ECG200 analysis was re-run with
+repeated CV (5 repetitions of the same stratified 5-fold protocol).
+Table~\ref{tab:stage_impact} reports the repeated-CV ranges and CIs;
+the ordering vectorizer $>$ classifier $>$ filtration was stable in
+all five repetitions. Notably, the paper's best single-split ECG200
+configuration (cubical + Silhouette + Random Forest, 83.0\%)
+ranks fourth by repeated-CV mean (79.6\%, SD 1.98pp), while cubical
++ Persistence Image + Random Forest is best in 4 of 5 repetitions
+(83.2\% mean). Differences below $\sim$1pp between individual
+configurations should not be over-interpreted.
+
+\textbf{Generalisation check: ECG5000.} To test whether
+vectorization-dominance is specific to ECG200, the same stage
+analysis was run on ECG5000 (UCR archive; 5 classes; 140 timesteps)
+with the same 5-fold protocol and a pipeline subset (2 filtrations,
+3 vectorizers, 2 classifiers). The result replicates the hierarchy
+at larger scale: vectorizer marginal range 24.89pp versus filtration
+3.60pp. Vectorization-dominance on time series is not an artefact of
+a single dataset.
+
+\textbf{Cubical robustness check.} CubicalPersistence on ECG200
+operates on the $94 \times 3$ Takens-embedded array as a pixel grid
+(intensities are treated as coordinates), not on a point-cloud
+filtration. Excluding cubical from the ECG200 analysis leaves the
+hierarchy intact: the best non-cubical configuration
+(Vietoris-Rips + Persistence Entropy + Random Forest) reaches 79.5\%,
+the vectorizer range widens slightly to 6.58pp, and the filtration
+range drops to 0.34pp.
+
+\subsection{Classical Baselines and the Role of Raw Features}
+
+To calibrate the absolute accuracy of the TDA pipelines, we ran
+non-topological baselines under the same stratified 5-fold CV
+protocol (seed 43, identical to sweep repetition~1):
+
+\begin{table}[H]
+  \centering
+  \caption{Non-topological baselines under the sweep's 5-fold CV protocol.}
+  \label{tab:baselines}
+  \begin{tabular}{llcc}
+    \toprule
+    Dataset & Approach & Classifier & Accuracy \\
+    \midrule
+    MNIST 0/1 & raw pixels (784) & Logistic & 99.75\% \\
+    MNIST 0/1 & raw pixels (784) & Random Forest & 99.0\% \\
+    MNIST 0/1 & TDA best & cubical + Betti + Logistic & 98.0\% \\
+    ECG200 & raw signal (96) & Logistic & 85.5\% \\
+    ECG200 & raw signal (96) & Random Forest & 85.0\% \\
+    ECG200 & TDA best & cubical + Silhouette + RF & 83.0\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+On both datasets the TDA pipeline's best configuration sits below the
+raw-feature baselines: 98.0\% versus 99.75\% (logistic regression)
+on MNIST binary, and 83.0\% versus 85.5\% on ECG200. The claim that
+``TDA features can be competitive with classical methods'' is
+therefore scoped to the internal TDA comparison: we make no claim of
+beating raw features on these datasets. The noise experiments
+(\S4.2) additionally show that a single norm feature separates the
+synthetic sphere/torus classes at 100\% at every noise level, which
+quantifies the scale confound and motivates the matched-genus
+experiment reported there.
+
 % ────────────────────────────────────────────────────────────
 \section{Noise Perturbation Thresholds}
 \label{sec:noise}
@@ -923,10 +1195,11 @@ Does topological signal survive additive spatial noise? Noise is
 applied as $\eta_i \sim \mathcal{N}(0, \sigma^2 I_3)$ to Euclidean
 coordinates (Equation~\ref{eq:noise}). Gaussian noise has unbounded
 support, so no deterministic bound on the perturbation exists; instead
-we use the probabilistic bound of \S2.4: with high probability the
-bottleneck distance between clean and noisy diagrams is at most
-$O(\sigma\sqrt{\log n})$, i.e.\ $d_B \lesssim 0.46$ at
-$\sigma=0.15$ and $\lesssim 0.91$ at $\sigma=0.30$ for $n=100$.
+we use the corrected probabilistic bound of \S2.4
+(Equation~\ref{eq:db_bound}): with high probability the bottleneck
+distance between clean and noisy diagrams is at most
+$2\sigma\sqrt{2\ln n}$, i.e.\ $d_B \lesssim 0.92$ at
+$\sigma=0.15$ and $\lesssim 1.83$ at $\sigma=0.30$ for $n=100$.
 
 \begin{figure}[H]
   \centering
@@ -937,31 +1210,52 @@ $\sigma=0.15$ and $\lesssim 0.91$ at $\sigma=0.30$ for $n=100$.
 
 At $\sigma = 0.00$, $0.05$, and $0.15$, every configuration achieves
 $\ge 99.5\%$ accuracy (mean 99.99\%, 100.00\%, and 99.97\%
-respectively). The probabilistic stability bound at
-$\sigma = 0.15$ is $d_B \lesssim 0.46$, but the torus's $\Betti_1$ features have
-measured top-$H_1$ persistences span roughly $0.4$--$1.2$ on the
-clean torus clouds --- features near the lower
-end of this range would be threatened by the bound, yet classification
-remains perfect. This suggests the stability bound overestimates the observed
-degradation: the actual bottleneck distance between clean and noisy
-diagrams appears substantially below the worst-case guarantee of
-$O(\sigma\sqrt{\log n})$ for the sphere and torus geometries tested.
+respectively). The stability bound at
+$\sigma = 0.15$ is $d_B \lesssim 0.92$ (Equation~\ref{eq:db_bound}).
+Directly measured bottleneck distances between clean and noisy
+diagrams (ripser diagrams, GUDHI bottleneck implementation, $H_0$
+and $H_1$, 80 cloud/dimension pairs) confirm the bound is
+conservative: at $\sigma = 0.15$ the mean measured $d_B$ is 0.144
+and the maximum 0.300, both well below the bound.
 
-At $\sigma = 0.30$ (bound $\lesssim 0.91$), mean accuracy across the 112
+At $\sigma = 0.30$ (bound $\lesssim 1.83$), mean accuracy across the 112
 sphere/torus configurations at that level remained at 99.85\%
 (minimum 98.5\%). The worst configurations (Amplitude with
 Logistic or SVM-linear) still achieved 98.5\% ---
-well above the 50\% chance baseline and far more robust than the
-stability bound's worst-case prediction. The topological signal
+well above the 50\% chance baseline, and the maximum measured
+bottleneck distance at this level is 0.434, less than a quarter of
+the corrected bound. The torus $H_1$ diagrams move on average by
+$d_B = 0.283$ at this level --- below the measured $H_1$ persistence
+range [0.608, 1.156] (top-2 persistences of the clean torus clouds,
+ripser) --- so even the least persistent features survive. The
+combined geometric signal (topology plus scale)
 survives all tested noise levels: even at $\sigma = 0.30$, the
-$\Betti_1 = 0$ vs.\ $\Betti_1 = 2$ distinction remains linearly
-separable in every vectorized feature space tested.
+$\Betti_1 = 0$ vs.\ $\Betti_1 = 2$ distinction is separated by
+linear kernels at $\ge 98.5\%$ in every vectorized feature space
+tested.
+
+\textbf{Isolating the topological signal.} The sphere/torus classes
+differ in scale as well as topology (torus point norms in $[1,3]$
+versus sphere $\equiv 1$): a single norm feature separates them at
+100\% at every noise level, so the survival results above describe
+the \emph{combined} geometric signal. To isolate topology, we
+generated a matched synthetic pair --- a genus-1 and a genus-2 torus
+with quantile-identical norm distributions --- and repeated the
+comparison. Norm-based features now collapse to chance (48--58\%),
+while the TDA pipeline separates the pair at 99.75\% clean and
+95.83\% at $\sigma=0.30$ (minimum 91\% over configurations). The
+topological signal is therefore not an artefact of the norm
+confound: it survives on its own, and it is robust to noise at the
+levels tested.
 
 \begin{figure}[H]
   \centering
 \includegraphics[width=0.8\textwidth]{figures/fig_noise_curves.pdf}
-  \caption{Accuracy vs.\ noise. All pipelines maintain $\ge 98.5\%$
-    accuracy through $\sigma=0.30$ — the stability bound is conservative.}
+  \caption{Accuracy vs.~noise. All pipelines maintain $\ge 98.5\%$
+    accuracy through $\sigma=0.30$; measured bottleneck distances
+    (max 0.434 at $\sigma=0.30$ versus the corrected bound
+    $2\sigma\sqrt{2\ln n} \approx 1.83$) confirm the stability
+    bound is conservative.}
   \label{fig:noise_curves}
 \end{figure}
 
@@ -989,54 +1283,69 @@ completion.
   \end{tabular}
 
   \vspace{0.2cm}
-  \footnotesize{Cubical filtration on ECG200 uses the Takens-embedded
-    3D point cloud as a 3D grid; it is not restricted to image data.}
+  \footnotesize{CubicalPersistence on ECG200 operates on the
+    $94 \times 3$ Takens-embedded array as a pixel grid (intensities
+    treated as coordinates), not on a point-cloud filtration. Times
+    are single-split measurements; the 83.0\% ECG200 figure is a
+    single-split point estimate --- see \S4.1 for repeated-CV means.}
 \end{table}
 
 \begin{figure}[H]
   \centering
 \includegraphics[width=0.85\textwidth]{figures/fig_pareto.pdf}
-  \caption{Runtime vs.\ accuracy. Alpha dominates the frontier.}
+  \caption{Runtime vs.~accuracy on the Pareto frontier.}
   \label{fig:pareto}
 \end{figure}
 
-Alpha is 3--21\% faster than VR at identical accuracy on
-sphere/torus with Landscape+SVM (measured 3.5--3.9s vs.\ 3.9--4.4s
-across the four noise levels; the gap narrows at $\sigma=0.30$). Cubical filtration is the
-fastest overall (0.6--1.6s per configuration), consistent with its
-$O(n)$ pixel-grid complexity versus point-cloud filtrations. The
+Weak Alpha is 3--21\% faster than VR at identical accuracy on
+sphere/torus with Landscape+SVM (measured 3.5--3.9s vs.~3.9--4.4s
+across the four noise levels; the gap narrows at $\sigma=0.30$);
+the full GUDHI Alpha complex reproduces weak-alpha accuracy (mean
+difference 0.0--0.8pp) at 2--5$\times$ the cost. Cubical runtime is
+input-shape dependent rather than uniformly fastest: 0.6--1.6s per
+configuration on the sphere/torus and ECG200 instances, but
+3.1--12.7s on $28 \times 28$ MNIST images. The
 Nerve Theorem
-(Theorem~\ref{thm:nerve}) guarantees that Alpha's $O(n^2)$ simplex count
+(Theorem~\ref{thm:nerve}) guarantees that the full Alpha complex's
+$O(n^2)$ simplex count
 does not sacrifice geometric fidelity to the underlying
-union-of-balls, making its speed advantage a free lunch for
-2D/3D data. Sparse Rips takes
+union-of-balls; the executed \texttt{WeakAlphaPersistence} is an
+approximation, and its accuracy matches the full complex (mean
+difference 0.0--0.8pp) at 2--5$\times$ lower cost. Sparse Rips takes
 12--77s (mean 41s) with no accuracy gain at the 100-point scale; its design
 target ($n \ge 10^3$) is outside this benchmark's subsampling
 regime. Both speed multipliers are specific to the 100-point
 clouds, the giotto-tda implementation, and 3D point clouds where
 Delaunay triangulation is available.
 
-Landscape + SVM-RBF is the Pareto-optimal default: 2.9--4.1s,
-76\% on ECG200, 99.9\%+ on synthetic data, on the two datasets tested; the Pareto frontier may shift
+The repeated-CV-stable default for ECG200 is cubical + Persistence
+Image + Random Forest (best in 4 of 5 repetitions; 83.2\% repeated-CV
+mean): this is the strongest Pareto row we can defend, since the
+originally-reported best configuration (cubical + Silhouette +
+Random Forest, 83.0\% single-split) ranks fourth by repeated-CV mean
+(79.6\%, SD 1.98pp). The Pareto frontier may shift
 with additional datasets or libraries.
 
-\noindent Chapter~5 interprets why pipeline-stage importance depends
-on modality and derives operational guidelines from these patterns.
+\noindent Chapter~5 interprets why vectorization dominates on both
+real datasets and derives operational guidelines from these
+patterns.
 
 \newpage
 
 % ════════════════════════════════════════════════════════════
-%  CHAPTER 5 -- MODALITY-DEPENDENCE AND THEORETICAL SYNTHESIS
+%  CHAPTER 5 -- VECTORIZATION DOMINANCE AND THEORETICAL SYNTHESIS
 % ════════════════════════════════════════════════════════════
-\chapter{Modality-Dependence and Theoretical Synthesis}
+\chapter{Vectorization Dominance and Theoretical Synthesis}
 \label{chap:discussion}
 
 % ────────────────────────────────────────────────────────────
-\section{Why Does Filtration Dominate on Images but Not Time Series?}
+\section{Why Vectorization Dominates on Both Datasets}
 % ────────────────────────────────────────────────────────────
 
-The central empirical result is that pipeline-stage importance is
-modality-dependent. The mechanism is as follows.
+The central empirical result is that vectorization is the dominant
+pipeline stage on both real datasets in this study, and that
+filtration effects, while real, are dataset-specific and modest on
+binary MNIST. The mechanism is as follows.
 
 On \textbf{image data}, the raw input is a 2D grid of pixel
 intensities. A cubical filtration directly captures adjacency
@@ -1045,37 +1354,55 @@ $2 \times 2$ blocks form squares --- producing a simplicial complex
 whose topology faithfully represents the image's spatial structure.
 A point-cloud filtration like Vietoris-Rips, applied to the same
 data (which the pipeline feeds to the filtration as its native array
---- for MNIST, 28 rows of 28 intensities, i.e.\ a 28-point cloud in
+--- for MNIST, 28 rows of 28 intensities, i.e.~a 28-point cloud in
 $\mathbb{R}^{28}$), does not see the 2D grid adjacency at all: the
 filtration's notion of ``nearby'' is Euclidean distance between
-rows, so the pixel-grid topology is absent from the outset. Conti et al.\ (2022) showed that this
-difference can swing MNIST accuracy from 18\% (with an inappropriate
-filtration) to 94\% (with cubical). Filtration dominates because the
-\emph{wrong} filtration destroys the topological signal before
-vectorization or classification can recover it.
+rows, so the pixel-grid topology is absent from the outset.
+Consistently, cubical beats Vietoris-Rips by $\sim$1.75pp
+best-of-family on binary MNIST (98.0\% vs.~96.25\%). Conti et
+al.~(2022) showed the same mechanism can be catastrophic at scale:
+on MNIST their accuracy ranged from 18\% (their cubical pipeline) to
+94\% (improved filtrations), under 10-split cross-validation with
+grid search. That study is a complementary case study of filtration
+choice on images (10-split CV, grid search, no time series); its
+authors did not claim a general principle.
 
-On \textbf{delay-embedded time series}, the situation reverses. The
+Yet even on binary MNIST the vectorizer moves accuracy more than the
+filtration: the marginal range is 3.22pp for vectorizers versus
+1.65pp for filtrations (\S4.1). Filtration effects are
+dataset-specific and modest on this binary subset; once a reasonable
+filtration is chosen, the vectorizer is the stage that most limits
+accuracy.
+
+On \textbf{delay-embedded time series}, the situation is similar but
+more pronounced. The
 input is already a point cloud $Y = \Phi_{(d,\tau)}(x) \subset \R^d$
-produced by Takens embedding. Both Vietoris-Rips and Alpha complexes
-operate on the same metric space $(Y, d_E)$ and produce topologically
-equivalent filtrations (they share the same persistence diagram up to
-small bottleneck-distance perturbations). The embedding captures the
+produced by Takens embedding. Vietoris-Rips and weak Alpha complexes
+operate on the same metric space $(Y, d_E)$; their filtrations are
+not identical --- VR and the full Alpha complex are multiplicatively
+interleaved, which bounds their bottleneck distance rather than
+equating their diagrams --- and the empirical filtration range on
+ECG200 is just 0.70pp (repeated-CV mean). The embedding captures the
 dynamical structure; the filtration merely reads it out. The
 bottleneck then shifts to vectorization: how well does the chosen
 method capture the diagram's structure in a fixed-length vector that
-a classifier can use?
+a classifier can use? On ECG200 the vectorizer range is 6.09pp
+versus 0.70pp for filtration; on ECG5000 it is 24.89pp versus
+3.60pp.
 
-This mechanism explains both findings without contradiction. Conti
-et al.\ are correct that filtration dominates on images --- the wrong
-filtration can be catastrophic. We are correct that vectorization
-dominates on ECG200 --- filtration choice is neutral because both VR
-and Weak Alpha faithfully capture the embedded point cloud's topology.
+This mechanism explains the findings without contradiction. Conti
+et al.'s image results are a complementary case study (10-class
+MNIST, grid search, no time series) demonstrating that a
+badly-matched filtration can be catastrophic; on our binary MNIST
+subset the filtration gap is modest (cubical beats VR by $\sim$1.75pp
+best-of-family) and the vectorizer gap is larger (3.22pp). On both
+time-series datasets the vectorizer dominates by a wide margin.
 (We use giotto-tda's \texttt{WeakAlphaPersistence}, a subcomplex
 approximation of the full Alpha complex; the Nerve-Theorem homotopy
-argument applies to the full complex, and the approximation is standard
-practice for point-cloud filtrations.)
-The apparent contradiction resolves when the data modality and its
-interaction with filtration type are made explicit.
+argument applies to the full complex, and the approximation is
+standard practice for point-cloud filtrations --- empirically, the
+full GUDHI Alpha complex reproduces weak-alpha accuracy to within
+0.0--0.8pp at 2--5$\times$ the cost.)
 
 \begin{table}[H]
   \centering
@@ -1085,16 +1412,20 @@ interaction with filtration type are made explicit.
     \toprule
     Modality & Dominant Stage & Range & $n$ (datasets) \\
     \midrule
-    Point clouds (clean) & None & 0pp & 1\textsuperscript{*} \\
-    Time series (embedded) & Vectorizer & 6.1pp & 1 \\
-    Images (spatial grid) & Filtration & $\sim$60pp & 1\textsuperscript{$\dagger$} \\
+    Point clouds (clean) & None & $\approx$0pp & 1\textsuperscript{*} \\
+    Time series (embedded) & Vectorizer & 6.09pp; 24.89pp & 2 \\
+    Images (binary MNIST) & Vectorizer & 3.22pp vs.~1.65pp & 1 \\
     \bottomrule
   \end{tabular}
 
   \vspace{0.3cm}
   \footnotesize{\textsuperscript{*}Synthetic sphere/torus pair.\\
-  \textsuperscript{$\dagger$}From Conti et al.\ (2022); single
-    dataset (MNIST).}
+    Ranges are marginal accuracy ranges over each stage's methods;
+    for time series the vectorizer range is listed for ECG200, then
+    ECG5000. On binary MNIST the vectorizer range (3.22pp) exceeds
+    the filtration range (1.65pp). Conti et al.~(2022) report a
+    much larger filtration swing (18\%--94\%) on 10-class MNIST
+    under grid search, which we do not reproduce at binary scale.}
 \end{table}
 
 This table summarises initial evidence, not a settled taxonomy.
@@ -1105,33 +1436,44 @@ or qualify every cell.
 \section{Non-Topological Context and Limitations}
 % ────────────────────────────────────────────────────────────
 
-Our pipeline's best ECG200 accuracy (83.0\%, cubical filtration +
-Silhouette + Random Forest) sits below published
-classical baselines for this dataset: Euclidean 1-NN achieves
-$\sim$88\%, DTW-based 1-NN $\sim$88\% on the standard UCR train/test
-split (our default Landscape+SVM-RBF pipeline achieves 76.0\%).
-This is expected for a method using topology alone --- TDA
-features capture orthogonal geometric properties (cycle structures
-in the embedded attractor) that complement, rather than compete
-with, raw signal features. The internal TDA-pipeline comparisons
-reported here are valid regardless of the absolute accuracy level.
+Under the same 5-fold CV protocol, our TDA pipelines sit below
+raw-feature baselines on both real datasets: on ECG200, raw-signal
+logistic regression achieves 85.5\% and random forest 85.0\% versus
+83.0\% for the best TDA configuration; on MNIST binary, raw-pixel
+logistic regression achieves 99.75\% and random forest 99.0\% versus
+98.0\% for the best TDA configuration (\S4.1). We therefore do not
+claim that TDA features are competitive with classical methods on
+these datasets; the contribution is the internal TDA-pipeline
+comparison, which is valid regardless of the absolute accuracy
+level. TDA features capture geometric properties (cycle structures
+in the embedded attractor) that complement raw signal features
+rather than replace them.
 
 \textbf{Limitations.} (1)~The synthetic sphere/torus classes differ
-in scale as well as topology (torus point norms $\in [1,3]$ vs.\
-sphere $\equiv 1$; $\approx$10\% of torus points have norm $<1.1$),
-so a radial-threshold classifier would already separate most of the
-data; the noise experiments therefore measure robustness of the
-\emph{combined} geometric signal, not topology alone. (2)~Homology
-capped at $H_1$ ($H_2$ requires
-$O(n^4)$ simplices for VR). (3)~Two-class problems only.
-(4)~One real dataset per modality. (5)~Single implementation library
+in scale as well as topology (torus point norms $\in [1,3]$ vs.~sphere
+$\equiv 1$): a single norm feature separates them at 100\% at every
+noise level, so the sphere/torus noise results measure robustness of
+the \emph{combined} geometric signal. We control for this with the
+matched genus-1/genus-2 experiment of \S4.2, where norm features
+collapse to chance (48--58\%) while TDA retains 95.83\% at
+$\sigma=0.30$ --- the topological contribution is real and
+noise-robust on its own. (2)~Homology capped at $H_1$ ($H_2$ requires
+$O(n^4)$ simplices for VR). (3)~Classification is binary on all
+datasets except ECG5000 (5 classes).
+(4)~Two time-series datasets (ECG200, ECG5000) but a single image
+dataset (binary MNIST); the image claim rests on one dataset.
+(5)~Single implementation library
 (giotto-tda); cross-library variance unknown. (6)~No learned
 vectorizers (PersLay \cite{carriere2020}, Hofer input layers \cite{hofer2017}). (7)~$n=200$ produces wide
-CIs. Each limitation suggests a concrete future-work item:
-$H_2$ via Flood Complex \cite{graf2025}; multi-class extension
-(MNIST, Outex); a second time-series dataset (ECG5000, FordA);
-cross-library replication in GUDHI and Ripser; PersLay integration
-via a new backend; and larger-$n$ datasets for narrower CIs.
+CIs, and single-split point estimates are noisy (per-configuration
+SD across CV repetitions averages 1.09pp). Each limitation suggests
+a concrete future-work item:
+$H_2$ via Flood Complex \cite{graf2025}; additional multi-class
+datasets (full MNIST, Outex) to test whether Conti et al.'s large
+filtration swing reproduces at scale; a third time-series dataset
+(FordA); cross-library replication in GUDHI and Ripser; PersLay
+integration via a new backend; and larger-$n$ datasets for narrower
+CIs.
 
 \textbf{Data and code availability.} All code, configuration files,
 and result schemas are provided in the public repository
@@ -1140,21 +1482,43 @@ synthetic sphere/torus data are regenerated by the bundled
 \path{scripts/generate_datasets.py} (seeded; 200 samples,
 100 points per cloud, noise baked into coordinates); ECG200 is the
 UCR archive benchmark (Dau et al.\ 2019); MNIST is the standard
-binary 0/1 subset \cite{lecun1998}. The SQLite result database is
-regenerated by the bundled \texttt{run\_all.sh} script. Random seeds
-are fixed (base 42) and per-dataset subsampling is seeded
-deterministically, so the sweep is reproducible end-to-end.
+binary 0/1 subset \cite{lecun1998}. The main sweep's SQLite result
+database is regenerated by the bundled \texttt{run\_all.sh} script,
+and every follow-up analysis has a bundled producer:
+\path{scripts/run_repeated_cv.py} writes
+\path{data/tda/repeated_cv.db} (560 runs: 112 configurations
+$\times$ 5 repetitions), analysed by
+\path{scripts/analysis_repeated_cv.py};
+\path{scripts/analysis_eta_squared.py} produces the $\eta^2$
+decomposition of Table~\ref{tab:eta2};
+\path{scripts/analysis_mnist_stage_impact.py} produces the MNIST
+marginal analysis;
+\path{scripts/run_baselines.py} writes
+\path{data/tda/baseline_experiments.db} (raw-signal baselines,
+matched-genus synthetic clouds, measured bottleneck distances);
+\path{scripts/generate_matched_synthetic.py} writes the
+\path{data/tda/synthetic_matched/} data; and
+\path{scripts/experiment_alpha.py},
+\path{scripts/experiment_cubical_artifact.py}, and
+\path{scripts/ecg5000_lean_sweep.py} are the producers of the
+remaining sensitivity results. Random seeds are fixed: the main
+sweep uses base seed 42, the repeated-CV splits use seeds 43--47
+(random seed 42 + repetition index), and per-dataset subsampling is
+seeded deterministically via CRC32, so all experiments are
+reproducible end-to-end.
 
 \textbf{Compute.} The full 616-configuration sweep was executed on a
 single consumer workstation (8-core CPU, 16GB RAM), serial
 ($n_{\text{workers}} = 1$). Summed wall-clock time across all 616
 configurations was 2.0 hours (mean $\sim$12s per configuration,
-median 1.4s); Sparse Rips dominates the total (140 runs, mean 41s,
+median 3.78s); Sparse Rips dominates the total (140 runs, mean 41s,
 $\approx$1.6h), while the other three filtrations complete in
-$\approx$24 minutes. Per-configuration wall times are recorded in the
-results database (cf. the R-package PH runtime benchmark of
-Somasundaram et al.\ \cite{somasundaram2021}); memory was not
-measured per stage (see Limitations).
+$\approx$24 minutes. The repeated-CV verification of \S4.1 added
+560 further runs (112 configurations $\times$ 5 repetitions,
+$\approx$53 minutes summed wall time). Per-configuration wall times
+are recorded in the results databases (cf. the R-package PH runtime
+benchmark of Somasundaram et al.\ \cite{somasundaram2021}); memory
+was not measured per stage (see Limitations).
 
 % ────────────────────────────────────────────────────────────
 \section{Operational Guidelines for Pipeline Selection}
@@ -1174,9 +1538,9 @@ would strengthen or qualify each entry.
     \toprule
     Data Modality & Filtration & Vectorizer & Classifier & Rationale \\
     \midrule
-    Low-dim.\ point clouds ($\le 3$D, clean) & Alpha complex & Pers.\ Statistics or Landscapes & SVM (RBF) or Logistic & Alpha 3--21\% faster than VR at identical accuracy; Nerve Theorem guarantees homotopy fidelity \\
-    Delay-embedded time series ($d \ge 3$) & VR or Alpha & Pers.\ Landscapes & RF or SVM (RBF) & Vectorization dominates variance (6.1pp marginal range across 7 vectorizers) \\
-    High-noise clouds ($\sigma \ge 0.15$) & Alpha or VR & Pers.\ Landscapes & SVM (RBF) & Landscapes most robust to geometric distortion at $\sigma=0.30$ (0.7pp vectorizer range; five vectorizers tie at 100\%) \\
+    Low-dim.~point clouds ($\le 3$D, clean) & Weak Alpha & Pers.~Statistics or Landscapes & SVM (RBF) or Logistic & Weak Alpha 3--21\% faster than VR at identical accuracy; full-complex fidelity verified empirically (0.0--0.8pp at 2--5$\times$ cost) \\
+    Delay-embedded time series ($d \ge 3$) & VR or Weak Alpha & Pers.~Landscapes & RF or SVM (RBF) & Vectorization dominates variance (6.09pp on ECG200; 24.89pp on ECG5000) \\
+    High-noise clouds ($\sigma \ge 0.15$) & Weak Alpha or VR & Pers.~Landscapes & SVM (RBF) & All vectorizers maintain $\ge 98.5\%$ at $\sigma=0.30$ (minimum over configurations); measured $d_B$ far below the stability bound \\
     Large-scale clouds ($n \ge 10^3$) & Sparse Rips & Pers.\ Images or Betti Curves & Random Forest & Sparse Rips designed for $n \ge 10^3$; its benefit is untestable at $n=100$ in this sweep \\
     \bottomrule
   \end{tabularx}
@@ -1193,21 +1557,35 @@ conditional thesis.
 \chapter{Conclusion and Operational Guidelines}
 \label{chap:conclusion}
 
-Pipeline-stage importance in TDA classification is modality-dependent.
-On ECG200 time series, vectorization produced a 6.1pp marginal accuracy
-range across 7 vectorizers (95\% CI [4.8, 7.4]), while filtration
-contributed only 0.7pp across 4 filtrations (95\% CI [0.2, 1.1]). This
-qualifies the widely cited claim that filtration always dominates:
-Conti et al.'s finding holds for image data but does not generalise. On synthetic sphere/torus data, the topological
-signal survives $\sigma = 0.30$ additive spatial Gaussian noise at
-99.85\% mean accuracy across the 112 configurations at that level — the stability bound is conservative,
-and the $\Betti_1 = 0$ vs.\ $\Betti_1 = 2$ distinction remains
-linearly separable in all tested pipelines.
+Vectorization is the dominant pipeline stage on both real datasets
+in this study. On ECG200 time series, vectorization produced a 6.09pp
+marginal accuracy range across 7 vectorizers (95\% CI [5.84, 6.34]),
+while filtration contributed 0.70pp across 4 filtrations (95\% CI
+[0.35, 1.04]; small but statistically non-zero) and classifiers
+3.18pp (95\% CI [2.57, 3.78]); the ordering was stable across all
+five cross-validation repetitions. On binary MNIST the same hierarchy
+holds --- vectorizer range 3.22pp versus filtration 1.65pp, with
+cubical beating Vietoris-Rips by $\sim$1.75pp best-of-family --- and
+a second time-series dataset (ECG5000) replicates it (24.89pp versus
+3.60pp). Conti et al.'s image results are a complementary case study
+on 10-class MNIST under grid search, not a general law. On synthetic
+sphere/torus data, the combined geometric signal survives
+$\sigma = 0.30$ additive spatial Gaussian noise at
+99.85\% mean accuracy across the 112 configurations at that level;
+measured bottleneck distances (max 0.434 versus the corrected bound
+$2\sigma\sqrt{2\ln n} \approx 1.83$) confirm the stability bound is
+conservative, and a matched
+genus-1/genus-2 experiment with identical norm distributions shows
+the robustness is topology-specific (TDA 95.83\% versus 48--58\% for
+norm features at $\sigma=0.30$). TDA features do not beat raw
+features on the datasets studied (raw-signal logistic 85.5\% vs.~83.0\%
+TDA on ECG200; raw-pixel logistic 99.75\% vs.~98.0\% TDA on MNIST),
+so the contribution is the internal TDA-pipeline comparison.
 
 The core contribution is the conditionality itself: benchmark claims
-about pipeline-stage importance depend on the data modality and the
-fixed dimensions of the study, and those conditions should be stated
-as explicitly as the claims. The framework that produced these
+about pipeline-stage importance depend on the datasets, modalities,
+and fixed dimensions of the study, and those conditions should be
+stated as explicitly as the claims. The framework that produced these
 findings --- a modular, YAML-configurable, factory-pattern
 architecture with normalised SQLite storage executing a 616-
 configuration factorial sweep --- exists to enable the larger
@@ -1446,6 +1824,18 @@ class PersistenceStatistics(BaseEstimator, TransformerMixin):
 The following sensitivity tests were conducted on reduced
 configuration subsets.
 
+\begin{quote}\small
+\textbf{Provenance note.} The Takens sensitivity table below is an
+\emph{illustrative reduced-sweep result} from an early exploratory
+phase: it was produced by a script that is no longer part of the
+verified pipeline, and no database producer for it exists in the
+repository. It is not part of the verified 616-configuration sweep,
+and its numbers should be treated as indicative only. The
+stage-impact claims of Chapter~4 rest on the repeated-CV analysis of
+\S4.1 and the $\eta^2$ decomposition of
+Table~\ref{tab:eta2}, which are fully reproducible.
+\end{quote}
+
 \subsection*{Takens Embedding Sensitivity}
 
 The claim that vectorization dominates on ECG200 was tested under
@@ -1544,6 +1934,12 @@ PersLay: A neural network layer for persistence diagrams and new
 graph topological signatures.
 \textit{Proceedings of AISTATS}, 2020.
 
+\bibitem{chazal2014}
+F.~Chazal, B.~T.~Fasy, F.~Lecci, A.~Rinaldo, and L.~Wasserman.
+Stochastic convergence of persistence landscapes and silhouettes.
+\textit{Proceedings of the 30th Annual Symposium on Computational
+Geometry (SoCG)}, pp.~474--483, 2014.
+
 \bibitem{chung2022}
 Y.-M.~Chung and A.~Lawson.
 Persistence curves: A canonical framework for summarizing persistence
@@ -1589,6 +1985,13 @@ J.~A.~Perea, E.~Munch, and F.~Khasawneh.
 Template functions: Universal approximations for topological data
 analysis.
 \textit{Foundations of Computational Mathematics}, 2022.
+
+\bibitem{rucco2016}
+M.~Rucco, F.~Castiglione, E.~Merelli, and M.~Pettini.
+Characterisation of the idiotypic immune network through persistent
+entropy.
+\textit{Proceedings of ECCS 2014}, Springer Proceedings in
+Complexity, pp.~117--128, 2016.
 
 \bibitem{somasundaram2021}
 E.~Somasundaram, S.~Brown, A.~Litzler, and R.~Green.
