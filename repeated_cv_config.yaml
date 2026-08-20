@@ -1,0 +1,55 @@
+# Repeated 5-fold CV on ECG200 — 5 repetitions (CV seeds 43..47) to measure
+# between-split variance. NEW experiment (reviewer objection #1): single
+# 5-fold CV gives CIs computed from 5 correlated folds of one split.
+# Additive-only: new file, new DB (data/tda/repeated_cv.db); expanded_results.db untouched.
+datasets:
+  - name: ecg200
+    path: data/tda/ucr/ecg200_X.npy
+    labels: data/tda/ucr/ecg200_y.npy
+    modality: time_series
+    takens_dimension: 3
+    takens_delay: 1
+
+filtrations:
+  - name: vietoris_rips
+    homology_dimensions: [0, 1]
+  - name: weak_alpha
+    homology_dimensions: [0, 1]
+  - name: sparse_rips
+    homology_dimensions: [0, 1]
+    epsilon: 0.3
+  - name: cubical
+    homology_dimensions: [0, 1]
+
+vectorizations:
+  - name: persistence_image
+    sigma: 0.1
+    n_bins: 20
+  - name: persistence_landscape
+    n_layers: 3
+    n_bins: 50
+  - name: betti_curve
+    n_bins: 50
+  - name: silhouette
+    n_bins: 50
+  - name: persistence_entropy
+    normalize: true
+  - name: amplitude
+    metric: bottleneck
+  - name: persistence_statistics
+
+classifiers:
+  - name: svm_rbf
+  - name: random_forest
+  - name: logistic
+  - name: svm_linear
+
+evaluation:
+  cv_folds: 5
+  scoring: accuracy
+  random_seed: 42
+  repetitions: 5
+
+output:
+  db_path: data/tda/repeated_cv.db
+  log_level: WARNING
