@@ -139,13 +139,25 @@ class ResultStore:
         self._conn.commit()
 
     def summary(self) -> list[dict]:
-        """Return aggregate statistics across all runs with proper CIs."""
+        """Return aggregate statistics across all runs with CIs.
+
+        CI uses the t-distribution critical value (df = n_folds - 1)
+        on the per-configuration fold accuracies. This is a reporting
+        convenience for the console; the paper's headline CIs are
+        computed separately in the analysis pipeline.
+        """
+        # t_{0.975, df} for df = 4..8 (n_folds 5..9); fallback 1.96 for large df.
+        tcrit_for_df = {4: 2.776, 5: 2.571, 6: 2.447, 7: 2.365, 8: 2.306}
+        df = self._conn.execute(
+            "SELECT CAST(COUNT(DISTINCT fold) AS INTEGER) FROM fold_results"
+        ).fetchone()[0]
+        tcrit = tcrit_for_df.get(max(1, df - 1), 1.96)
         cur = self._conn.execute("""
             SELECT dataset, filtration, vectorizer, classifier,
                    COUNT(*) AS reps,
                    AVG(avg_acc) AS mean_accuracy,
-                   AVG(avg_acc - 1.96 * (std_acc / SQRT(n_folds))) AS ci_lower,
-                   AVG(avg_acc + 1.96 * (std_acc / SQRT(n_folds))) AS ci_upper,
+                   AVG(avg_acc - ? * (std_acc / SQRT(n_folds))) AS ci_lower,
+                   AVG(avg_acc + ? * (std_acc / SQRT(n_folds))) AS ci_upper,
                    AVG(avg_wall_time) AS mean_wall_time
             FROM (
                 SELECT r.run_id, r.dataset, r.filtration, r.vectorizer, r.classifier,
@@ -162,7 +174,7 @@ class ResultStore:
             )
             GROUP BY dataset, filtration, vectorizer, classifier
             ORDER BY mean_accuracy DESC
-        """)
+        """, (tcrit, tcrit))
         columns = [d[0] for d in cur.description]
         return [dict(zip(columns, row)) for row in cur.fetchall()]
 

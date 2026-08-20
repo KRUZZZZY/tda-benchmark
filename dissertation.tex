@@ -230,7 +230,7 @@ through three stages:
 
 \begin{figure}[H]
   \centering
-  % [IMAGE: Horizontal pipeline diagram.]
+\includegraphics[width=\textwidth]{figures/fig_pipeline_diagram.pdf}
   \caption{The three-stage persistent homology classification pipeline.}
   \label{fig:pipeline_diagram}
 \end{figure}
@@ -536,8 +536,9 @@ expected maximum perturbation is $\E[\max_i \|\eta_i\|] \approx
 probability the Gromov-Hausdorff distance is bounded by
 $O(\sigma\sqrt{\log n})$, so the bottleneck distance between
 clean and noisy diagrams is at most $O(\sigma\sqrt{\log n})$.
-For $n=200$ and $\sigma=0.15$, this gives $d_B \lesssim 0.45$;
-at $\sigma=0.30$, $d_B \lesssim 0.90$. We compare
+For $n=100$ (points per cloud after subsampling) and
+$\sigma=0.15$, this gives $d_B \lesssim 0.46$; at $\sigma=0.30$,
+$d_B \lesssim 0.91$. We compare
 this bound against the observed persistence ranges of the torus's
 $\Betti_1$ features.
 
@@ -622,9 +623,7 @@ homology dimension.
 
 \begin{figure}[H]
   \centering
-  % [IMAGE: 2×2 grid of vectorization methods applied to one
-  %  persistence diagram. PI: 2D heatmap. PL: layered curves.
-  %  Betti: single curve. Stats: bar chart.]
+  \includegraphics[width=0.85\textwidth]{figures/fig_vectorization_comparison.pdf}
   \caption{The four vectorization methods applied to one diagram.}
   \label{fig:vectorization_comparison}
 \end{figure}
@@ -647,10 +646,10 @@ executed in Chapter~4:
     and Cubical constitute the four filtrations varied in the
     factorial sweep of \S4.1.
   \item \textbf{Persistence and stability} (\S2.3--\S2.4): The
-    stability bound $d_B \le 2 d_{GH}$ predicts that $\sigma = 0.15$
-    noise perturbs diagrams by $\le 0.30$, while torus $\Betti_1$
-    features have persistence $0.5$--$0.8$. \S4.2 confirms that
-    classification survives this perturbation.
+    probabilistic bound $d_B \lesssim \sigma\sqrt{2\log n}$ predicts
+    that $\sigma = 0.15$ noise perturbs diagrams by $\lesssim 0.46$,
+    while torus $\Betti_1$ features have persistence $0.5$--$0.8$.
+    \S4.2 confirms that classification survives this perturbation.
   \item \textbf{Vectorization} (\S2.5): Persistence Statistics,
     Betti Curves, Landscapes, and Images constitute the four
     vectorizers varied in \S4.1, spanning the complexity spectrum
@@ -896,9 +895,7 @@ are descriptive; the sample of one dataset and five folds is too
 small for reliable significance testing.
 \begin{figure}[H]
   \centering
-  % [IMAGE: Grouped bar chart. Three groups: Filtration,
-  %  Vectorizer, Classifier. Bars showing marginal accuracy
-  %  with ±1 SE error bars. Vectorizer shows widest spread.]
+\includegraphics[width=\textwidth]{figures/fig_stage_impact.pdf}
   \caption{Stage impact on ECG200. Error bars show $\pm 1$ SE.}
   \label{fig:stage_impact}
 \end{figure}
@@ -915,29 +912,30 @@ separates it nearly perfectly.
 
 Does topological signal survive additive spatial noise? Noise is
 applied as $\eta_i \sim \mathcal{N}(0, \sigma^2 I_3)$ to Euclidean
-coordinates (Equation~\ref{eq:noise}). The perturbation's Gromov-Hausdorff
-distance from the clean point cloud is bounded by $2\sigma$, so the
-stability theorem (Equation~\ref{eq:stability}) guarantees
-$d_B \le 2 \cdot 2\sigma = 4\sigma$.
+coordinates (Equation~\ref{eq:noise}). Gaussian noise has unbounded
+support, so no deterministic bound on the perturbation exists; instead
+we use the probabilistic bound of \S2.4: with high probability the
+bottleneck distance between clean and noisy diagrams is at most
+$O(\sigma\sqrt{\log n})$, i.e.\ $d_B \lesssim 0.46$ at
+$\sigma=0.15$ and $\lesssim 0.91$ at $\sigma=0.30$ for $n=100$.
 
 \begin{figure}[H]
   \centering
-  % [IMAGE: 2×2 grid. Sphere at σ=0.00 and σ=0.15 (top).
-  %  Torus at σ=0.00 and σ=0.15 (bottom).]
+\includegraphics[width=0.8\textwidth]{figures/fig_noise_pds.pdf}
   \caption{Persistence diagrams under clean and noisy conditions.}
   \label{fig:noise_pds}
 \end{figure}
 
 At $\sigma = 0.00$, $0.05$, and $0.15$, every configuration achieves
 $\ge 99.5\%$ accuracy (mean 99.99\%, 100.00\%, and 99.97\%
-respectively). The stability bound at $\sigma = 0.15$ is
-$4 \times 0.15 = 0.60$, but the torus's $\Betti_1$ features have
+respectively). The probabilistic stability bound at
+$\sigma = 0.15$ is $d_B \lesssim 0.46$, but the torus's $\Betti_1$ features have
 empirical persistences of $0.5$--$0.8$ --- features near the lower
 end of this range would be threatened by the bound, yet classification
 remains perfect. This suggests the stability bound overestimates the observed
 degradation: the actual bottleneck distance between clean and noisy
 diagrams appears substantially below the worst-case guarantee of
-$4\sigma$ for the sphere and torus geometries tested.
+$O(\sigma\sqrt{\log n})$ for the sphere and torus geometries tested.
 
 At $\sigma = 0.30$ (bound $= 1.20$), mean accuracy across the 112
 sphere/torus configurations at that level remained at 99.85\%
@@ -951,8 +949,7 @@ separable in every vectorized feature space tested.
 
 \begin{figure}[H]
   \centering
-  % [IMAGE: Line plot. x: σ (0.00--0.30). y: accuracy (0.5--1.0).
-  %  Mean, best, worst lines.]
+\includegraphics[width=0.8\textwidth]{figures/fig_noise_curves.pdf}
   \caption{Accuracy vs.\ noise. All pipelines maintain $\ge 98.5\%$
     accuracy through $\sigma=0.30$ — the stability bound is conservative.}
   \label{fig:noise_curves}
@@ -988,8 +985,7 @@ completion.
 
 \begin{figure}[H]
   \centering
-  % [IMAGE: Scatter plot. Wall time (log) vs accuracy.
-  %  Coloured by filtration. Pareto frontier connected.]
+\includegraphics[width=0.85\textwidth]{figures/fig_pareto.pdf}
   \caption{Runtime vs.\ accuracy. Alpha dominates the frontier.}
   \label{fig:pareto}
 \end{figure}
