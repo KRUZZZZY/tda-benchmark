@@ -143,8 +143,8 @@ class ResultStore:
 
         CI uses the t-distribution critical value (df = n_folds - 1)
         on the per-configuration fold accuracies. This is a reporting
-        convenience for the console; the paper's headline CIs are
-        computed separately in the analysis pipeline.
+        convenience for the console only; the paper's headline
+        marginal-range CIs are not produced by this method.
         """
         # t_{0.975, df} for df = 4..8 (n_folds 5..9); fallback 1.96 for large df.
         tcrit_for_df = {4: 2.776, 5: 2.571, 6: 2.447, 7: 2.365, 8: 2.306}

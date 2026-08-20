@@ -82,6 +82,8 @@
             linkcolor=blue!60!black,
             citecolor=blue!60!black,
             urlcolor=blue!60!black]{hyperref}
+% xurl would help break long URLs but is not installed; URLs here are
+% short enough that hyperref's \url breaks at slashes within the line.
 
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[chapter]
@@ -149,7 +151,7 @@ $\Betti_1 = 0$ vs.\ $\Betti_1 = 2$ distinction remains classifiable.
 On MNIST, cubical filtration outperforms Vietoris-Rips
 by 1.8 percentage points (98.0\% vs.\ 96.25\%), confirming that
 filtration choice matters for image data. The Alpha complex is
-11--21\% faster than Vietoris-Rips at identical accuracy on
+3--21\% faster than Vietoris-Rips at identical accuracy on
 100-point 3D clouds under the giotto-tda implementation. Simple
 persistence statistics match kernel-based vectorizers on real data
 despite requiring zero hyperparameters. All code, configuration, and
@@ -639,7 +641,7 @@ executed in Chapter~4:
 \begin{itemize}
   \item \textbf{Simplicial complex size} (\S2.1--\S2.2): VR's
     $O(n^3)$ 2-simplex count versus Alpha's $O(n^2)$ drives the
-    11--21\% wall-clock speed gap measured in \S4.3. The Nerve
+    3--21\% wall-clock speed gap measured in \S4.3. The Nerve
     Theorem guarantees that Alpha's speed advantage does not cost
     geometric fidelity.
   \item \textbf{Filtration choice} (\S2.2): VR, Alpha, Sparse Rips,
@@ -704,12 +706,14 @@ where:
     is a generic smooth measurement of a dynamical system on a
     compact manifold $M$ of dimension $d_M$, then $\Phi_{(d,\tau)}$
     is an embedding provided $d > 2 d_M$. We use $d = 3$, $\tau = 1$
-    throughout (the standard UCR convention for ECG200).
+    throughout (chosen to satisfy $d > 2 d_M$ for a 1D attractor;
+    sensitivity to $(d, \tau)$ is examined in Appendix~D).
   \item \textbf{Filt}. Constructs a filtration $\{K_\varepsilon\}$
     from $Y$ and computes the persistence diagram
     $\mathcal{D} = \Dgm_0 \cup \Dgm_1$ (homology dimensions 0 and 1).
     Implemented via giotto-tda's VietorisRipsPersistence,
-    WeakAlphaPersistence, or SparseRipsPersistence transformers.
+    WeakAlphaPersistence, SparseRipsPersistence, or
+    CubicalPersistence transformers.
   \item \textbf{Vec}. Maps $\mathcal{D}$ to a vector
     $v \in \R^d$ via one of the four methods in \S2.5. Global grid
     bounds ($\birth_{\min}, \birth_{\max}$, $\pers_{\max}$) are
@@ -798,8 +802,9 @@ where the point-cloud filtrations Weak Alpha and Sparse Rips are
 incompatible with image data. All
 filtrations computed $H_0$ and $H_1$ homology. All configurations
 used stratified 5-fold cross-validation (base seed 42; the CV split uses seed 42 + repetition, and subsampling is seeded deterministically per dataset via CRC32).
-Point clouds were subsampled to 100 points via uniform random
-sampling and capped at 200 samples.
+Point clouds were generated at 100 points per cloud (200 samples
+per noise level); uniform random subsampling is applied by the runner
+only if a source cloud exceeds the target size.
 
 \noindent\textbf{Datasets.} Six dataset instances span three modalities:
 sphere/torus point clouds at four noise levels
@@ -830,7 +835,10 @@ finding of a much larger gap on full 10-class MNIST.
 \begin{table}[H]
   \centering
   \caption{Dataset instances used in the benchmark sweep. Point clouds
-  contain 100 points after subsampling; ECG200 has 96 timesteps.}
+  contain 100 points; ECG200 has 96 timesteps. The torus has major
+  radius $R=2$ and minor radius $r=1$ (so point norms range
+  $[1,3]$), while the sphere has unit radius (norms $\equiv 1$):
+  the classes differ in scale as well as topology.}
   \label{tab:datasets}
   \footnotesize
   \begin{tabularx}{\textwidth}{lXXXXl}
@@ -872,25 +880,25 @@ to test whether the range exceeds sampling noise.
 
   \vspace{0.2cm}
   \footnotesize{All $p$-values are reported descriptively; no multiplicity
-    correction is applied across the four stage comparisons.}
+    correction is applied across the three stage comparisons.}
 \end{table}
 
 Vectorization dominates: its range (6.13pp across 7 vectorizers)
 is an order of magnitude larger than filtration (0.66pp across 4
 filtrations). The top-performing vectorizer, Silhouette, achieves
 75.4\% marginal accuracy versus 69.3\% for Persistence Entropy
-(the weakest). Cubical filtration leads at 73.7\%, while the
-remaining three filtrations (VR, Alpha, Sparse Rips) cluster within
-0.1pp of each other.
+(the weakest). Cubical filtration leads at 73.7\%, with Sparse Rips (73.3\%)
+and Vietoris-Rips (73.3\%) within 0.02pp of each other and Weak Alpha
+(73.0\%) 0.3pp lower.
 
 \textbf{Simple versus complex.} Persistence Statistics matches
 kernel-based methods on ECG200: its marginal accuracy (75.2\%) is
 comparable to Persistence Landscapes (74.7\%), with Statistics
 slightly ahead (+0.5pp across the 16 filtration--classifier cells;
 Statistics wins 11 of 16). Statistics versus Images (73.3\%)
-is also not distinguishable. On MNIST binary,
-Persistence Statistics (97.0\%) is within 0.5pp of the best method
-(Persistence Images at 97.5\% with Random Forest). All comparisons
+is also not distinguishable. On MNIST binary, Persistence Statistics reaches 95.9\% marginal
+accuracy, within 2.1pp of the best configuration overall (Cubical +
+Betti Curve + Logistic Regression at 98.0\%, Table~\ref{tab:pareto}). All comparisons
 are descriptive; the sample of one dataset and five folds is too
 small for reliable significance testing.
 \begin{figure}[H]
@@ -930,14 +938,15 @@ At $\sigma = 0.00$, $0.05$, and $0.15$, every configuration achieves
 $\ge 99.5\%$ accuracy (mean 99.99\%, 100.00\%, and 99.97\%
 respectively). The probabilistic stability bound at
 $\sigma = 0.15$ is $d_B \lesssim 0.46$, but the torus's $\Betti_1$ features have
-empirical persistences of $0.5$--$0.8$ --- features near the lower
+measured top-$H_1$ persistences span roughly $0.4$--$1.2$ on the
+clean torus clouds --- features near the lower
 end of this range would be threatened by the bound, yet classification
 remains perfect. This suggests the stability bound overestimates the observed
 degradation: the actual bottleneck distance between clean and noisy
 diagrams appears substantially below the worst-case guarantee of
 $O(\sigma\sqrt{\log n})$ for the sphere and torus geometries tested.
 
-At $\sigma = 0.30$ (bound $= 1.20$), mean accuracy across the 112
+At $\sigma = 0.30$ (bound $\lesssim 0.91$), mean accuracy across the 112
 sphere/torus configurations at that level remained at 99.85\%
 (minimum 98.5\%). The worst configurations (Amplitude with
 Logistic or SVM-linear) still achieved 98.5\% ---
@@ -971,7 +980,7 @@ completion.
     \toprule
     Dataset & Filtration & Vectorizer & Classifier & Acc. & Time \\
     \midrule
-    Sphere/Torus & Cubical & Pers.\ Statistics & SVM-linear & 100\% & 0.6s \\
+    Sphere/Torus & Cubical & Pers.\ Statistics & SVM-linear & 100\% & 0.7s \\
     MNIST 0/1 & Cubical & Betti Curve & Logistic & 98.0\% & 3.7s \\
     ECG200 & Cubical & Silhouette & Random Forest & 83.0\% & 1.6s \\
     ECG200 & Cubical & Pers.\ Image & Random Forest & 82.0\% & 1.4s \\
@@ -990,9 +999,9 @@ completion.
   \label{fig:pareto}
 \end{figure}
 
-Alpha is 11--21\% faster than VR at identical accuracy on
+Alpha is 3--21\% faster than VR at identical accuracy on
 sphere/torus with Landscape+SVM (measured 3.5--3.9s vs.\ 3.9--4.4s
-across the four noise levels). Cubical filtration is the
+across the four noise levels; the gap narrows at $\sigma=0.30$). Cubical filtration is the
 fastest overall (0.6--1.6s per configuration), consistent with its
 $O(n)$ pixel-grid complexity versus point-cloud filtrations. The
 Nerve Theorem
@@ -1000,7 +1009,7 @@ Nerve Theorem
 does not sacrifice geometric fidelity to the underlying
 union-of-balls, making its speed advantage a free lunch for
 2D/3D data. Sparse Rips takes
-28--77s (mean 48s) with no accuracy gain at the 100-point scale; its design
+12--77s (mean 41s) with no accuracy gain at the 100-point scale; its design
 target ($n \ge 10^3$) is outside this benchmark's subsampling
 regime. Both speed multipliers are specific to the 100-point
 clouds, the giotto-tda implementation, and 3D point clouds where
@@ -1034,9 +1043,11 @@ relationships in this grid --- neighbouring pixels form edges,
 $2 \times 2$ blocks form squares --- producing a simplicial complex
 whose topology faithfully represents the image's spatial structure.
 A point-cloud filtration like Vietoris-Rips, applied to the same
-data after flattening pixel coordinates, loses this grid topology:
-spatially distant pixels with similar intensities become neighbours,
-producing spurious cycles. Conti et al.\ (2022) showed that this
+data (which the pipeline feeds to the filtration as its native array
+--- for MNIST, 28 rows of 28 intensities, i.e.\ a 28-point cloud in
+$\mathbb{R}^{28}$), does not see the 2D grid adjacency at all: the
+filtration's notion of ``nearby'' is Euclidean distance between
+rows, so the pixel-grid topology is absent from the outset. Conti et al.\ (2022) showed that this
 difference can swing MNIST accuracy from 18\% (with an inappropriate
 filtration) to 94\% (with cubical). Filtration dominates because the
 \emph{wrong} filtration destroys the topological signal before
@@ -1057,7 +1068,11 @@ This mechanism explains both findings without contradiction. Conti
 et al.\ are correct that filtration dominates on images --- the wrong
 filtration can be catastrophic. We are correct that vectorization
 dominates on ECG200 --- filtration choice is neutral because both VR
-and Alpha faithfully capture the embedded point cloud's topology.
+and Weak Alpha faithfully capture the embedded point cloud's topology.
+(We use giotto-tda's \texttt{WeakAlphaPersistence}, a subcomplex
+approximation of the full Alpha complex; the Nerve-Theorem homotopy
+argument applies to the full complex, and the approximation is standard
+practice for point-cloud filtrations.)
 The apparent contradiction resolves when the data modality and its
 interaction with filtration type are made explicit.
 
@@ -1092,7 +1107,7 @@ or qualify every cell.
 Our pipeline's best ECG200 accuracy (83.0\%, cubical filtration +
 Silhouette + Random Forest) sits below published
 classical baselines for this dataset: Euclidean 1-NN achieves
-$\sim$88\%, DTW-based 1-NN $\sim$81\% on the standard UCR train/test
+$\sim$88\%, DTW-based 1-NN $\sim$88\% on the standard UCR train/test
 split (our default Landscape+SVM-RBF pipeline achieves 76.0\%).
 This is expected for a method using topology alone --- TDA
 features capture orthogonal geometric properties (cycle structures
@@ -1100,11 +1115,17 @@ in the embedded attractor) that complement, rather than compete
 with, raw signal features. The internal TDA-pipeline comparisons
 reported here are valid regardless of the absolute accuracy level.
 
-\textbf{Limitations.} (1)~Homology capped at $H_1$ ($H_2$ requires
-$O(n^4)$ simplices for VR). (2)~Two-class problems only.
-(3)~One real dataset per modality. (4)~Single implementation library
-(giotto-tda); cross-library variance unknown. (5)~No learned
-vectorizers (PersLay \cite{carriere2020}, Hofer input layers \cite{hofer2017}). (6)~$n=200$ produces wide
+\textbf{Limitations.} (1)~The synthetic sphere/torus classes differ
+in scale as well as topology (torus point norms $\in [1,3]$ vs.\
+sphere $\equiv 1$; $\approx$10\% of torus points have norm $<1.1$),
+so a radial-threshold classifier would already separate most of the
+data; the noise experiments therefore measure robustness of the
+\emph{combined} geometric signal, not topology alone. (2)~Homology
+capped at $H_1$ ($H_2$ requires
+$O(n^4)$ simplices for VR). (3)~Two-class problems only.
+(4)~One real dataset per modality. (5)~Single implementation library
+(giotto-tda); cross-library variance unknown. (6)~No learned
+vectorizers (PersLay \cite{carriere2020}, Hofer input layers \cite{hofer2017}). (7)~$n=200$ produces wide
 CIs. Each limitation suggests a concrete future-work item:
 $H_2$ via Flood Complex \cite{graf2025}; multi-class extension
 (MNIST, Outex); a second time-series dataset (ECG5000, FordA);
@@ -1113,23 +1134,26 @@ via a new backend; and larger-$n$ datasets for narrower CIs.
 
 \textbf{Data and code availability.} All code, configuration files,
 and result schemas are provided in the public repository
-\texttt{github.com/KRUZZZZY/tda-benchmark} (MIT licence). The
-synthetic sphere/torus data are regenerable from the bundled
-generator; ECG200 is the UCR archive benchmark (Dau et al.\ 2019);
-MNIST is the standard binary 0/1 subset \cite{lecun1998}. The
-SQLite result database is regenerated by the bundled
-\texttt{run\_all.sh} script. Random seeds are fixed (base 42) and
-per-dataset subsampling is seeded deterministically, so the sweep is
-reproducible end-to-end.
+\texttt{github.com/KRUZZZZY/tda\allowbreak-benchmark} (MIT licence). The
+synthetic sphere/torus data are regenerated by the bundled
+\path{scripts/generate_datasets.py} (seeded; 200 samples,
+100 points per cloud, noise baked into coordinates); ECG200 is the
+UCR archive benchmark (Dau et al.\ 2019); MNIST is the standard
+binary 0/1 subset \cite{lecun1998}. The SQLite result database is
+regenerated by the bundled \texttt{run\_all.sh} script. Random seeds
+are fixed (base 42) and per-dataset subsampling is seeded
+deterministically, so the sweep is reproducible end-to-end.
 
 \textbf{Compute.} The full 616-configuration sweep was executed on a
 single consumer workstation (8-core CPU, 16GB RAM), serial
-($n_{\text{workers}} = 1$), with a mean wall-clock time of
-$\sim$3--4s per configuration (filtration-dominated), giving a total
-of roughly 35--45 minutes for the sweep plus data preparation.
-Per-configuration wall times are recorded in the results database (cf. the
-R-package PH runtime benchmark of Somasundaram et al.\ \cite{somasundaram2021});
-memory was not measured per stage (see Limitations).
+($n_{\text{workers}} = 1$). Summed wall-clock time across all 616
+configurations was 2.0 hours (mean $\sim$12s per configuration,
+median 1.4s); Sparse Rips dominates the total (140 runs, mean 41s,
+$\approx$1.6h), while the other three filtrations complete in
+$\approx$24 minutes. Per-configuration wall times are recorded in the
+results database (cf. the R-package PH runtime benchmark of
+Somasundaram et al.\ \cite{somasundaram2021}); memory was not
+measured per stage (see Limitations).
 
 % ────────────────────────────────────────────────────────────
 \section{Operational Guidelines for Pipeline Selection}
@@ -1149,7 +1173,7 @@ would strengthen or qualify each entry.
     \toprule
     Data Modality & Filtration & Vectorizer & Classifier & Rationale \\
     \midrule
-    Low-dim.\ point clouds ($\le 3$D, clean) & Alpha complex & Pers.\ Statistics or Landscapes & SVM (RBF) or Logistic & Alpha 11--21\% faster than VR at identical accuracy; Nerve Theorem guarantees homotopy fidelity \\
+    Low-dim.\ point clouds ($\le 3$D, clean) & Alpha complex & Pers.\ Statistics or Landscapes & SVM (RBF) or Logistic & Alpha 3--21\% faster than VR at identical accuracy; Nerve Theorem guarantees homotopy fidelity \\
     Delay-embedded time series ($d \ge 3$) & VR or Alpha & Pers.\ Landscapes & RF or SVM (RBF) & Vectorization dominates variance (6.1pp marginal range across 7 vectorizers) \\
     High-noise clouds ($\sigma \ge 0.15$) & Alpha or VR & Pers.\ Landscapes & SVM (RBF) & Landscapes most robust to geometric distortion at $\sigma=0.30$ (0.7pp vectorizer range; five vectorizers tie at 100\%) \\
     Large-scale clouds ($n \ge 10^3$) & Sparse Rips & Pers.\ Images or Betti Curves & Random Forest & Sparse Rips designed for $n \ge 10^3$; its benefit is untestable at $n=100$ in this sweep \\
@@ -1354,13 +1378,14 @@ class FiltrationFactory:
     @staticmethod
     def create(name: str, **kwargs):
         mapping = {
-            "vietoris_rips":  VietorisRipsPersistence,
-            "weak_alpha":     WeakAlphaPersistence,
-            "sparse_rips":    SparseRipsPersistence,
+            "vietoris_rips": VietorisRipsPersistence,
+            "sparse_rips": SparseRipsPersistence,
+            "cubical": CubicalPersistence,
+            "weak_alpha": WeakAlphaPersistence,
         }
         cls = mapping.get(name)
         if cls is None:
-            raise ValueError(f"Unknown: {name}")
+            raise ValueError(f"Unknown filtration: {name}")
         return cls(n_jobs=1, **kwargs)
 \end{lstlisting}
 

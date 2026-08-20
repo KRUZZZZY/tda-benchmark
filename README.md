@@ -6,24 +6,40 @@ Systematic comparison of persistent homology pipelines for classification:
 ## Quick Start
 
 ```bash
-# 1. Create environment
+# 1. Create environment (at the AI_KOS_PROJECT root — the runner's project_root)
+cd ../..
 python3 -m venv .venv-tda
 source .venv-tda/bin/activate
 pip install -r projects/tda-benchmark/requirements.txt
 
-# 2. Download datasets
-python scripts/tda_download_datasets.py
+# 2. Generate / check datasets
+cd projects/tda-benchmark
+python scripts/generate_datasets.py --data-dir ../../data/tda
 
-# 3. Run benchmark
-python -c "
-import sys; sys.path.insert(0, 'scripts')
+# 3. Run benchmark (616-config sweep — takes ~2h serial)
+bash run_all.sh            # full pipeline incl. analysis
+
+# ...or run the sweep directly:
+python - <<'PY'
+import sys, importlib.util, os
+pkg_dir = os.path.abspath('.')
+spec = importlib.util.spec_from_file_location(
+    "tda_benchmark", os.path.join(pkg_dir, "__init__.py"),
+    submodule_search_locations=[pkg_dir])
+pkg = importlib.util.module_from_spec(spec)
+sys.modules["tda_benchmark"] = pkg
+spec.loader.exec_module(pkg)
 from tda_benchmark.runner import run_benchmark
-run_benchmark('projects/tda-benchmark/config.yaml')
-"
+run_benchmark("expanded_config.yaml", n_jobs=1)
+PY
 
 # 4. Analyze results
-python projects/tda-benchmark/analysis.py data/tda/results.db
+python analysis.py ../../data/tda/expanded_results.db
 ```
+
+> The repo directory is hyphenated (`tda-benchmark`), so it cannot be
+> imported as a package by name; the `importlib` shim above registers it
+> as `tda_benchmark` (matching the relative imports in the source).
 
 ## Architecture
 

@@ -167,7 +167,7 @@ def fig_stage_impact(cur):
     plt.close(fig)
 
 
-# ── 4. Persistence diagrams clean vs noisy (from synthetic data) ───────
+# ── 4. Persistence diagrams clean vs noisy (from the actual .npy files) ──
 def fig_noise_pds():
     data_root = os.path.join(REPO, "..", "..", "data", "tda", "synthetic")
     try:
@@ -176,34 +176,25 @@ def fig_noise_pds():
     except ImportError:
         have_ripser = False
 
+    # The executed benchmark stores all 200 samples per noise level
+    # (100 spheres label 0, 100 tori label 1). Plot the first sample of
+    # each class from the actual data files — the geometry shown is the
+    # geometry the sweep ran on (torus R=2, r=1; sphere S^2).
     fig, axes = plt.subplots(2, 2, figsize=(7, 6.5))
-    for row, (sigma, cloud_idx) in enumerate([(0.00, 0), (0.15, 2)]):
-        for col, (shape, target) in enumerate([("sphere", 0), ("torus", 1)]):
+    for row, sigma in enumerate([0.00, 0.15]):
+        tag = f"noise{int(sigma * 100)}"
+        X = np.load(os.path.join(data_root, f"sphere_torus_{tag}_X.npy"))
+        y = np.load(os.path.join(data_root, f"sphere_torus_{tag}_y.npy"))
+        for col, (label, name) in enumerate([(0, "sphere"), (1, "torus")]):
             ax = axes[row][col]
-            # regenerate one clean cloud of the requested shape
-            rng = np.random.default_rng(7)
-            n = 100
-            if shape == "sphere":
-                pts = rng.normal(size=(n, 3))
-                pts /= np.linalg.norm(pts, axis=1, keepdims=True)
-            else:
-                R, r = 2.0, 0.6
-                u = rng.uniform(0, 2 * np.pi, n)
-                v = rng.uniform(0, 2 * np.pi, n)
-                pts = np.stack([
-                    (R + r * np.cos(v)) * np.cos(u),
-                    (R + r * np.cos(v)) * np.sin(u),
-                    r * np.sin(v),
-                ], axis=1)
-            if sigma > 0:
-                pts = pts + rng.normal(0, sigma, pts.shape)
+            pts = X[y == label][0]
             if have_ripser:
                 dgms = ripser.ripser(pts, maxdim=1)["dgms"]
                 dg1 = dgms[1]
                 ax.scatter(dg1[:, 0], dg1[:, 1], s=10, color=ORANGE if col else BLACK,
                            alpha=0.85)
             ax.plot([0, 2], [0, 2], color=GREY, lw=0.8, ls="--")
-            ax.set_title(f"{shape.capitalize()}, $\\sigma$={sigma:.2f}", fontsize=9)
+            ax.set_title(f"{name.capitalize()}, $\\sigma$={sigma:.2f}", fontsize=9)
             ax.set_xlim(0, 1.2); ax.set_ylim(0, 1.2)
             ax.set_xlabel("birth"); ax.set_ylabel("death")
             ax.set_aspect("equal")

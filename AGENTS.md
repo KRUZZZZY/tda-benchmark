@@ -4,7 +4,7 @@ Independent dissertation research (Zachariah Markusson, independent researcher).
 Persistent homology / topological data analysis pipeline benchmark.
 
 ## Facts
-- Dissertation: `dissertation.tex` in this directory (6 chapters + 5 appendices), 38pp compiled, ~20 refs. This is the authoritative source — keep AGENTS.md/README in sync with it.
+- Dissertation: `dissertation.tex` in this directory (6 chapters + 5 appendices), 41pp compiled, ~20 refs. This is the authoritative source — keep AGENTS.md/README in sync with it.
 - Venv: `.venv-tda` (at AI_KOS_PROJECT root). Runner: `run_benchmark(cfg, n_jobs=-1)`.
 - `expanded_config.yaml` drives the 616-configuration sweep; `analysis.py` analyses results from the SQLite DB (`data/tda/expanded_results.db`).
 - E2E sanity check: sphere/torus = 100% (clean) / ≥99.5% (noisy).

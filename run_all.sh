@@ -1,16 +1,15 @@
 #!/bin/bash
 # run_all.sh — end-to-end reproduction of the TDA Pipeline Benchmark.
 #
-# NOTE on data: the paper's datasets (synthetic sphere/torus at four noise
-# levels, ECG200, MNIST 0/1) are NOT bundled in the repo (gitignored under
-# data/). They are regenerable:
-#   - synthetic sphere/torus: run scripts in the `synthetic` generation code
-#     (see AGENTS.md / the ai-kos repo's scripts/tda_download_datasets.py for
-#     the canonical generator) — or request the .npy files from the author.
-#   - ECG200: UCR archive (timeseriesclassification.com), parsed to npy.
-#   - MNIST 0/1: torchvision/keras MNIST, binary subset 200/class.
-# If data/tda/ is already populated (e.g. pulled from the author's local
-# copy), this script runs the full sweep and analysis directly.
+# Reproduces the full 616-configuration sweep:
+#   1. regenerate the synthetic sphere/torus data (seeded, exact shapes)
+#   2. run the sweep (fresh results DB — idempotent)
+#   3. produce the analysis report
+#
+# ECG200 and MNIST 0/1 are sourced from the UCR archive / standard MNIST;
+# place ECG200.arff in data/tda/ucr/ and mnist_X.npy + mnist_y.npy in
+# data/tda/images/ (see scripts/generate_datasets.py) — or provide the
+# pre-parsed .npy files from the author.
 #
 # Usage: bash run_all.sh            (from the repo root)
 # Env:   TDA_NJOBS (default 1)      parallel worker count
@@ -21,24 +20,26 @@ cd "$(dirname "$0")"
 # (runner.py: project_root = Path(__file__).parent.parent.parent),
 # i.e. AI_KOS_PROJECT/data/tda — matching the repo's AGENTS.md layout.
 DATA_DIR="$(cd ../.. && pwd)/data/tda"
-if [ ! -d "$DATA_DIR/synthetic" ] || [ ! -f "$DATA_DIR/ucr/ecg200_X.npy" ] || [ ! -f "$DATA_DIR/images/mnist_01_X.npy" ]; then
-  echo "[!] Datasets not found under $DATA_DIR."
-  echo "    See the header comment in this script for how to obtain them."
-  echo "    (Synthetic generator: ai-kos repo scripts/tda_download_datasets.py;"
-  echo "     ECG200: UCR archive; MNIST 0/1: 200/class binary subset.)"
-  exit 1
-fi
-echo "[ok] Datasets present: $DATA_DIR"
+mkdir -p "$DATA_DIR/synthetic" "$DATA_DIR/ucr" "$DATA_DIR/images"
 
-echo "[1/3] Creating environment (if missing)..."
-if [ ! -d .venv-tda ]; then
-  python3 -m venv .venv-tda
+echo "[1/4] Creating environment (if missing)..."
+if [ ! -d ../.venv-tda ]; then
+  python3 -m venv ../.venv-tda
 fi
-source .venv-tda/bin/activate
+# shellcheck disable=SC1091
+source ../.venv-tda/bin/activate
 pip install -q -r requirements.txt
 
-echo "[2/3] Running benchmark sweep (this takes a while)..."
-export PYTHONHASHSEED=0   # pin hash() for full reproducibility
+echo "[2/4] Generating / checking datasets..."
+python scripts/generate_datasets.py --data-dir "$DATA_DIR"
+if [ ! -f "$DATA_DIR/ucr/ecg200_X.npy" ] || [ ! -f "$DATA_DIR/images/mnist_01_X.npy" ]; then
+  echo "[!] ECG200 / MNIST 0/1 sources missing — see scripts/generate_datasets.py."
+  echo "    Synthetic sphere/torus data are ready; the sweep will run those only."
+fi
+
+echo "[3/4] Running benchmark sweep (fresh DB, this takes ~2h)..."
+# Idempotency: start from a clean results DB so a re-run cannot double rows.
+rm -f "$DATA_DIR/expanded_results.db"
 python - <<'PY'
 import sys, importlib.util, os
 # The repo dir is hyphenated (tda-benchmark), so register it as the
@@ -54,7 +55,7 @@ from tda_benchmark.runner import run_benchmark
 run_benchmark("expanded_config.yaml", n_jobs=${TDA_NJOBS:-1})
 PY
 
-echo "[3/3] Generating analysis report..."
-python analysis.py data/tda/expanded_results.db
+echo "[4/4] Generating analysis report..."
+python analysis.py "$DATA_DIR/expanded_results.db"
 
-echo "Done. Results: data/tda/expanded_results.db (path set by the config's output.db_path)"
+echo "Done. Results: $DATA_DIR/expanded_results.db (path set by the config's output.db_path)"
