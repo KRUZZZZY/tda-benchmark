@@ -51,23 +51,22 @@ projects/tda-benchmark/
 
 | Name | Modality | Shape | Classes |
 |---|---|---|---|
-| Sphere+Torus | Point cloud | 200 × 100pts × 3D (× 4 noise levels) | 2 |
+| Sphere+Torus | Point cloud | 200 × 100pts × 3D (× 4 noise levels: σ=0.00/0.05/0.15/0.30) | 2 |
 | ECG200 | Time series | 200 × 96 (Takens→3D) | 2 |
-| MNIST | Image | 70K × 28×28 | 10 |
-| Fashion-MNIST | Image | 70K × 28×28 | 10 |
+| MNIST 0/1 | Image | 400 × 28×28 (binary subset, 200/class) | 2 |
 
 ## Key Findings
 
-1. **Filtration dominates** — can swing accuracy by 60pp; wrong choice cannot be compensated downstream
-2. **Simple beats complex** — Persistence Statistics often match sophisticated kernel methods
-3. **Landscapes are most robust** — best accuracy/stability trade-off across noise levels and datasets
-4. **Alpha > VR** — 20-30% faster at equal accuracy for ≤3D point clouds
-5. **Noise kills topology** — above σ=0.15, topological signal degrades rapidly
+1. **Stage importance is modality-dependent** — vectorization dominates on time series (ECG200: 6.1pp marginal range across 7 vectorizers, 95% CI [4.8, 7.4]); filtration dominates on images (MNIST: cubical 98.0% vs Vietoris-Rips 96.25%). Qualifies the widely cited claim that filtration always dominates.
+2. **Simple beats complex** — Persistence Statistics match kernel-based vectorizers on real data with zero hyperparameters (ECG200: 75.2% vs Landscapes 74.7%)
+3. **Cubical wins on images** — the grid-aligned filtration captures image topology that point-cloud filtrations destroy
+4. **Alpha > VR on 3D point clouds** — 11-21% faster at identical accuracy (measured on sphere/torus, Landscape+SVM)
+5. **Noise robustness** — the topological signal survives Gaussian noise to σ=0.30 (99.85% mean accuracy on the 112 sphere/torus configs at that level, min 98.5%)
 6. **Non-linear classifiers help on real data** — little benefit on clean synthetic
 7. **Stages interact** — best vectorizer depends on filtration and classifier choice
-8. **Betti curves are underrated** — strong middle ground, faster than PI/PL
-9. **Research gap is real** — no prior study varies all three pipeline stages
-10. **Reproducibility is fragile** — giotto-tda's sklearn pin creates dependency conflicts
+8. **Betti curves are a strong middle ground** — competitive accuracy, faster than PI/PL
+9. **Research gap is real** — a standardized harness varying all three stages (616 executed configs of a 672 grid) is exactly what the TDA community has called for
+10. **Reproducibility is fragile** — giotto-tda's sklearn pin creates dependency conflicts; the repo pins versions and seeds
 
 ## Results Storage
 
@@ -98,7 +97,7 @@ If you use this benchmark in your research, please cite:
   author = {AI-KOS TDA Benchmark},
   title = {A Systematic Benchmark of Persistent Homology Pipelines for Classification},
   year = {2026},
-  note = {Open-source framework with 7 filtrations × 11 vectorizations × 4 classifiers},
+  note = {616-configuration benchmark: 6 datasets × 4 filtrations × 7 vectorizations × 4 classifiers},
 }
 ```
 

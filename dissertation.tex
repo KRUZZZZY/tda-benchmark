@@ -38,6 +38,7 @@
 \graphicspath{{./figures/}}
 
 \usepackage{booktabs}
+\usepackage{tabularx}
 \usepackage{array}
 
 \usepackage{listings}
@@ -122,7 +123,7 @@
 Persistent homology classification pipelines have three stages ---
 filtration, vectorization, and classifier --- each with multiple
 available methods. Which stage matters most? The literature's most
-widely cited answer, from Conti et al.\ (2022), is that filtration
+widely cited answer, from Conti et al.\ \cite{conti2022}, is that filtration
 choice dominates: switching filtrations on MNIST images swung
 accuracy from 18\% to 94\%. We show that this finding does not
 generalise. On ECG200 time series with Takens embedding,
@@ -132,20 +133,23 @@ marginal range of 6.1 percentage points (across 7 vectorizers,
 0.7pp (across 4 filtrations, 95\% CI [0.2, 1.1]).
 Pipeline-stage importance in TDA classification is modality-dependent.
 The sweep comprised 4 filtrations, 7 vectorizers, and 4 classifiers
-(extensible from 3, 4, and 3 via YAML-only changes).
+(the framework is extensible to 7 filtrations, 11 vectorizers, and 4
+classifiers via YAML-only changes).
 
 We demonstrate this on one synthetic (sphere/torus at four noise
 levels) and two real-world datasets (ECG200, MNIST binary), with
 616 completed configurations (of 672 possible; 56 excluded where
-cubical filtration was incompatible with point-cloud data). The
-topological signal survives Gaussian noise up to $\sigma = 0.30$
-at 99.85\% mean accuracy: classification accuracy survives noise
-levels where the stability bound's worst-case guarantee would permit
-degradation, and the $\Betti_1 = 0$ vs.\ $\Betti_1 = 2$ distinction
-pipelines. On MNIST, cubical filtration outperforms Vietoris-Rips
+the point-cloud filtrations Weak Alpha and Sparse Rips are
+incompatible with image data). The topological signal on
+sphere/torus point clouds survives Gaussian noise up to $\sigma = 0.30$
+at 99.85\% mean accuracy across the 112 configurations at that level:
+classification accuracy survives noise levels where the stability
+bound's worst-case guarantee would permit degradation, and the
+$\Betti_1 = 0$ vs.\ $\Betti_1 = 2$ distinction remains classifiable.
+On MNIST, cubical filtration outperforms Vietoris-Rips
 by 1.8 percentage points (98.0\% vs.\ 96.25\%), confirming that
 filtration choice matters for image data. The Alpha complex is
-20--30\% faster than Vietoris-Rips at identical accuracy on
+11--21\% faster than Vietoris-Rips at identical accuracy on
 100-point 3D clouds under the giotto-tda implementation. Simple
 persistence statistics match kernel-based vectorizers on real data
 despite requiring zero hyperparameters. All code, configuration, and
@@ -179,26 +183,33 @@ and death of topological features as a scale parameter varies.
 
 Practitioners face a combinatorial problem: the TDA classification
 pipeline has three stages --- filtration, vectorization, and
-classification --- each with 5--15 available methods. The literature's
+classification --- each with 5--15 available methods (surveys:
+Hatwar and Thangaraj \cite{hatwar2026}). The literature's
 most widely cited answer to ``which stage matters most?'' comes from
-Conti et al.\ (2022), who showed that filtration choice on MNIST
+Conti et al.\ \cite{conti2022}, who showed that filtration choice on MNIST
 images can swing accuracy from 18\% to 94\% --- a finding that has
 been interpreted as a general principle: ``filtration dominates.''
 
 This paper argues that principle does not generalise. Pipeline-stage
 importance is modality-dependent. We demonstrate this using a modular
 benchmarking framework that varies all three pipeline stages
-simultaneously in a controlled factorial sweep: a 180-configuration
-core sweep (5 datasets $\times$ 3 filtrations $\times$ 4 vectorizers
-$\times$ 3 classifiers), extended to 616 configurations with a fourth
-filtration (cubical), three additional vectorizers (Silhouette,
-Amplitude, Persistence Entropy), and a fourth classifier (SVM-linear).
-The framework is extensible to 7 filtrations, 11 vectorizers, and 4
-classifiers via YAML-only configuration changes.
+simultaneously in a controlled factorial sweep: 6 dataset instances
+$\times$ 4 filtrations (Vietoris-Rips, Alpha, Sparse Rips, Cubical)
+$\times$ 7 vectorizers $\times$ 4 classifiers --- 672 possible, 616
+completed (56 excluded where point-cloud filtrations are incompatible
+with image data). The framework is extensible to 7 filtrations, 11
+vectorizers, and 4 classifiers via YAML-only configuration changes;
+standardised harnesses of this kind are the direction the community
+has moved towards \cite{telyatnikov2024}.
 
 % ────────────────────────────────────────────────────────────
 \section{The Persistent Homology Pipeline}
 % ────────────────────────────────────────────────────────────
+
+Whether persistent homology features help classification at all has
+itself been questioned \cite{turkes2022}; this benchmark assumes the
+features are informative and asks which pipeline stage extracts them
+most effectively.
 
 A persistent homology classification pipeline transforms raw data
 through three stages:
@@ -234,17 +245,20 @@ framework built for that purpose. Specifically:
 
 \begin{enumerate}
   \item \textbf{Finding.} On ECG200 time series with Takens embedding,
-    vectorization dominates classification accuracy (1.9pp marginal
-    range, 95\% CI [1.2, 2.5], Wilcoxon $p = 0.038$) while filtration
-    is statistically neutral (0.1pp, 95\% CI [0.0, 0.4], $p = 0.61$).
+    vectorization dominates classification accuracy (6.1pp marginal
+    range across 7 vectorizers, 95\% CI [4.8, 7.4]) while filtration
+    is statistically neutral (0.7pp across 4 filtrations,
+    95\% CI [0.2, 1.1]).
     This qualifies the widely cited claim that filtration always
     dominates --- that finding holds for image data but does not
     generalise. Pipeline-stage importance is fundamentally
     modality-dependent.
   \item \textbf{Framework.} The finding was produced by a benchmarking
     framework that varies all three pipeline stages simultaneously:
-    3 filtrations, 4 vectorizers, and 3 classifiers executed in a
-    180-configuration factorial sweep, with YAML-driven configuration
+    4 filtrations, 7 vectorizers, and 4 classifiers executed in a
+    616-configuration factorial sweep (of 672 possible; 56 exclusions
+    where point-cloud filtrations are incompatible with image data),
+    with YAML-driven configuration
     and normalised SQLite storage. The framework is extensible to
     7 filtrations, 11 vectorizers, and 4 classifiers via YAML-only
     changes. Full configuration and schema in Appendices~A--B; code
@@ -336,7 +350,7 @@ $\varepsilon/2$. The Alpha complex is the nerve of the cover
 $\{R_i(\varepsilon)\}_{i=1}^n$. The Nerve Theorem (see below)
 guarantees homotopy equivalence to the union of balls.
 
-\begin{theorem}[Nerve Theorem --- Leray 1945]
+\begin{theorem}[Nerve Theorem --- Leray 1945 \cite{leray1945}]
   \label{thm:nerve}
   Let $\mathcal{U} = \{U_i\}_{i \in I}$ be a finite open cover of a
   topological space $M$ such that every non-empty intersection
@@ -504,7 +518,7 @@ diagram --- essential for any pipeline handling noisy data.
   \sup_{b \in B} \inf_{a \in A} d_Z(a,b)\}$.
 \end{definition}
 
-\begin{theorem}[Stability Theorem --- Cohen-Steiner et al.\ 2007]
+\begin{theorem}[Stability Theorem --- Cohen-Steiner et al.\ 2007 \cite{cohen2007}]
   \label{thm:stability}
   Let $X, Y$ be totally bounded metric spaces. Then:
   \begin{equation}
@@ -530,6 +544,12 @@ $\Betti_1$ features.
 % ────────────────────────────────────────────────────────────
 \section{Vectorization Methods}
 \label{sec:vectorization}
+
+Vectorization converts a persistence diagram into a fixed-length
+feature vector for classification. We use the taxonomy of Ali et
+al.\ \cite{ali2023}; comparative studies include Barnes et
+al.\ \cite{barnes2021}, Perea et al.\ \cite{perea2022}, and
+Sulowska \cite{sulowska2026}.
 % ────────────────────────────────────────────────────────────
 
 Persistence diagrams are multisets of variable cardinality. To use
@@ -620,12 +640,12 @@ executed in Chapter~4:
 \begin{itemize}
   \item \textbf{Simplicial complex size} (\S2.1--\S2.2): VR's
     $O(n^3)$ 2-simplex count versus Alpha's $O(n^2)$ drives the
-    20--30\% wall-clock speed gap reported in \S4.3. The Nerve
+    11--21\% wall-clock speed gap measured in \S4.3. The Nerve
     Theorem guarantees that Alpha's speed advantage does not cost
     geometric fidelity.
-  \item \textbf{Filtration choice} (\S2.2): VR, Alpha, and Sparse
-    Rips constitute the three filtrations varied in the factorial
-    sweep of \S4.1.
+  \item \textbf{Filtration choice} (\S2.2): VR, Alpha, Sparse Rips,
+    and Cubical constitute the four filtrations varied in the
+    factorial sweep of \S4.1.
   \item \textbf{Persistence and stability} (\S2.3--\S2.4): The
     stability bound $d_B \le 2 d_{GH}$ predicts that $\sigma = 0.15$
     noise perturbs diagrams by $\le 0.30$, while torus $\Betti_1$
@@ -681,7 +701,7 @@ where:
       x[t + (d-1)\tau]\bigr), \quad t = 1, \dots, T - (d-1)\tau.
       \label{eq:takens}
     \end{equation}
-    By Takens' Delay Embedding Theorem (1981), if the signal $x$
+    By Takens' Delay Embedding Theorem \cite{takens1981}, if the signal $x$
     is a generic smooth measurement of a dynamical system on a
     compact manifold $M$ of dimension $d_M$, then $\Phi_{(d,\tau)}$
     is an embedding provided $d > 2 d_M$. We use $d = 3$, $\tau = 1$
@@ -705,13 +725,14 @@ where:
 % ────────────────────────────────────────────────────────────
 
 \textbf{Subsampling.} Point clouds exceeding the target size
-$n_{\text{target}} = 100$ are reduced via \emph{farthest point
-sampling} (FPS): initialise $S = \{x_{i_1}\}$ with an arbitrary
-seed point; iteratively add $x_{i_{k+1}} = \arg\max_{x \in X
-\setminus S} \min_{s \in S} \|x - s\|$ until $|S| = n_{\text{target}}$.
-FPS preserves the metric space geometry and Hausdorff distance
-significantly better than uniform random sampling, directly
-benefitting persistent homology output stability.
+$n_{\text{target}} = 100$ are reduced via \emph{uniform random
+subsampling}: $n_{\text{target}}$ points are drawn without
+replacement from the full cloud, seeded deterministically per
+dataset. Uniform random sampling does not preserve metric-space
+geometry as well as farthest-point sampling would; we use it for
+simplicity and reproducibility, and note that an FPS variant is a
+natural ablation for future work (its stability benefit is
+well documented).
 
 \textbf{Noise model.} For the synthetic sphere/torus benchmark,
 additive isotropic Gaussian noise is applied directly to spatial
@@ -767,25 +788,24 @@ across five datasets and three analytical cuts.
 \chapter{Empirical Benchmark and Sensitivity Analysis}
 \label{chap:results}
 
-One benchmark sweep, three analytical cuts. The sweep comprises
-180 configurations: 5 datasets $\times$ 3 filtrations
-(Vietoris-Rips, Alpha, Sparse Rips) $\times$ 4 vectorizers
-(Persistence Statistics as baseline; Persistence Image, Persistence
-Landscape, Betti Curve in the factorial design) $\times$ 3
-classifiers (SVM-RBF, Random Forest, Logistic Regression).
-Persistence Statistics is included as a fourth vectorizer baseline
-in the narrative but was evaluated in a reduced sweep alongside the
-full factorial; its marginal accuracy was computed from the same
-cross-validation folds. All
+One benchmark sweep, four analytical cuts. The sweep comprises
+616 completed configurations from a full factorial of 6 dataset
+instances $\times$ 4 filtrations (Vietoris-Rips, Alpha, Sparse Rips,
+Cubical) $\times$ 7 vectorizers (Persistence Image, Persistence
+Landscape, Betti Curve, Persistence Statistics, Silhouette, Amplitude,
+Persistence Entropy) $\times$ 4 classifiers (SVM-RBF, SVM-linear,
+Random Forest, Logistic Regression) --- 672 possible, 56 excluded
+where the point-cloud filtrations Weak Alpha and Sparse Rips are
+incompatible with image data. All
 filtrations computed $H_0$ and $H_1$ homology. All configurations
-used stratified 5-fold cross-validation with fixed random seed (42).
-Point clouds were subsampled to 100 points via farthest point
+used stratified 5-fold cross-validation (base seed 42; the CV split uses seed 42 + repetition, and subsampling is seeded deterministically per dataset via CRC32).
+Point clouds were subsampled to 100 points via uniform random
 sampling and capped at 200 samples.
 
 \noindent\textbf{Datasets.} Six dataset instances span three modalities:
 sphere/torus point clouds at four noise levels
 ($\sigma \in \{0.00, 0.05, 0.15, 0.30\}$; $n=200$ per level;
-100 points per cloud after FPS; $\Betti_1 = 0$ vs.\ $2$), and
+100 points per cloud after uniform random subsampling; $\Betti_1 = 0$ vs.\ $2$), and
 ECG200 heartbeat recordings (normal vs.\ myocardial infarction;
 $n=200$; 96 timesteps, Takens-embedded to $94 \times 3$ point clouds
 with $d=3, \tau=1$). ECG200 is a UCR archive benchmark where
@@ -808,6 +828,26 @@ thesis: on image data, filtration choice \emph{does} matter
 finding of a much larger gap on full 10-class MNIST.
 
 % ────────────────────────────────────────────────────────────
+\begin{table}[H]
+  \centering
+  \caption{Dataset instances used in the benchmark sweep. Point clouds
+  contain 100 points after subsampling; ECG200 has 96 timesteps.}
+  \label{tab:datasets}
+  \footnotesize
+  \begin{tabularx}{\textwidth}{lXXXXl}
+    \toprule
+    Dataset & Modality & $n$ & Dims & Classes & Source \\
+    \midrule
+    Sphere/Torus ($\sigma{=}0.00$) & point cloud & 200 & 100 pts & 2 & synthetic \\
+    Sphere/Torus ($\sigma{=}0.05$) & point cloud & 200 & 100 pts & 2 & synthetic \\
+    Sphere/Torus ($\sigma{=}0.15$) & point cloud & 200 & 100 pts & 2 & synthetic \\
+    Sphere/Torus ($\sigma{=}0.30$) & point cloud & 200 & 100 pts & 2 & synthetic \\
+    ECG200 & time series & 200 & 96 ts & 2 & UCR archive \cite{dau2019} \\
+    MNIST 0/1 & image & 400 & $28\times28$ & 2 & MNIST subset \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
 \section{Stage Variance Analysis}
 \label{sec:stage_impact}
 % ────────────────────────────────────────────────────────────
@@ -845,14 +885,15 @@ remaining three filtrations (VR, Alpha, Sparse Rips) cluster within
 0.1pp of each other.
 
 \textbf{Simple versus complex.} Persistence Statistics matches
-kernel-based methods on ECG200: its marginal accuracy (75.0\%) is
-within 1.0pp of Persistence Landscapes (76.0\%), a difference whose
-95\% CI of [0.3, 2.1] and Wilcoxon $p = 0.038$ confirm Landscapes
-do outperform but by a narrow margin. Statistics versus Images
-(74.1\%) yields $p = 0.23$ (not distinguishable). On MNIST binary,
+kernel-based methods on ECG200: its marginal accuracy (75.2\%) is
+comparable to Persistence Landscapes (74.7\%), with Statistics
+slightly ahead (+0.5pp across the 16 filtration--classifier cells;
+Statistics wins 11 of 16). Statistics versus Images (73.3\%)
+is also not distinguishable. On MNIST binary,
 Persistence Statistics (97.0\%) is within 0.5pp of the best method
-(Persistence Images at 97.5\% with Random Forest). All $p$-values
-are reported descriptively.
+(Persistence Images at 97.5\% with Random Forest). All comparisons
+are descriptive; the sample of one dataset and five folds is too
+small for reliable significance testing.
 \begin{figure}[H]
   \centering
   % [IMAGE: Grouped bar chart. Three groups: Filtration,
@@ -862,9 +903,10 @@ are reported descriptively.
   \label{fig:stage_impact}
 \end{figure}
 
-On synthetic sphere/torus data with $\sigma = 0.00$, all 27
-configurations achieve 100\% accuracy. No stage dominates --- the
-signal is strong enough that every pipeline separates it perfectly.
+On synthetic sphere/torus data with $\sigma = 0.00$, all 112
+configurations achieve $\ge 99.5\%$ accuracy (mean 99.99\%). No
+stage dominates --- the signal is strong enough that every pipeline
+separates it nearly perfectly.
 
 % ────────────────────────────────────────────────────────────
 \section{Noise Perturbation Thresholds}
@@ -886,8 +928,9 @@ $d_B \le 2 \cdot 2\sigma = 4\sigma$.
   \label{fig:noise_pds}
 \end{figure}
 
-At $\sigma = 0.00$, $0.05$, and $0.15$, \textbf{every} configuration
-achieves 100\% accuracy. The stability bound at $\sigma = 0.15$ is
+At $\sigma = 0.00$, $0.05$, and $0.15$, every configuration achieves
+$\ge 99.5\%$ accuracy (mean 99.99\%, 100.00\%, and 99.97\%
+respectively). The stability bound at $\sigma = 0.15$ is
 $4 \times 0.15 = 0.60$, but the torus's $\Betti_1$ features have
 empirical persistences of $0.5$--$0.8$ --- features near the lower
 end of this range would be threatened by the bound, yet classification
@@ -896,9 +939,10 @@ degradation: the actual bottleneck distance between clean and noisy
 diagrams appears substantially below the worst-case guarantee of
 $4\sigma$ for the sphere and torus geometries tested.
 
-At $\sigma = 0.30$ (bound $= 1.20$), mean accuracy across all 616
-configurations remained at 99.85\%. The worst single configuration
-(Sparse Rips + Amplitude + SVM-linear) still achieved 98.5\% —
+At $\sigma = 0.30$ (bound $= 1.20$), mean accuracy across the 112
+sphere/torus configurations at that level remained at 99.85\%
+(minimum 98.5\%). The worst configurations (Amplitude with
+Logistic or SVM-linear) still achieved 98.5\% ---
 well above the 50\% chance baseline and far more robust than the
 stability bound's worst-case prediction. The topological signal
 survives all tested noise levels: even at $\sigma = 0.30$, the
@@ -950,8 +994,9 @@ completion.
   \label{fig:pareto}
 \end{figure}
 
-Alpha is 20--30\% faster than VR at identical accuracy (2.7s vs.\
-4.2s on sphere/torus with Landscape+SVM). Cubical filtration is the
+Alpha is 11--21\% faster than VR at identical accuracy on
+sphere/torus with Landscape+SVM (measured 3.5--3.9s vs.\ 3.9--4.4s
+across the four noise levels). Cubical filtration is the
 fastest overall (0.6--1.6s per configuration), consistent with its
 $O(n)$ pixel-grid complexity versus point-cloud filtrations. The
 Nerve Theorem
@@ -959,14 +1004,14 @@ Nerve Theorem
 does not sacrifice geometric fidelity to the underlying
 union-of-balls, making its speed advantage a free lunch for
 2D/3D data. Sparse Rips takes
-28--33s with no accuracy gain at the 100-point scale; its design
+28--77s (mean 48s) with no accuracy gain at the 100-point scale; its design
 target ($n \ge 10^3$) is outside this benchmark's subsampling
 regime. Both speed multipliers are specific to the 100-point
 clouds, the giotto-tda implementation, and 3D point clouds where
 Delaunay triangulation is available.
 
-Landscape + SVM-RBF is the Pareto-optimal default: 2.0--2.7s,
-76\% on ECG200, 100\% on synthetic data, on the two datasets tested; the Pareto frontier may shift
+Landscape + SVM-RBF is the Pareto-optimal default: 2.9--4.1s,
+76\% on ECG200, 99.9\%+ on synthetic data, on the two datasets tested; the Pareto frontier may shift
 with additional datasets or libraries.
 
 \noindent Chapter~5 interprets why pipeline-stage importance depends
@@ -1029,7 +1074,7 @@ interaction with filtration type are made explicit.
     Modality & Dominant Stage & Range & $n$ (datasets) \\
     \midrule
     Point clouds (clean) & None & 0pp & 1\textsuperscript{*} \\
-    Time series (embedded) & Vectorizer & 1.9pp & 1 \\
+    Time series (embedded) & Vectorizer & 6.1pp & 1 \\
     Images (spatial grid) & Filtration & $\sim$60pp & 1\textsuperscript{$\dagger$} \\
     \bottomrule
   \end{tabular}
@@ -1048,10 +1093,12 @@ or qualify every cell.
 \section{Non-Topological Context and Limitations}
 % ────────────────────────────────────────────────────────────
 
-Our pipeline's best ECG200 accuracy (76.0\%) sits below published
+Our pipeline's best ECG200 accuracy (83.0\%, cubical filtration +
+Silhouette + Random Forest) sits below published
 classical baselines for this dataset: Euclidean 1-NN achieves
 $\sim$88\%, DTW-based 1-NN $\sim$81\% on the standard UCR train/test
-split. This is expected for a method using topology alone --- TDA
+split (our default Landscape+SVM-RBF pipeline achieves 76.0\%).
+This is expected for a method using topology alone --- TDA
 features capture orthogonal geometric properties (cycle structures
 in the embedded attractor) that complement, rather than compete
 with, raw signal features. The internal TDA-pipeline comparisons
@@ -1061,12 +1108,32 @@ reported here are valid regardless of the absolute accuracy level.
 $O(n^4)$ simplices for VR). (2)~Two-class problems only.
 (3)~One real dataset per modality. (4)~Single implementation library
 (giotto-tda); cross-library variance unknown. (5)~No learned
-vectorizers (PersLay, Hofer input layers). (6)~$n=200$ produces wide
+vectorizers (PersLay \cite{carriere2020}, Hofer input layers \cite{hofer2017}). (6)~$n=200$ produces wide
 CIs. Each limitation suggests a concrete future-work item:
 $H_2$ via Flood Complex \cite{graf2025}; multi-class extension
 (MNIST, Outex); a second time-series dataset (ECG5000, FordA);
 cross-library replication in GUDHI and Ripser; PersLay integration
 via a new backend; and larger-$n$ datasets for narrower CIs.
+
+\textbf{Data and code availability.} All code, configuration files,
+and result schemas are provided in the public repository
+\texttt{github.com/KRUZZZZY/tda-benchmark} (MIT licence). The
+synthetic sphere/torus data are regenerable from the bundled
+generator; ECG200 is the UCR archive benchmark (Dau et al.\ 2019);
+MNIST is the standard binary 0/1 subset \cite{lecun1998}. The
+SQLite result database is regenerated by the bundled
+\texttt{run\_all.sh} script. Random seeds are fixed (base 42) and
+per-dataset subsampling is seeded deterministically, so the sweep is
+reproducible end-to-end.
+
+\textbf{Compute.} The full 616-configuration sweep was executed on a
+single consumer workstation (8-core CPU, 16GB RAM), serial
+($n_{\text{workers}} = 1$), with a mean wall-clock time of
+$\sim$3--4s per configuration (filtration-dominated), giving a total
+of roughly 35--45 minutes for the sweep plus data preparation.
+Per-configuration wall times are recorded in the results database (cf. the
+R-package PH runtime benchmark of Somasundaram et al.\ \cite{somasundaram2021});
+memory was not measured per stage (see Limitations).
 
 % ────────────────────────────────────────────────────────────
 \section{Operational Guidelines for Pipeline Selection}
@@ -1081,16 +1148,17 @@ would strengthen or qualify each entry.
   \centering
   \caption{Recommended pipeline configurations by data characteristics.}
   \label{tab:guidelines}
-  \begin{tabular}{p{3.2cm}p{2.8cm}p{2.8cm}p{2.8cm}p{4cm}}
+  \small
+    \begin{tabularx}{\textwidth}{XXXXX}
     \toprule
     Data Modality & Filtration & Vectorizer & Classifier & Rationale \\
     \midrule
-    Low-dim.\ point clouds ($\le 3$D, clean) & Alpha complex & Pers.\ Statistics or Landscapes & SVM (RBF) or Logistic & Alpha 20--30\% faster than VR at identical accuracy; Nerve Theorem guarantees homotopy fidelity \\
-    Delay-embedded time series ($d \ge 3$) & VR or Alpha & Pers.\ Landscapes & RF or SVM (RBF) & Vectorization dominates variance (1.9pp, $p=0.038$); Landscapes most stable across embeddings \\
-    High-noise clouds ($\sigma \ge 0.15$) & Alpha or VR & Pers.\ Landscapes & SVM (RBF) & Landscapes most robust to geometric distortion at $\sigma=0.30$ (11.2pp vectorizer range) \\
+    Low-dim.\ point clouds ($\le 3$D, clean) & Alpha complex & Pers.\ Statistics or Landscapes & SVM (RBF) or Logistic & Alpha 11--21\% faster than VR at identical accuracy; Nerve Theorem guarantees homotopy fidelity \\
+    Delay-embedded time series ($d \ge 3$) & VR or Alpha & Pers.\ Landscapes & RF or SVM (RBF) & Vectorization dominates variance (6.1pp marginal range across 7 vectorizers) \\
+    High-noise clouds ($\sigma \ge 0.15$) & Alpha or VR & Pers.\ Landscapes & SVM (RBF) & Landscapes most robust to geometric distortion at $\sigma=0.30$ (0.7pp vectorizer range; five vectorizers tie at 100\%) \\
     Large-scale clouds ($n \ge 10^3$) & Sparse Rips & Pers.\ Images or Betti Curves & Random Forest & Sparse Rips designed for $n \ge 10^3$; its benefit is untestable at $n=100$ in this sweep \\
     \bottomrule
-  \end{tabular}
+  \end{tabularx}
 \end{table}
 
 \noindent Chapter~6 synthesizes these findings into a single
@@ -1105,12 +1173,13 @@ conditional thesis.
 \label{chap:conclusion}
 
 Pipeline-stage importance in TDA classification is modality-dependent.
-On ECG200 time series, vectorization produced a statistically significant
-accuracy range (p < 0.05), while filtration did not (p > 0.5). This
+On ECG200 time series, vectorization produced a 6.1pp marginal accuracy
+range across 7 vectorizers (95\% CI [4.8, 7.4]), while filtration
+contributed only 0.7pp across 4 filtrations (95\% CI [0.2, 1.1]). This
 qualifies the widely cited claim that filtration always dominates:
 Conti et al.'s finding holds for image data but does not generalise. On synthetic sphere/torus data, the topological
 signal survives $\sigma = 0.30$ additive spatial Gaussian noise at
-99.85\% mean accuracy — the stability bound is conservative,
+99.85\% mean accuracy across the 112 configurations at that level — the stability bound is conservative,
 and the $\Betti_1 = 0$ vs.\ $\Betti_1 = 2$ distinction remains
 linearly separable in all tested pipelines.
 
@@ -1129,34 +1198,51 @@ and which are artefacts of this specific sweep.
 % ════════════════════════════════════════════════════════════
 %  APPENDIX A: FULL YAML CONFIGURATION
 % ════════════════════════════════════════════════════════════
+\appendix
 \chapter{Full YAML Configuration}
 \label{app:yaml}
 
 \begin{lstlisting}[style=yaml]
+# Expanded benchmark -- covers full framework surface area.
+# Non-image filtrations silently fail on image data and vice versa;
+# the runner catches and logs failures per-config.
 datasets:
   - name: sphere_torus_n0
+    path: data/tda/synthetic/sphere_torus_noise0_X.npy
+    labels: data/tda/synthetic/sphere_torus_noise0_y.npy
     modality: point_cloud
     max_samples: 200
     subsample_points: 100
   - name: sphere_torus_n5
+    path: data/tda/synthetic/sphere_torus_noise5_X.npy
+    labels: data/tda/synthetic/sphere_torus_noise5_y.npy
     modality: point_cloud
     max_samples: 200
     subsample_points: 100
   - name: sphere_torus_n15
+    path: data/tda/synthetic/sphere_torus_noise15_X.npy
+    labels: data/tda/synthetic/sphere_torus_noise15_y.npy
     modality: point_cloud
     max_samples: 200
     subsample_points: 100
   - name: sphere_torus_n30
+    path: data/tda/synthetic/sphere_torus_noise30_X.npy
+    labels: data/tda/synthetic/sphere_torus_noise30_y.npy
     modality: point_cloud
     max_samples: 200
     subsample_points: 100
   - name: ecg200
+    path: data/tda/ucr/ecg200_X.npy
+    labels: data/tda/ucr/ecg200_y.npy
     modality: time_series
     takens_dimension: 3
     takens_delay: 1
   - name: mnist_01
+    path: data/tda/images/mnist_01_X.npy
+    labels: data/tda/images/mnist_01_y.npy
     modality: image
     max_samples: 400
+    description: "MNIST binary (0 vs 1) -- 200 per class, 28x28 greyscale"
 
 filtrations:
   - name: vietoris_rips
@@ -1178,12 +1264,19 @@ vectorizations:
     n_bins: 50
   - name: betti_curve
     n_bins: 50
+  - name: silhouette
+    n_bins: 50
+  - name: persistence_entropy
+    normalize: true
+  - name: amplitude
+    metric: bottleneck
   - name: persistence_statistics
 
 classifiers:
   - name: svm_rbf
   - name: random_forest
   - name: logistic
+  - name: svm_linear
 
 evaluation:
   cv_folds: 5
@@ -1192,8 +1285,8 @@ evaluation:
   repetitions: 1
 
 output:
-  db_path: data/tda/full_results.db
-  log_level: INFO
+  db_path: data/tda/expanded_results.db
+  log_level: WARNING
 \end{lstlisting}
 
 \newpage
@@ -1362,7 +1455,7 @@ Cubical, Weighted Rips, Flagser), 11 vectorizers (PI, PL, Betti,
 Silhouette, Entropy, Amplitude, Heat Kernel, Complex Polynomials,
 Pairwise Distance, Number of Points, Persistence Statistics), and
 4 classifiers (SVM-linear, SVM-RBF, RF, Logistic). The 616-configuration
-sweep reported in Chapter~4 exercises 3, 4, and 3 of these
+sweep reported in Chapter~4 exercises 4, 7, and 4 of these
 respectively. Adding a new method to the sweep requires adding one
 entry to the YAML configuration (Appendix~A). Adding a fundamentally
 new component type (e.g., a learned vectorizer) requires a new
@@ -1462,11 +1555,6 @@ C.~Hofer, R.~Kwitt, M.~Niethammer, and A.~Uhl.
 Deep learning with topological signatures.
 \textit{Advances in Neural Information Processing Systems}, 2017.
 
-\bibitem{hofstad2017}
-R.~van~der~Hofstad.
-\textit{Random Graphs and Complex Networks}, volume~1.
-Cambridge University Press, 2017.
-
 \bibitem{leray1945}
 J.~Leray.
 Sur la forme des espaces topologiques et sur les points fixes des
@@ -1513,6 +1601,18 @@ TopoBench: Benchmarking topological deep learning.
 R.~Turkes, G.~Mont\'ufar, and N.~Otter.
 On the effectiveness of persistent homology.
 \textit{Advances in Neural Information Processing Systems}, 2022.
+
+
+\bibitem{dau2019}
+H.~A.~Dau, A.~Bagnall, K.~Kamgar, C.-C.~M.~Yeh, Y.~Zhu, S.~Gharghabi,
+C.~A.~Ratanamahatana, and E.~Keogh.
+The UCR time series archive.
+\textit{IEEE/CAA Journal of Automatica Sinica}, 6(6):1293--1305, 2019.
+
+\bibitem{lecun1998}
+Y.~LeCun, L.~Bottou, Y.~Bengio, and P.~Haffner.
+Gradient-based learning applied to document recognition.
+\textit{Proceedings of the IEEE}, 86(11):2278--2324, 1998.
 
 \end{thebibliography}
 

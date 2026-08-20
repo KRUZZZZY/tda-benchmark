@@ -11,6 +11,7 @@ import logging
 import os
 import time
 import traceback
+import zlib
 from itertools import product
 from pathlib import Path
 from typing import Any
@@ -47,7 +48,10 @@ def _run_one_worker(
     Each worker opens its own ResultStore connection to the shared DB.
     """
     store = ResultStore(db_path)
-    rng = np.random.default_rng(random_seed + rep * 1000 + hash(ds.name) % 2**31)
+    # Deterministic per-dataset seed: zlib.crc32 is stable across processes
+    # (Python's hash() is salted per interpreter via PYTHONHASHSEED).
+    dataset_seed = zlib.crc32(ds.name.encode("utf-8"))
+    rng = np.random.default_rng(random_seed + rep * 1000 + dataset_seed % 2**31)
 
     try:
         # ── Load & preprocess ──────────────────────────────────────────

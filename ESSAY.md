@@ -2,6 +2,14 @@
 
 **A Systematic Comparison of Persistent Homology Pipelines for Classification**
 
+> **STALENESS WARNING (2026-08-20):** This is a working planning document.
+> Its numbers predate the final 616-configuration sweep and are OUTDATED.
+> The authoritative source is `dissertation.tex` (6 chapters + 5 appendices).
+> Key corrections: 616 executed configs (not 88); ECG200 vectorizer range
+> 6.1pp (not 1.9pp); MNIST cubical 98.0% vs VR 96.25%; noise survives to
+> σ=0.30 (not degrading after 0.15); Alpha 11-21% faster than VR (not
+> 20-30%). This file is kept for structure/methodology reference only.
+
 ---
 
 ## ABSTRACT
