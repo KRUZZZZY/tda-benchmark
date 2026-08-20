@@ -138,7 +138,10 @@ the filtration effect is modest (cubical 98.0\% vs.\ Vietoris--Rips
 96.25\% best of family, 1.75pp). A second time series, ECG5000,
 replicates the hierarchy (24.89pp vs.\ 3.60pp). These results
 complement, rather than refute, the image-data case study of Conti et
-al.\ \cite{conti2022}, whose 18\%--94\% range measured their own
+al.\ \cite{conti2022}, whose 18\%--94\% range spans a joint
+filtration-and-vectorization redesign (their H0-only naive
+cubical-binary pipeline to improved-filtration multivectors),
+part of which is attributable to the vectorization stage
 cubical-binary against improved-filtration pipelines on 10-class MNIST.
 On scale-matched genus-1 versus genus-2 synthetic point clouds, norm
 features classify at chance (48--58\%) while the TDA pipeline sustains
@@ -394,12 +397,16 @@ full Rips complex.
 
 \begin{remark}
 The benchmark executes giotto-tda's \texttt{WeakAlphaPersistence},
-which builds a subcomplex approximation of the full Alpha complex
-rather than the complex itself. The Nerve-Theorem homotopy guarantee
-below applies to the full complex; for the executed approximation we
-verify empirically in \S4.3 that the full GUDHI Alpha complex
-reproduces weak-alpha classification accuracy (mean difference
-0.0--0.8pp) at 2--5$\times$ the runtime cost.
+which per giotto's documentation is the Vietoris--Rips filtration of
+the sparse matrix of distances between Delaunay-neighbouring vertices
+--- a subcomplex of the full Rips complex (cheaper to build), not a
+subcomplex of the Alpha complex, and not covered by the Nerve-Theorem
+homotopy guarantee, which applies to the full Alpha/\v{C}ech complex.
+For the executed approximation we verify empirically in \S4.3 that the
+full GUDHI Alpha complex (persistence-equivalent to the \v{C}ech
+complex) reproduces weak-alpha classification accuracy (mean
+difference 0.0--0.8pp) at 2--5$\times$ the runtime cost, so the
+approximation is faithful on these tasks.
 \end{remark}
 
 \textbf{Sparse Rips complex.} A subsampled approximation of VR that
@@ -554,7 +561,7 @@ diagram --- essential for any pipeline handling noisy data.
   \sup_{b \in B} \inf_{a \in A} d_Z(a,b)\}$.
 \end{definition}
 
-\begin{theorem}[Stability Theorem --- Cohen-Steiner et al.\ 2007 \cite{cohen2007}]
+\begin{theorem}[Stability Theorem for geometric complexes --- Chazal, de Silva \& Oudot \cite{chazal2014}]
   \label{thm:stability}
   Let $X, Y$ be totally bounded metric spaces. Then:
   \begin{equation}
@@ -562,16 +569,26 @@ diagram --- essential for any pipeline handling noisy data.
     \label{eq:stability}
   \end{equation}
   for all $k \ge 0$, where $\Dgm_k(\cdot)$ denotes the $k$-dimensional
-  persistence diagram of the Vietoris-Rips or \v{C}ech filtration.
+  persistence diagram of the Vietoris-Rips or \v{C}ech filtration
+  (Chazal, de Silva \& Oudot 2014, Thm.~5.2). The function-level
+  stability bound $d_B \le \|f-g\|_\infty$ of Cohen-Steiner,
+  Edelsbrunner \& Harer \cite{cohen2007} applies instead to the
+  sublevel-set (cubical) filtration on grids.
 \end{theorem}
 
 This theorem is applied in \S4.2: for $n$ points with additive
 Gaussian noise $\eta_i \sim \mathcal{N}(0, \sigma^2 I_3)$, extreme
-value theory gives $\E[\max_i \|\eta_i\|] \approx
-\sigma\sqrt{2\ln n}$. With high probability the noisy cloud lies
-within Gromov--Hausdorff distance $O(\sigma\sqrt{\ln n})$ of the
-clean one, so by Theorem~\ref{thm:stability} the bottleneck distance
-between clean and noisy diagrams satisfies
+value theory gives the typical scale of the maximum perturbation as
+$\E[\max_i \|\eta_i\|] \approx \sigma\sqrt{2\ln n}$ (the
+one-dimensional leading-order value; for the executed $d=3$
+per-coordinate noise the expectation is slightly larger,
+$\approx 1.05\,\sigma\sqrt{2\ln n}$ at $n=100$). The noisy cloud
+therefore lies within Gromov--Hausdorff distance of order
+$\sigma\sqrt{\ln n}$ of the clean one --- a typical-case estimate,
+not an almost-sure bound (the union-bound failure probability is
+$O(1/\sqrt{\ln n})$ at $n=100$). By
+Theorem~\ref{thm:stability} the bottleneck distance between clean and
+noisy diagrams satisfies
 \begin{equation}
   d_B\bigl(\Dgm_k(X),\, \Dgm_k(X + \eta)\bigr)
   \;\lesssim\; 2\,\sigma\sqrt{2\ln n}.
@@ -1024,7 +1041,14 @@ $F$-tests) to test whether the range exceeds sampling noise.
 Vectorization dominates: its range (6.09pp across 7 vectorizers)
 is an order of magnitude larger than filtration (0.70pp across 4
 filtrations), and the ordering vectorizer $>$ classifier $>$
-filtration was stable across all five CV repetitions. The variance
+filtration was stable across all five CV repetitions. This
+ordering is significant under exact non-parametric inference on the
+five repetition-level stage rankings: the Friedman statistic
+$Q = \frac{12n}{k(k+1)}\sum_j (\bar{R}_j - \frac{k+1}{2})^2 = 10$
+for $k{=}3$ stages and $n{=}5$ repetitions, exceeding the exact 5\%
+critical value 6.40 (one-sided $p \approx 0.0008$); pairwise, the
+vectorizer-margin exceeds the filtration-margin in all five
+repetitions (one-sided sign test $p = (1/2)^5 = 0.031$). The variance
 decomposition of Table~\ref{tab:eta2} is the primary evidence for
 this ordering: on ECG200 the vectorizer explains 21.7\% of the
 per-config variance (fold-level 10.6\%), the classifier 9.8\%
@@ -1953,9 +1977,8 @@ Stability of persistence diagrams.
 
 \bibitem{conti2022}
 F.~Conti, D.~Moroni, and M.~A.~Pascali.
-Pipeline comparisons of persistent homology approaches for
-classification.
-\textit{Machine Learning and Knowledge Extraction}, 2022.
+A topological machine learning pipeline for classification.
+\textit{Mathematics} (MDPI), 10(17):3086, 2022. arXiv:2309.15276.
 
 \bibitem{graf2025}
 F.~Graf, F.~Chazal, and S.~Oudot.
@@ -1999,10 +2022,11 @@ Benchmarking R packages for persistent homology computation.
 \textit{Journal of Statistical Software}, 2021.
 
 \bibitem{sulowska2026}
-A.~Sulowska.
-Comparative analysis of persistence diagram vectorization methods
-for TDA-based classification.
-\textit{Preprint}, 2026.
+D.~Sulowska.
+Comparative evaluation of persistence diagram vectorisation methods
+in classification tasks.
+\textit{Advances in Science and Technology Research Journal},
+20(7):54--70, 2026. DOI 10.12913/22998624/218660.
 
 \bibitem{takens1981}
 F.~Takens.
@@ -2017,10 +2041,11 @@ giotto-tda: A topological data analysis toolkit for machine learning.
 \textit{Journal of Machine Learning Research}, 22(39):1--6, 2021.
 
 \bibitem{telyatnikov2024}
-L.~Telyatnikov, G.~Oliver, M.~V.~Giuffr\`e, P.~Li\`o, and
-J.~B.~P\'erez.
-TopoBench: Benchmarking topological deep learning.
-\textit{Advances in Neural Information Processing Systems}, 2024.
+L.~Telyatnikov, G.~Bernardez, M.~Montagna, M.~Hajij, S.~Carrasco,
+M.~Vasylenko, et al.
+TopoBench: A framework for benchmarking topological deep learning.
+\textit{Advances in Neural Information Processing Systems},
+Datasets and Benchmarks Track, 2024. arXiv:2406.06642.
 
 \bibitem{turkes2022}
 R.~Turkes, G.~Mont\'ufar, and N.~Otter.
@@ -2038,6 +2063,11 @@ The UCR time series archive.
 Y.~LeCun, L.~Bottou, Y.~Bengio, and P.~Haffner.
 Gradient-based learning applied to document recognition.
 \textit{Proceedings of the IEEE}, 86(11):2278--2324, 1998.
+
+\bibitem{chazal2014}
+F.~Chazal, V.~de Silva, and S.~Oudot.
+Persistence stability for geometric complexes.
+\textit{Geometriae Dedicata}, 178:295--331, 2015. arXiv:1207.3885.
 
 \end{thebibliography}
 
