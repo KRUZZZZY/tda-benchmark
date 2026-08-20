@@ -142,12 +142,13 @@ al.\ \cite{conti2022}, whose 18\%--94\% range spans a joint
 filtration-and-vectorization redesign (their H0-only naive
 cubical-binary pipeline to improved-filtration multivectors),
 part of which is attributable to the vectorization stage
-cubical-binary against improved-filtration pipelines on 10-class MNIST.
+(their 18\% figure is the H0-only naive cubical-binary pipeline;
+the 94\% figure adds improved filtrations on 10-class MNIST).
 On scale-matched genus-1 versus genus-2 synthetic point clouds, norm
 features classify at chance (48--58\%) while the TDA pipeline sustains
-95.83\% accuracy at $\sigma = 0.30$ --- the noise robustness is
-topology-specific. Measured bottleneck distances (max $d_B = 0.434$ vs.\
-the corrected bound $2\sigma\sqrt{2\ln n} \approx 1.83$ at
+95.83\% accuracy at $\sigma = 0.30$ --- the noise robustness is not an artefact
+of the norm/scale confound. Measured bottleneck distances (max $d_B = 0.434$ vs.\
+the corrected bound $2\sigma\sqrt{2\ln n} \approx 1.82$ at
 $\sigma=0.30$) confirm the stability bound is conservative. The
 framework is YAML-configurable and extensible to 7 filtrations, 11
 vectorizers, and 4 classifiers; all code, configuration, and result
@@ -180,8 +181,7 @@ and death of topological features as a scale parameter varies.
 
 Practitioners face a combinatorial problem: the TDA classification
 pipeline has three stages --- filtration, vectorization, and
-classification --- each with 5--15 available methods (surveys:
-Hatwar and Thangaraj \cite{hatwar2026}). The literature's most cited answer to ``which stage matters most?''
+classification --- each with 5--15 available methods (surveys: Ali et al.\ \cite{ali2023} and Hensel et al.\ \cite{hensel2021}). The literature's most cited answer to ``which stage matters most?''
 comes from Conti et al.\ \cite{conti2022}, who showed that filtration
 choice on MNIST images can be catastrophic: accuracy ranged from 18\%
 (their cubical pipeline) to 94\% (improved filtrations), under 10-split
@@ -284,12 +284,12 @@ stage. Specifically:
     distributions are quantile-matched, norm features classify at
     chance (48--58\%) while the TDA pipeline sustains 95.83\%
     accuracy at $\sigma = 0.30$ noise --- the noise robustness is
-    topology-specific, not an artefact of the scale difference
+    not an artefact of the norm/scale confound
     between the sphere and torus geometries.
   \item \textbf{Stability-bound confirmation.} Measured bottleneck
     distances between clean and noisy diagrams (max $d_B = 0.434$
     over 80 cloud/dimension pairs) sit well below the corrected
-    worst-case bound $d_B \le 2\sigma\sqrt{2\ln n}$ ($\approx 1.83$
+    worst-case bound $d_B \le 2\sigma\sqrt{2\ln n}$ ($\approx 1.82$
     at $\sigma = 0.30$, $n = 100$), confirming the bound is
     conservative in practice.
 \end{enumerate}
@@ -561,7 +561,7 @@ diagram --- essential for any pipeline handling noisy data.
   \sup_{b \in B} \inf_{a \in A} d_Z(a,b)\}$.
 \end{definition}
 
-\begin{theorem}[Stability Theorem for geometric complexes --- Chazal, de Silva \& Oudot \cite{chazal2014}]
+\begin{theorem}[Stability Theorem for geometric complexes --- Chazal, de Silva \& Oudot \cite{chazalDesilvaOudot2015}]
   \label{thm:stability}
   Let $X, Y$ be totally bounded metric spaces. Then:
   \begin{equation}
@@ -581,12 +581,15 @@ Gaussian noise $\eta_i \sim \mathcal{N}(0, \sigma^2 I_3)$, extreme
 value theory gives the typical scale of the maximum perturbation as
 $\E[\max_i \|\eta_i\|] \approx \sigma\sqrt{2\ln n}$ (the
 one-dimensional leading-order value; for the executed $d=3$
-per-coordinate noise the expectation is slightly larger,
-$\approx 1.05\,\sigma\sqrt{2\ln n}$ at $n=100$). The noisy cloud
-therefore lies within Gromov--Hausdorff distance of order
-$\sigma\sqrt{\ln n}$ of the clean one --- a typical-case estimate,
-not an almost-sure bound (the union-bound failure probability is
-$O(1/\sqrt{\ln n})$ at $n=100$). By
+per-coordinate noise the expectation is larger by the dimension
+correction, $\approx 1.16\,\sigma\sqrt{2\ln n}$ at $n=100$; Monte
+Carlo gives $\E[\max_i\|\eta_i\|] \approx 1.06$ at $\sigma=0.30$).
+The noisy cloud therefore lies within Gromov--Hausdorff distance of
+order $\sigma\sqrt{\ln n}$ of the clean one --- a typical-case
+estimate, not an almost-sure bound: the threshold
+$\sigma\sqrt{2\ln n}$ is exceeded by the maximum with probability
+$\approx 93\%$ in the executed $d{=}3$ noise (the 1-D value would be
+$\approx 22\%$). By
 Theorem~\ref{thm:stability} the bottleneck distance between clean and
 noisy diagrams satisfies
 \begin{equation}
@@ -596,8 +599,8 @@ noisy diagrams satisfies
 \end{equation}
 The factor~2 inherited from the stability theorem is essential: for
 $n = 100$ (points per cloud after subsampling),
-$2\,\sigma\sqrt{2\ln 100} \approx 0.92$ at $\sigma = 0.15$ and
-$\approx 1.83$ at $\sigma = 0.30$ --- a factor of two larger than
+$2\,\sigma\sqrt{2\ln 100} \approx 0.91$ at $\sigma = 0.15$ and
+$\approx 1.82$ at $\sigma = 0.30$ --- a factor of two larger than
 the bound one would write down by omitting it. Measured bottleneck
 distances between clean and noisy diagrams (ripser diagrams, GUDHI
 bottleneck implementation; 80 cloud/dimension pairs; \S4.2) are far
@@ -688,7 +691,7 @@ is a 2D Gaussian kernel. Evaluating $\rho$ on an $n_{\text{bins}}
 \times n_{\text{bins}}$ grid yields $n_{\text{bins}}^2$ features per
 homology dimension.
 
-\paragraph{Silhouette} \cite{chazal2014}.
+\paragraph{Silhouette} \cite{chazalSilh2014}.
 The silhouette of a diagram weights the landscape tent functions of
 \eqref{eq:tent} by persistence and normalises:
 \begin{equation}
@@ -756,8 +759,8 @@ executed in Chapter~4:
   \item \textbf{Persistence and stability} (\S2.3--\S2.4): The
     corrected bound of \eqref{eq:db_bound}, $d_B \lesssim
     2\sigma\sqrt{2\ln n}$, predicts that $\sigma = 0.15$ noise
-    perturbs diagrams by $\lesssim 0.92$ (and $\sigma=0.30$ by
-    $\lesssim 1.83$), while torus $\Betti_1$ features have measured
+    perturbs diagrams by $\lesssim 0.91$ (and $\sigma=0.30$ by
+    $\lesssim 1.82$), while torus $\Betti_1$ features have measured
     top-2 persistence range [0.608, 1.156] (ripser on the shipped
     clouds). \S4.2 confirms that classification survives this
     perturbation (measured $d_B$: max 0.300 at $\sigma=0.15$, max
@@ -1032,7 +1035,10 @@ $F$-tests) to test whether the range exceeds sampling noise.
     values (means across five independent splits, seeds 43--47): the
     range is the mean over repetitions of the per-split marginal
     range, with a 95\% $t$-interval across the five per-split ranges.
-    $p$-values are $F$-test $p$-values from the fold-level three-way
+    $p$-values are $F$-test $p$-values from the per-configuration
+    three-way ANOVA (the fold-level panel below is descriptive:
+    folds within a configuration share training data, so its $p$-values
+    are anti-conservative)
     ANOVA (main effects only; Table~\ref{tab:eta2}), not paired
     Wilcoxon tests. No multiplicity correction is applied across the
     three stage comparisons.}
@@ -1157,14 +1163,19 @@ ranks fourth by repeated-CV mean (79.6\%, SD 1.98pp), while cubical
 (83.2\% mean). Differences below $\sim$1pp between individual
 configurations should not be over-interpreted.
 
-\textbf{Generalisation check: ECG5000.} To test whether
-vectorization-dominance is specific to ECG200, the same stage
-analysis was run on ECG5000 (UCR archive; 5 classes; 140 timesteps)
-with the same 5-fold protocol and a pipeline subset (2 filtrations,
-3 vectorizers, 2 classifiers). The result replicates the hierarchy
-at larger scale: vectorizer marginal range 24.89pp versus filtration
-3.60pp. Vectorization-dominance on time series is not an artefact of
-a single dataset.
+\textbf{Generality probe: ECG5000.} To test whether
+vectorization-dominance is specific to ECG200, the stage analysis was
+run on ECG5000 (UCR archive; 5 classes; 140 timesteps; single
+patient recording) with the same 5-fold protocol on a stratified
+subsample of 714 samples ($\le 200$ per class; the minority classes
+contain 96, 194 and 24 samples) and a pipeline subset (2 filtrations,
+3 vectorizers, 2 classifiers; the subset spans the strongest and
+weakest vectorizers from ECG200 to bound the range). The result
+replicates the hierarchy: vectorizer marginal range 24.89pp versus
+filtration 3.60pp (point estimate, single split). Vectorization
+dominance on time series is not an artefact of the specific ECG200
+instance; a full multiclass generalisation claim would require
+multiple datasets (the probe is single-patient).
 
 \textbf{Cubical robustness check.} CubicalPersistence on ECG200
 operates on the $94 \times 3$ Takens-embedded array as a pixel grid
@@ -1222,8 +1233,8 @@ support, so no deterministic bound on the perturbation exists; instead
 we use the corrected probabilistic bound of \S2.4
 (Equation~\ref{eq:db_bound}): with high probability the bottleneck
 distance between clean and noisy diagrams is at most
-$2\sigma\sqrt{2\ln n}$, i.e.\ $d_B \lesssim 0.92$ at
-$\sigma=0.15$ and $\lesssim 1.83$ at $\sigma=0.30$ for $n=100$.
+$2\sigma\sqrt{2\ln n}$, i.e.\ $d_B \lesssim 0.91$ at
+$\sigma=0.15$ and $\lesssim 1.82$ at $\sigma=0.30$ for $n=100$.
 
 \begin{figure}[H]
   \centering
@@ -1235,14 +1246,14 @@ $\sigma=0.15$ and $\lesssim 1.83$ at $\sigma=0.30$ for $n=100$.
 At $\sigma = 0.00$, $0.05$, and $0.15$, every configuration achieves
 $\ge 99.5\%$ accuracy (mean 99.99\%, 100.00\%, and 99.97\%
 respectively). The stability bound at
-$\sigma = 0.15$ is $d_B \lesssim 0.92$ (Equation~\ref{eq:db_bound}).
+$\sigma = 0.15$ is $d_B \lesssim 0.91$ (Equation~\ref{eq:db_bound}).
 Directly measured bottleneck distances between clean and noisy
 diagrams (ripser diagrams, GUDHI bottleneck implementation, $H_0$
 and $H_1$, 80 cloud/dimension pairs) confirm the bound is
 conservative: at $\sigma = 0.15$ the mean measured $d_B$ is 0.144
 and the maximum 0.300, both well below the bound.
 
-At $\sigma = 0.30$ (bound $\lesssim 1.83$), mean accuracy across the 112
+At $\sigma = 0.30$ (bound $\lesssim 1.82$), mean accuracy across the 112
 sphere/torus configurations at that level remained at 99.85\%
 (minimum 98.5\%). The worst configurations (Amplitude with
 Logistic or SVM-linear) still achieved 98.5\% ---
@@ -1265,12 +1276,16 @@ versus sphere $\equiv 1$): a single norm feature separates them at
 the \emph{combined} geometric signal. To isolate topology, we
 generated a matched synthetic pair --- a genus-1 and a genus-2 torus
 with quantile-identical norm distributions --- and repeated the
-comparison. Norm-based features now collapse to chance (48--58\%),
-while the TDA pipeline separates the pair at 99.75\% clean and
+comparison. Norm-based features now collapse to near chance (48--58\%; the
+clean-level 58\% is within $\sim$2 SE of chance at $n=200$), while
+the TDA pipeline separates the pair at 99.75\% clean and
 95.83\% at $\sigma=0.30$ (minimum 91\% over configurations). The
 topological signal is therefore not an artefact of the norm
 confound: it survives on its own, and it is robust to noise at the
-levels tested.
+levels tested. (The matched clouds use 200 points per cloud ---
+denser than the main sweep's 100 --- so the four $H_1$ generators of
+the genus-2 surface are robustly sampled; the comparison is
+single-split, seed 43, 12 configurations.)
 
 \begin{figure}[H]
   \centering
@@ -1278,7 +1293,7 @@ levels tested.
   \caption{Accuracy vs.~noise. All pipelines maintain $\ge 98.5\%$
     accuracy through $\sigma=0.30$; measured bottleneck distances
     (max 0.434 at $\sigma=0.30$ versus the corrected bound
-    $2\sigma\sqrt{2\ln n} \approx 1.83$) confirm the stability
+    $2\sigma\sqrt{2\ln n} \approx 1.82$) confirm the stability
     bound is conservative.}
   \label{fig:noise_curves}
 \end{figure}
@@ -1326,7 +1341,7 @@ sphere/torus with Landscape+SVM (measured 3.5--3.9s vs.~3.9--4.4s
 across the four noise levels; the gap narrows at $\sigma=0.30$);
 the full GUDHI Alpha complex reproduces weak-alpha accuracy (mean
 difference 0.0--0.8pp) at 2--5$\times$ the cost. Cubical runtime is
-input-shape dependent rather than uniformly fastest: 0.6--1.6s per
+input-shape dependent rather than uniformly fastest: 0.6--2.3s per
 configuration on the sphere/torus and ECG200 instances, but
 3.1--12.7s on $28 \times 28$ MNIST images. The
 Nerve Theorem
@@ -1532,8 +1547,8 @@ seeded deterministically via CRC32, so all experiments are
 reproducible end-to-end.
 
 \textbf{Compute.} The full 616-configuration sweep was executed on a
-single consumer workstation (8-core CPU, 16GB RAM), serial
-($n_{\text{workers}} = 1$). Summed wall-clock time across all 616
+single consumer workstation (8-core CPU, 16GB RAM), parallelised with
+joblib over the CPU cores ($n_{\text{workers}} \approx 16$). Summed wall-clock time across all 616
 configurations was 2.0 hours (mean $\sim$12s per configuration,
 median 3.78s); Sparse Rips dominates the total (140 runs, mean 41s,
 $\approx$1.6h), while the other three filtrations complete in
@@ -1597,10 +1612,10 @@ sphere/torus data, the combined geometric signal survives
 $\sigma = 0.30$ additive spatial Gaussian noise at
 99.85\% mean accuracy across the 112 configurations at that level;
 measured bottleneck distances (max 0.434 versus the corrected bound
-$2\sigma\sqrt{2\ln n} \approx 1.83$) confirm the stability bound is
+$2\sigma\sqrt{2\ln n} \approx 1.82$) confirm the stability bound is
 conservative, and a matched
 genus-1/genus-2 experiment with identical norm distributions shows
-the robustness is topology-specific (TDA 95.83\% versus 48--58\% for
+the robustness is not an artefact of the norm confound (TDA 95.83\% versus 48--58\% for
 norm features at $\sigma=0.30$). TDA features do not beat raw
 features on the datasets studied (raw-signal logistic 85.5\% vs.~83.0\%
 TDA on ECG200; raw-pixel logistic 99.75\% vs.~98.0\% TDA on MNIST),
@@ -1958,7 +1973,7 @@ PersLay: A neural network layer for persistence diagrams and new
 graph topological signatures.
 \textit{Proceedings of AISTATS}, 2020.
 
-\bibitem{chazal2014}
+\bibitem{chazalSilh2014}
 F.~Chazal, B.~T.~Fasy, F.~Lecci, A.~Rinaldo, and L.~Wasserman.
 Stochastic convergence of persistence landscapes and silhouettes.
 \textit{Proceedings of the 30th Annual Symposium on Computational
@@ -1981,15 +1996,11 @@ A topological machine learning pipeline for classification.
 \textit{Mathematics} (MDPI), 10(17):3086, 2022. arXiv:2309.15276.
 
 \bibitem{graf2025}
-F.~Graf, F.~Chazal, and S.~Oudot.
+F.~Graf, P.~Pellizzoni, M.~Uray, S.~Huber, and R.~Kwitt.
 The flood complex: Large-scale persistent homology on millions of
 points.
 \textit{Advances in Neural Information Processing Systems}, 2025.
-
-\bibitem{hatwar2026}
-S.~Hatwar and A.~Thangaraj.
-Topological data analysis and machine learning: A survey.
-\textit{Preprint}, 2026.
+arXiv:2509.22432.
 
 \bibitem{hofer2017}
 C.~Hofer, R.~Kwitt, M.~Niethammer, and A.~Uhl.
@@ -2064,10 +2075,15 @@ Y.~LeCun, L.~Bottou, Y.~Bengio, and P.~Haffner.
 Gradient-based learning applied to document recognition.
 \textit{Proceedings of the IEEE}, 86(11):2278--2324, 1998.
 
-\bibitem{chazal2014}
+\bibitem{chazalDesilvaOudot2015}
 F.~Chazal, V.~de Silva, and S.~Oudot.
 Persistence stability for geometric complexes.
 \textit{Geometriae Dedicata}, 178:295--331, 2015. arXiv:1207.3885.
+
+\bibitem{hensel2021}
+M.~Hensel, M.~Moor, and B.~Rieck.
+A survey of topological machine learning methods.
+\textit{Frontiers in Artificial Intelligence}, 4:681108, 2021.
 
 \end{thebibliography}
 
