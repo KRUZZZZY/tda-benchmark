@@ -22,6 +22,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
 
+# Deterministic PDF output (reproducible builds): matplotlib embeds the
+# current time in PDF metadata unless SOURCE_DATE_EPOCH is set.
+if "SOURCE_DATE_EPOCH" not in os.environ:
+    os.environ["SOURCE_DATE_EPOCH"] = "1755676800"  # 2026-08-20T00:00:00Z
+
 REPO = os.path.dirname(os.path.abspath(__file__))
 DB = sys.argv[1] if len(sys.argv) > 1 else os.path.join(REPO, "..", "..", "data", "tda", "expanded_results.db")
 OUT = os.path.join(REPO, "figures")
