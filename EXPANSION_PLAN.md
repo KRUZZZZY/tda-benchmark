@@ -1,0 +1,150 @@
+# TDA Benchmark Paper — Expansion Plan (external feedback)
+
+- **Date received:** 2026-08-21
+- **Applies to:** `dissertation.tex` — "A Systematic Benchmark of Persistent Homology Pipelines for Classification" (54 pp, 6 chapters + 5 appendices)
+- **Repo:** github.com/KRUZZZZY/tda-benchmark
+- **Status:** Recorded for planning; execution not started (see status tracker at the bottom)
+- **Provenance:** External review feedback on the dissertation, transcribed verbatim below. Prior audit/completion state documented in `HANDOFF_PROMPT.md`.
+
+---
+
+## Preamble
+
+> Here's a comprehensive expansion plan, ordered roughly by how much each item strengthens the central claim. The paper's own limitations section already names some of these — the difference between naming a gap and closing it is exactly the gap between a strong dissertation and a publishable paper.
+
+---
+
+## Tier 1 — Fixes the core scientific vulnerability
+
+### 1. Diversify the filtration menu
+
+This is the single most important change. Right now three of four filtrations (VR, weak Alpha, Sparse Rips) approximate the same Rips-type geometry, so "filtration barely matters" is partly baked in. Add filtrations that see genuinely different structure:
+
+- DTM (distance-to-measure) filtration — robust to outliers, behaves very differently under noise
+- Weighted/kernel-density Rips
+- Lower-star filtrations on different scalar functions (height, curvature estimates)
+- For images: sublevel vs superlevel vs signed-distance cubical, and radial/erosion filtrations (the family Conti et al. actually varied — this directly tests whether their 18–94% swing reproduces under your protocol)
+
+If vectorization still dominates with a genuinely diverse filtration pool, the claim becomes robust instead of menu-dependent. If it doesn't, you've discovered the real boundary condition — equally publishable.
+
+### 2. Report the stage comparison on an equal footing
+
+The 7-vs-3-level range comparison is confounded by level counts. Lead with ω² (you already compute it), and add a levels-matched analysis: best-3 vectorizers vs 3 filtrations, or pairwise "swap one stage, hold others at best" deltas. Also report ranges excluding the degenerate scalar vectorizers (entropy, amplitude), since much of the 6.39pp/24.89pp is a floor effect from a single-number representation being bad — an unsurprising result that inflates the headline.
+
+### 3. Add interaction effects to the ANOVA
+
+The current model is main-effects-only, but Appendix D shows the vectorizer×classifier interaction can dominate on subsets. A full factorial ANOVA with two-way interaction terms (you have the data already) tells you whether "stages" are even separable — if interactions carry large η², the whole stage-dominance framing needs qualifying, and finding that yourself is far better than a reviewer finding it.
+
+---
+
+## Tier 2 — Broadens the evidence base
+
+### 4. Scale the multi-dataset panel and make it stage-capable
+
+The 9-dataset panel currently runs VR-only on time series, so it can't compare filtration vs vectorization at all. Run at least 2–3 (working) filtrations across the full panel, and grow it: the UCR archive has 128 datasets — 20–30 stratified across lengths/classes is feasible with your runner and turns "two real datasets" into a real distribution of stage effects. Report the distribution of vectorizer-range vs filtration-range across datasets, not just point results.
+
+### 5. Repeated CV everywhere the claims are
+
+ECG200 got 25 repetitions; MNIST got 5; ECG5000, the matched-genus experiment, and the panel are single-split. Bring everything supporting a headline claim to the same protocol so no result rests on a point estimate you've elsewhere shown carries ±1–3pp noise.
+
+### 6. Test the regime where topology actually wins
+
+Everything is currently measured where TDA loses to raw baselines, so stage importance is measured in a regime where topological features are decorative. Add datasets where topology is known to carry the signal (e.g. Outex textures, dynamical-system classification, graph/point-cloud shape benchmarks like ModelNet slices, protein conformations) and run the same decomposition. "Does the dominant stage change when topology matters?" is the natural and important follow-up — and your matched-genus setup is already halfway there: give it the full stage-decomposition treatment.
+
+### 7. Multiclass and scale
+
+Run full 10-class MNIST with your protocol — this directly tests whether Conti et al.'s catastrophic filtration swing appears at scale under controlled conditions (your paper explicitly flags this as the open question). Add larger-n clouds (n ≥ 10³) where Sparse Rips' design point actually applies, so that row in your recommendation table stops being untestable.
+
+---
+
+## Tier 3 — Deepens the method space
+
+### 8. Learned vectorizers
+
+Add PersLay and/or Hofer-style deep sets input layers (you cite both). This is the strongest version of the vectorization-dominance question: if a learned vectorizer beats all fixed ones by a wide margin, vectorization dominance is confirmed and quantified at its ceiling; needs the new factory entry you already scoped.
+
+### 9. H₂ homology
+
+Currently capped at H₁ for cost. Use Alpha complexes in 3D (cheap for H₂) or the Flood Complex you cite; the sphere/torus pair differs in β₂ structure and the torus's second homology is exactly what's being thrown away.
+
+### 10. Hyperparameter-sensitivity arm
+
+You deliberately excluded grid search to avoid conflation — sound, but add a separate small study: tune each vectorizer's key hyperparameters per dataset and report how stage ranges change. This answers "is vectorizer dominance a default-settings artefact?" — a question a strong reviewer will certainly ask, since vectorizers differ hugely in how many knobs they expose.
+
+### 11. Cross-library replication
+
+Rerun a representative configuration subset in GUDHI-native and Ripser-native pipelines. You already found one library-specific fragility (giotto's weak-alpha IndexError crashes on quantized series) — establish whether the accuracy results are library-invariant too.
+
+### 12. Farthest-point sampling ablation
+
+You note uniform random subsampling is inferior to FPS and defer it — actually run it. It's cheap, it touches every point-cloud result, and it closes your own limitation #1 on preprocessing.
+
+---
+
+## Tier 4 — Statistical and theoretical polish
+
+### 13. Predictive theory, not just descriptive results
+
+Chapter 2 is textbook material. A top-level version derives something: e.g., a bound or estimate relating a vectorizer's stability constant / feature dimension to its achievable accuracy range, then tests the prediction against the sweep. Even a rough "Lipschitz constant of vectorization map vs empirical marginal range" correlation would convert the maths chapter from background to contribution.
+
+### 14. Beyond accuracy
+
+Add calibration, AUROC, and per-class breakdowns on the imbalanced sets; you started this with ECG5000's balanced accuracy — make it uniform.
+
+### 15. Bayesian or hierarchical model of stage effects
+
+A hierarchical model (datasets as random effects, stages as fixed) over the full panel would give a principled "population" estimate of stage importance with uncertainty, replacing the per-dataset patchwork of η²/ω²/Friedman.
+
+---
+
+## Tier 5 — Presentation and rigour hygiene
+
+### 16. Fix Figure 4.1's illegible labels; fix the \texttt{} leak in Appendix A line 83.
+
+### 17. Expand Chapter 6 into a genuine synthesis: a decision tree for practitioners with the evidence grade behind each branch.
+
+### 18. Add a threats-to-validity section using standard categories (construct/internal/external) — you have all the content scattered through §5.2; structuring it that way reads as deliberate methodology.
+
+### 19. Pre-register the expansion sweeps (even informally, via a dated protocol file in the repo) — for a benchmarking paper this is a cheap, high-credibility move.
+
+### 20. Package the framework as an installable library with CI and a small test suite, and consider a short companion "benchmark framework" submission (TopoBench-style venues, NeurIPS D&B track) separate from the findings paper.
+
+---
+
+## What I'd actually do first
+
+If the constraint is bachelor's-timeline-plus-some, the highest ratio of grade/publishability per week is: **#1 (diverse filtrations) + #2 (equal-footing stats) + #4 (panel with multiple filtrations) + #10 (hyperparameter arm)**.
+
+Those four together convert the thesis from "careful measurement with a menu-shaped conclusion" to "robust claim with its boundary conditions mapped" — which is the actual difference between a strong dissertation and a paper that survives review at a good venue. **Items #6 and #8** are the two that could turn it into something genuinely novel rather than confirmatory.
+
+---
+
+## Status tracker
+
+Statuses reflect the repo state at the time of recording (HEAD `c3ae98b`). "Partial" = the feedback itself acknowledges work already in the paper/repo.
+
+| # | Tier | Item | Status | Notes |
+|---|---|---|---|---|
+| 1 | 1 | Diversify the filtration menu (DTM, weighted Rips, lower-star, cubical variants) | 🔲 Open | Single most important change |
+| 2 | 1 | Equal-footing stage stats (ω² lead, levels-matched, exclude degenerate scalars) | 🔲 Open | 7-vs-3 confound |
+| 3 | 1 | Two-way interaction ANOVA | 🔲 Open | Data already in hand |
+| 4 | 2 | Scale panel + make it stage-capable | 🟡 Partial | 9-dataset VR-only panel exists; needs 2–3 filtrations + growth |
+| 5 | 2 | Repeated CV everywhere claims are | 🟡 Partial | ECG200 r=25 ✅; MNIST r=5; ECG5000/genus/panel single-split |
+| 6 | 2 | Topology-wins regime (Outex, dynamical systems, ModelNet, proteins) | 🔲 Open | Matched-genus = halfway |
+| 7 | 2 | Full 10-class MNIST + n≥10³ clouds | 🔲 Open | Direct Conti et al. test |
+| 8 | 3 | Learned vectorizers (PersLay / Hofer) | 🔲 Open | Potential novelty driver |
+| 9 | 3 | H₂ homology (Alpha-3D / Flood Complex) | 🔲 Open | Torus β₂ currently thrown away |
+| 10 | 3 | Hyperparameter-sensitivity arm | 🔲 Open | Answers default-settings artefact Q |
+| 11 | 3 | Cross-library replication (GUDHI/Ripser-native) | 🔲 Open | Weak-alpha fragility already found |
+| 12 | 3 | FPS ablation | 🔲 Open | Closes limitation #1 on preprocessing |
+| 13 | 4 | Predictive theory (stability constant vs range) | 🔲 Open | Converts Ch. 2 to contribution |
+| 14 | 4 | Calibration / AUROC / per-class | 🟡 Partial | ECG5000 balanced accuracy only |
+| 15 | 4 | Hierarchical model of stage effects | 🔲 Open | Replaces per-dataset η²/ω² patchwork |
+| 16 | 5 | Fig 4.1 labels + Appendix A \texttt leak | 🔲 Open | Line 83 |
+| 17 | 5 | Ch. 6 practitioner decision tree | 🔲 Open | With evidence grades |
+| 18 | 5 | Threats-to-validity section (§5.2 → construct/internal/external) | 🔲 Open | |
+| 19 | 5 | Pre-register expansion sweeps (dated protocol file) | 🔲 Open | |
+| 20 | 5 | Installable framework package + CI; companion framework paper | 🔲 Open | TopoBench-style / NeurIPS D&B |
+
+**Recommended first four (per feedback):** #1 + #2 + #4 + #10 — "careful measurement with a menu-shaped conclusion" → "robust claim with its boundary conditions mapped."
+**Novelty candidates:** #6 and #8.
