@@ -22,25 +22,17 @@ Read this first, then the authoritative detail in the KB plan:
   `from tda_benchmark.runner import _run_one_worker`.
 
 ## STATE
-- HEAD fc1f556 (all Phase-1 + B1 committed + pushed). Paper 56pp, 0 undefined
-  refs. DONE: #3 interaction-ANOVA, A1 (#2 equal-footing), A3 (#7a 10-class
-  MNIST), A4 (#14 beyond-accuracy), B1 (#1 DTM-weighted-Rips crux).
-- **B2 / B3 / B4 sweeps are COMPLETE (async subagents finished 2026-08-21),
-  verified on disk, NOT yet written to the paper:**
-  - B2 stage-capable panel -> data/tda/panel_stagecapable.db (144/144 finished);
-    FIL-range 0.31/1.37/4.41 (mean 2.17), VEC-range 0.62/3.32/15.00 (mean 5.11),
-    FIL>VEC on 2/9 (HandOutlines, mnist10). Paragraph: /tmp/B2_panel_paper.md.
-  - B3 hyperparameter arm -> data/tda/hyperparam_sweep.db (76/76 finished);
-    default->tuned vectorizer range ECG200 5.750->4.750pp, MNIST 1.750->1.625pp;
-    dominance NOT a default-settings artefact. Paragraph: /tmp/B3_hyperparam_paper.md.
-  - B4 FPS ablation -> data/tda/fps_ablation.db (64/64 finished); FPS NOT better
-    than uniform (k=15: -0.12/-0.88pp); revises Limitation #1. Paragraph:
-    /tmp/B4_fps_paper.md.
-- Remaining sweep driver scripts UNTRACKED (0600 perms); B5 driver present:
-  scripts/sweep_panel_stagecapable.py (B2), sweep_hyperparam.py (B3),
-  sweep_fps_ablation.py (B4), sweep_large_n.py (B5, not run), plus
-  analysis_hyperparam.py / probe_fps_k.py. B5 result DB large_n_sweep.db ABSENT
-  (NOT started).
+- HEAD d289e6d (Phase-1 + B1 + B2 + B3 + B4 committed; NOT yet pushed).
+  Paper 58pp, 0 undefined refs, 0 errors (B2/B3/B4 paragraphs inserted via
+  line-surgery at d289e6d, compiled clean in /tmp). DONE: #3 interaction-ANOVA,
+  A1 (#2 equal-footing), A3 (#7a 10-class MNIST), A4 (#14 beyond-accuracy),
+  B1 (#1 DTM-weighted-Rips crux), B2 (#4 stage-capable panel), B3 (#10
+  hyperparameter arm), B4 (#12 FPS ablation).
+- B5 (#7b n>=10^3) sweep_large_n.py RUNNING (serial, n_jobs=1, single-CPU;
+  est. many hours — sparse_rips@n=1000 alone ~50+ min/config, VR@1000 and
+  sparse@3000 slower). large_n_sweep.db created; resumable (skips finished).
+- Untracked scripts remaining: sweep_large_n.py, analysis_large_n.py
+  (committed with the B5 result). Drivers for B2/B3/B4 committed (30dba49).
 
 ## IMMEDIATE FIRST STEP
 Read the KB plan (slug above) fully, then START by REVIEWING the untracked
@@ -69,8 +61,9 @@ run the sweeps.
   intro/contributions/tables) — a number must match the DB it cites.
 
 ## REMAINING (in order) — full detail in the KB plan
-1. B5 (#7b) n>=10^3 — run sweep_large_n.py (Sparse Rips at its design point,
-   n=1000/3000) -> large_n_sweep.db. NOT started.
+1. B5 (#7b) n>=10^3 — RUNNING serially; write the B5 LaTeX paragraph from
+   large_n_sweep.db results when it completes (Sparse Rips at its design point,
+   n=1000/3000).
 2. PAPER: insert the B2/B3/B4/B5 LaTeX paragraphs via Python line-surgery
    (B2 -> /tmp/B2_panel_paper.md, B3 -> /tmp/B3_hyperparam_paper.md,
    B4 -> /tmp/B4_fps_paper.md; B5 -> write after its sweep). pdflatex x2,
