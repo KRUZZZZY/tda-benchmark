@@ -1181,6 +1181,37 @@ the filtration CI on ECG200 straddles zero.
     sphere/torus and ECG200 filtration rows.}
 \end{table}
 
+\textbf{Two-way interactions qualify the stage decomposition.} The
+$\eta^2$/$F$ analysis of Table~\ref{tab:eta2} is main-effects-only:
+each stage's contribution is assessed in isolation. Because the
+factorial design varies all three stages jointly, we also fitted a
+three-way ANOVA with all two-way interaction terms to the fold-level
+accuracies of the repeated-CV sweeps (\texttt{repeated\_cv\_r25.db}
+for ECG200, $N{=}10500$ fold accuracies; \texttt{mnist\_repeated\_cv.db}
+for MNIST, $N{=}1400$). On ECG200 the two-way interactions are not
+negligible: the three interaction terms jointly carry
+$\omega^2 = 0.187$, which is \emph{147\% of the main-effect total}
+($0.127$). The filtration--vectorizer interaction ($\omega^2 = 0.092$)
+is the \emph{largest single effect in the model}, exceeding the
+vectorizer main effect ($0.086$); the vectorizer--classifier
+interaction ($0.089$) rivals it. On MNIST the interactions carry 50\%
+of the main-effect total ($0.103$ versus $0.206$), led by
+vectorizer--classifier ($0.054$) and filtration--vectorizer
+($0.047$). Fold-level $p$-values in this analysis are
+anti-conservative (folds within a configuration share training data),
+so the effect sizes --- the $\omega^2$ values --- are the robust
+quantities and the $p$-values are indicative. The practical
+implication is that the stages are \emph{not cleanly separable}: the
+effect of changing one stage depends on the levels at which the other
+two are held. Vectorization remains the largest single \emph{main}
+effect on both datasets, so the direction of the headline finding is
+unchanged, but the magnitude of the interaction terms shows that
+``which stage matters most'' is partly conditional on the other two
+stages, not a stage-intrinsic property. We therefore read the
+stage-dominance claim as \emph{dominance in main effect}, and treat
+the interaction structure as an explicit boundary condition on that
+claim.
+
 \textbf{Repeated cross-validation.} Because single-split point
 estimates are noisy (per-configuration SD across repetitions
 averages 1.27pp, max 3.33pp at 25 repetitions), the ECG200 analysis
