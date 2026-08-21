@@ -844,9 +844,20 @@ subsampling}: $n_{\text{target}}$ points are drawn without
 replacement from the full cloud, seeded deterministically per
 dataset. Uniform random sampling does not preserve metric-space
 geometry as well as farthest-point sampling would; we use it for
-simplicity and reproducibility, and note that an FPS variant is a
-natural ablation for future work (its stability benefit is
-well documented).
+simplicity and reproducibility. We measured whether the choice
+matters: farthest-point sampling (FPS) was compared against this
+uniform-random scheme on the synthetic sphere/torus clouds at
+two reduced resolutions ($k \in \{50, 15\}$ points per cloud)
+under both noise levels, over 2 filtrations $\times$ 2
+vectorizers $\times$ 2 classifiers (\texttt{fps\_ablation.db}).
+FPS provides no accuracy benefit on this task: the arms are
+indistinguishable at $k{=}50$ (100.00\% both), and at the
+degraded $k{=}15$ resolution uniform-random actually scores
+higher under $\sigma{=}0.30$ noise (99.81\% vs.~98.94\%); the
+overall FPS $-$ uniform delta is $-0.25$pp. On these
+classification tasks the uniform-random subsampling is
+adequate, so the paper's headline results are not an artefact
+of the subsampling scheme.
 
 \textbf{Noise model.} For the synthetic sphere/torus benchmark,
 additive isotropic Gaussian noise is applied directly to spatial
@@ -1893,6 +1904,54 @@ dominant, portable stage; the best vectorizer is data-set stable
 (Betti Curve), while filtration and classifier effects are
 secondary and dataset-specific.}
 
+
+\textbf{Stage-capable panel (two working filtrations per dataset).}
+The panel above ran a single filtration (Vietoris-Rips) on the
+time-series arm, so it could rank configurations but not compare the
+filtration stage against the vectorization stage on equal footing.
+To make the panel stage-capable, the same 9 datasets were re-run with
+two genuinely different working filtrations per modality ---
+Vietoris-Rips and the DTM-weighted Rips (giotto-tda
+\texttt{WeightedRipsPersistence}, weights $=$ DTM; Anai et al.)
+for the seven time series, cubical and Vietoris-Rips for the two image
+datasets --- across the same 4 vectorizers $\times$ 2 classifiers
+(16 configurations per dataset, 5-fold CV, seed as the sweep;
+\texttt{panel\_stagecapable.db}). The vectorizer stage still shows the
+larger range on seven of the nine datasets: the median vectorizer
+range is 3.32pp versus 1.37pp for the filtration stage. The
+filtration stage wins on the other two, and by comparable margins:
+HandOutlines (filtration range 4.22pp, driven by DTM at 75.74\%
+versus Vietoris-Rips 71.51\%) and 10-class MNIST (4.41pp, with
+Vietoris-Rips 33.61\% beating cubical 29.20\%). ECG200 reproduces the
+\S4.6 diverse-filtration result exactly (filtration range 2.81pp;
+DTM 76.19\% vs.~73.38\%), so the two sweeps are internally
+consistent. The stage ordering is therefore dataset-dependent: on
+most of the panel the vectorizer remains the binding constraint, but
+the filtration choice can matter as much on specific datasets, and
+this is visible only when the panel carries more than one genuinely
+different filtration per modality.
+
+\textbf{Hyperparameter-sensitivity: dominance is not a
+default-settings artefact.} The vectorizers differ in how many knobs
+they expose, so the marginal ranges above could in principle reflect
+unlucky defaults rather than representational capacity. To test
+this, each vectorizer's key hyperparameter (PersistenceImage
+$\sigma$/$n_\text{bins}$, PersistenceLandscape
+$n_\text{layers}$/$n_\text{bins}$, Silhouette and Betti
+$n_\text{bins}$) was swept one-parameter-at-a-time around the paper
+default on ECG200 (Vietoris-Rips) and binary MNIST (cubical), all
+other parameters held at the default, with the same
+$\{ \text{random\_forest}, \text{svm\_rbf} \}$ classifiers
+(\texttt{hyperparam\_sweep.db}). Giving every vectorizer its best
+tuned setting shrinks the vectorizer marginal range only slightly:
+5.75pp to 4.75pp on ECG200 and 1.75pp to 1.62pp on binary MNIST
+(classifier-averaged means). The dominance ordering survives at the
+per-vectorizer optimum on both datasets, and the best-tuned setting
+is often the default itself (Silhouette and Betti Curve on ECG200;
+three of four on MNIST). The reported stage ranges are therefore not
+an artefact of default hyperparameters; the one-parameter-at-a-time
+grid is a mild lower bound on tuning benefit because it does not
+search interactions, which favours the null hypothesis we reject.
 \textbf{TDA and raw features are complementary.} The classical
 baselines of \S4.3 beat TDA alone on both real datasets. To test
 whether TDA still adds value on top of raw features, the
