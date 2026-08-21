@@ -128,15 +128,15 @@ Statuses reflect the repo state at the time of recording (HEAD `c3ae98b`). "Part
 | 1 | 1 | Diversify the filtration menu (DTM, weighted Rips, lower-star, cubical variants) | 🟡 Partial | DTM-weighted Rips done (B1, 4c48a5c): filtration range 0.69->2.81pp, DTM beats VR on ECG200; lower-star/signed-distance-cubical pending |
 | 2 | 1 | Equal-footing stage stats (ω² lead, levels-matched, exclude degenerate scalars) | ✅ Done | 7-vs-3 confound; committed 28cc16e |
 | 3 | 1 | Two-way interaction ANOVA | ✅ Done | Data already in hand; committed dd51349 + 736a634 |
-| 4 | 2 | Scale panel + make it stage-capable | 🟡 Partial | 9-dataset VR-only panel exists; needs 2–3 filtrations + growth |
+| 4 | 2 | Scale panel + make it stage-capable | ✅ Done | B2 (30dba49): 9-dataset panel with 2 working filtrations per modality; vec range > fil range on 7/9 (median 3.32 vs 1.37pp); fil wins on HandOutlines + 10-class MNIST |
 | 5 | 2 | Repeated CV everywhere claims are | 🟡 Partial | ECG200 r=25 ✅; MNIST r=5; ECG5000/genus/panel single-split |
 | 6 | 2 | Topology-wins regime (Outex, dynamical systems, ModelNet, proteins) | 🔲 Open | Matched-genus = halfway |
 | 7 | 2 | Full 10-class MNIST + n≥10³ clouds | 🟡 Partial | 10-class MNIST ✅ (A3, 6f32a23); n≥10³ = B5 |
 | 8 | 3 | Learned vectorizers (PersLay / Hofer) | 🔲 Open | Potential novelty driver |
 | 9 | 3 | H₂ homology (Alpha-3D / Flood Complex) | 🔲 Open | Torus β₂ currently thrown away |
-| 10 | 3 | Hyperparameter-sensitivity arm | 🔲 Open | Answers default-settings artefact Q |
+| 10 | 3 | Hyperparameter-sensitivity arm | ✅ Done | B3 (30dba49): one-param-at-a-time grids; vec range 5.75→4.75pp (ECG200), 1.75→1.62pp (MNIST); dominance not a default-settings artefact |
 | 11 | 3 | Cross-library replication (GUDHI/Ripser-native) | 🔲 Open | Weak-alpha fragility already found |
-| 12 | 3 | FPS ablation | 🔲 Open | Closes limitation #1 on preprocessing |
+| 12 | 3 | FPS ablation | ✅ Done | B4 (30dba49): FPS vs uniform at k=50/15 on sphere/torus n0/n30; no benefit (−0.25pp overall; uniform wins at k=15/σ=0.30); limitation #1 closed |
 | 13 | 4 | Predictive theory (stability constant vs range) | 🔲 Open | Converts Ch. 2 to contribution |
 | 14 | 4 | Calibration / AUROC / per-class | ✅ Done | ECG5000 beyond-accuracy (92da848) |
 | 15 | 4 | Hierarchical model of stage effects | 🔲 Open | Replaces per-dataset η²/ω² patchwork |
