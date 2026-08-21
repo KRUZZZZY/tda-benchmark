@@ -269,6 +269,52 @@ def fig_pareto(cur):
     plt.close(fig)
 
 
+def fig_nemenyi_cd():
+    """B1 — critical-difference diagram from data/tda/multidataset_nemenyi.csv.
+
+    Horizontal bar chart: configs ordered by mean rank (1 = best), with a
+    CD-length bracket over the best config marking the Nemenyi-significant
+    cluster boundary (configs whose rank gap to the best exceeds CD are NOT
+    in the top cluster). Rank axis reversed (best at top/left).
+    """
+    csv_path = os.path.join(REPO, "..", "..", "data", "tda", "multidataset_nemenyi.csv")
+    if not os.path.exists(csv_path):
+        print("  [skip] fig_nemenyi_cd: multidataset_nemenyi.csv not found")
+        return
+    import csv
+    rows = list(csv.DictReader(open(csv_path)))
+    rows.sort(key=lambda r: float(r["mean_rank"]))
+    cd = float(rows[0]["cd"])
+    names = [r["config"] for r in rows]
+    ranks = [float(r["mean_rank"]) for r in rows]
+
+    fig, ax = plt.subplots(figsize=(9, 4.2))
+    y = np.arange(len(names))[::-1]  # best on top
+    colors = [ORANGE if i == 0 else GREY for i in range(len(names))]
+    ax.barh(y, ranks, height=0.55, color=colors, edgecolor=BLACK, linewidth=0.5)
+    ax.set_yticks(y)
+    ax.set_yticklabels(names, fontsize=8)
+    ax.invert_xaxis()  # rank 1 at right
+    ax.set_xlabel("Mean rank across 9 datasets (1 = best)")
+    ax.set_xlim(len(names) + 0.8, 0.2)
+    # CD bracket over the best config's rank
+    best = ranks[0]
+    ax.plot([best, best + cd], [y[0] + 0.45, y[0] + 0.45], color=BLACK,
+            linewidth=1.4, solid_capstyle="butt")
+    ax.plot([best, best], [y[0] + 0.35, y[0] + 0.55], color=BLACK, linewidth=1.2)
+    ax.plot([best + cd, best + cd], [y[0] + 0.35, y[0] + 0.55], color=BLACK, linewidth=1.2)
+    ax.text(best + cd / 2, y[0] + 0.62, f"CD = {cd:.2f}", ha="center",
+            va="bottom", fontsize=8)
+    ax.set_title("Nemenyi critical difference: config mean ranks across 9 datasets",
+                 fontsize=10)
+    ax.grid(axis="x", color=LIGHT, linewidth=0.5)
+    ax.set_axisbelow(True)
+    fig.tight_layout()
+    fig.savefig(os.path.join(OUT, "fig_nemenyi_cd.pdf"))
+    plt.close(fig)
+    print("  fig_nemenyi_cd.pdf")
+
+
 def main():
     con = sqlite3.connect(DB)
     cur = con.cursor()
@@ -278,6 +324,7 @@ def main():
     fig_noise_pds()
     fig_noise_curves(cur)
     fig_pareto(cur)
+    fig_nemenyi_cd()
     con.close()
     made = sorted(os.listdir(OUT))
     print(f"Wrote {len(made)} figures to {OUT}:")
