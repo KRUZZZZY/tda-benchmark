@@ -1164,6 +1164,27 @@ MNIST vectorizer 0.214 ([0.103, 0.540]) versus filtration 0.143
 vectorizer $\omega^2$ CI excludes zero on both real datasets, while
 the filtration CI on ECG200 straddles zero.
 
+\textbf{Full 10-class MNIST.} The binary-MNIST ordering is not
+scale-invariant. Re-running the same protocol on the full 10-class MNIST
+set (1000 samples, 100 per class; cubical and Vietoris-Rips filtrations,
+4 vectorizers, Random Forest and SVM-RBF, 5-fold CV reps 43--47;
+\texttt{data/tda/mnist10\_sweep.db}) flips the stage ordering: the
+filtration marginal range (4.53pp: cubical 29.1\% versus Vietoris-Rips
+33.7\%) now exceeds the vectorizer range (3.44pp: Betti Curve 33.4\% to
+Landscapes 30.0\%) and the classifier range (2.03pp). Within a single
+filtration the vectorizer span is larger --- cubical 10.40pp,
+Vietoris-Rips 9.10pp --- so the stage-dominance question is
+filtration-dependent (an interaction, \S4.1). Absolute accuracy is
+much lower than binary MNIST (best 37.8\%; chance 10\%), because
+ten-way separation is intrinsically harder. This is consistent with
+Conti et al.'s emphasis on filtration for multiclass images, but the
+swing we observe (4.53pp marginal; 9--10pp within a filtration) is far
+smaller than their reported 18\%--94\%, which used grid search,
+10-split CV and a broader filtration family. We therefore read the
+binary-MNIST result (vectorization dominant) as a binary-scale
+phenomenon: at 10-class scale, filtration becomes the larger marginal
+stage.
+
 \begin{table}[H]
   \centering
   \caption{$\eta^2$ variance decomposition of classification accuracy
