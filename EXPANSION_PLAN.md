@@ -131,14 +131,14 @@ Statuses reflect the repo state at the time of recording (HEAD `c3ae98b`). "Part
 | 4 | 2 | Scale panel + make it stage-capable | 🟡 Partial | 9-dataset VR-only panel exists; needs 2–3 filtrations + growth |
 | 5 | 2 | Repeated CV everywhere claims are | 🟡 Partial | ECG200 r=25 ✅; MNIST r=5; ECG5000/genus/panel single-split |
 | 6 | 2 | Topology-wins regime (Outex, dynamical systems, ModelNet, proteins) | 🔲 Open | Matched-genus = halfway |
-| 7 | 2 | Full 10-class MNIST + n≥10³ clouds | 🔲 Open | Direct Conti et al. test |
+| 7 | 2 | Full 10-class MNIST + n≥10³ clouds | 🟡 Partial | 10-class MNIST ✅ (A3, 6f32a23); n≥10³ = B5 |
 | 8 | 3 | Learned vectorizers (PersLay / Hofer) | 🔲 Open | Potential novelty driver |
 | 9 | 3 | H₂ homology (Alpha-3D / Flood Complex) | 🔲 Open | Torus β₂ currently thrown away |
 | 10 | 3 | Hyperparameter-sensitivity arm | 🔲 Open | Answers default-settings artefact Q |
 | 11 | 3 | Cross-library replication (GUDHI/Ripser-native) | 🔲 Open | Weak-alpha fragility already found |
 | 12 | 3 | FPS ablation | 🔲 Open | Closes limitation #1 on preprocessing |
 | 13 | 4 | Predictive theory (stability constant vs range) | 🔲 Open | Converts Ch. 2 to contribution |
-| 14 | 4 | Calibration / AUROC / per-class | 🟡 Partial | ECG5000 balanced accuracy only |
+| 14 | 4 | Calibration / AUROC / per-class | ✅ Done | ECG5000 beyond-accuracy (92da848) |
 | 15 | 4 | Hierarchical model of stage effects | 🔲 Open | Replaces per-dataset η²/ω² patchwork |
 | 16 | 5 | Fig 4.1 labels + Appendix A \texttt leak | 🔲 Open | Line 83 |
 | 17 | 5 | Ch. 6 practitioner decision tree | 🔲 Open | With evidence grades |
