@@ -1639,6 +1639,131 @@ benchmark of Somasundaram et al.\ \cite{somasundaram2021}); memory
 was not measured per stage (see Limitations).
 
 % ────────────────────────────────────────────────────────────
+\section{Multi-Dataset Generalisation}
+% ────────────────────────────────────────────────────────────
+
+The stage-impact analysis of \S4.1 rests on two real datasets
+(ECG200 and ECG5000, both time series) plus one image pair
+(binary MNIST). To test whether the vectorization-dominance
+ordering is a general property rather than a property of these
+instances, the same pipeline machinery was run on a wider benchmark
+panel: seven additional time-series datasets (FordA, FordB, Wafer,
+ElectricDevices, HandOutlines from the UCR archive) and two
+10-class image datasets (full MNIST and Fashion-MNIST, subsampled
+to 1000 stratified samples each for runtime), all through the
+repository's own runner with the paper's Takens embedding
+($d{=}3,\tau{=}1$; long series pre-subsampled to 100 points, uniform
+random with a fixed seed, matching the runner's subsampling
+convention --- disclosed because the runner's
+\texttt{subsample\_points} knob only fires on 3-D point-cloud
+input, so series length was capped at data-preparation time).
+This is the canonical Dem\v{s}ar multi-dataset protocol: one
+accuracy estimate per (dataset, configuration), ranked within each
+dataset, Friedman test across configurations, Nemenyi post-hoc
+critical difference.
+
+\begin{table}[H]
+  \centering
+  \caption{Multi-dataset panel (B1 sweep). All series are
+  Takens-embedded; the 9 datasets span time series and images,
+  binary and 10-class problems.}
+  \label{tab:multidataset_panel}
+  \footnotesize
+  \begin{tabular}{lcccc}
+    \toprule
+    Dataset & Modality & $n$ (used) & Length & Classes \\
+    \midrule
+    ECG200 & time series & 200 & 96 & 2 \\
+    ECG5000 & time series & 714 (subsample) & 140 & 5 \\
+    FordA & time series & 1000 & 500$\to$100 & 2 \\
+    FordB & time series & 1000 & 500$\to$100 & 2 \\
+    Wafer & time series & 1000 & 152$\to$100 & 2 \\
+    ElectricDevices & time series & 1000 & 96 & 7 \\
+    HandOutlines & time series & 1000 & 2709$\to$100 & 2 \\
+    MNIST (10-class) & image & 1000 & $28\times28$ & 10 \\
+    Fashion-MNIST & image & 1000 & $28\times28$ & 10 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The configuration grid per dataset was 16 configurations
+(2 filtrations $\times$ 4 vectorizers $\times$ 2 classifiers) on
+images (cubical + Vietoris-Rips) and 8 on time series
+(Vietoris-Rips only; see the weak-alpha note below).
+One 5-fold CV (seeds as the sweep) per (dataset, configuration).
+\textbf{Weak-alpha fragility finding.} The weak-alpha filtration
+crashes giotto-tda's own implementation on three of the seven
+time-series datasets: an \texttt{IndexError} in
+\texttt{\_weak\_alpha\_diagram} on the quantized Wafer and
+ElectricDevices series (degenerate Delaunay configurations) and the
+essential-class crash on ECG5000 described in \S4.1. It completes
+on FordA, FordB, HandOutlines and ECG200. The multi-dataset
+ranking therefore uses Vietoris-Rips only for the time-series arm;
+the weak-alpha fragility itself is a robustness result (a
+filtration that is not portable across datasets).
+
+\begin{figure}[H]
+  \centering
+\includegraphics[width=0.9\textwidth]{figures/fig_nemenyi_cd.pdf}
+  \caption{Nemenyi critical-difference diagram: configuration mean
+  ranks across the 9-dataset panel (1 = best). The bracket marks
+  the CD at $\alpha{=}0.05$; configurations outside it are
+  significantly worse than the best.}
+  \label{fig:nemenyi_cd}
+\end{figure}
+
+The Friedman test rejects the null of equal configurations at
+$\chi^2(7) = 33.22$ ($p = 2.4\times10^{-5}$; Iman--Davenport
+$F(7,56) = 8.93$, $p = 2.5\times10^{-7}$) over the 8 common
+configurations, and the Nemenyi critical difference is 2.58 mean
+rank units. The best configuration --- Vietoris-Rips + Betti Curve
++ Random Forest --- achieves a mean rank of 1.22 (best on six of
+the nine datasets) and is separated from the four weakest
+configurations by more than the CD. The vectorizer effect
+generalises: Betti Curve is the top vectorizer under both
+classifiers (mean rank 1.11 with random forest, 1.89 with SVM-RBF),
+Persistence Landscape is the weakest under both (3.78, 3.11), and
+the gap between them (2.67 units with random forest) exceeds the
+CD. The classifier effect is smaller (random forest beats SVM-RBF
+by 0.4--0.8 rank units, within the CD), matching the stage-impact
+result that vectorization moves accuracy more than the classifier.
+The cross-dataset ranking is therefore consistent with the
+within-dataset finding of \S4.1: \emph{vectorizer choice is the
+dominant, portable stage; the best vectorizer is data-set stable
+(Betti Curve), while filtration and classifier effects are
+secondary and dataset-specific.}
+
+\textbf{TDA and raw features are complementary.} The classical
+baselines of \S4.3 beat TDA alone on both real datasets. To test
+whether TDA still adds value on top of raw features, the
+concatenated feature vector $[\text{raw} \| \text{TDA}]$ was
+evaluated on ECG200 and MNIST binary under identical folds
+(\S4.3 protocol). On both datasets the best concatenation
+configuration reaches or exceeds the best single-arm accuracy:
+MNIST binary cubical + Betti Curve + logistic achieves 100.0\%
+(concat) versus 99.75\% (raw-only) and 98.0\% (TDA-only); ECG200
+weak-alpha + Betti Curve + logistic achieves 87.0\% versus 85.5\%
+(raw) and 78.5\% (TDA). The improvement is modest (0.25--1.5pp)
+but consistent and never harmful when the classifier handles TDA
+features; SVM-RBF collapses to the majority class on TDA features
+(66.5\% on ECG200) in both TDA-only and concatenated arms, so the
+concatenation benefit is confined to logistic and random forest.
+TDA therefore contributes complementary signal rather than
+redundancy, but the effect is small relative to the raw-feature
+baseline, and the paper's scoped claim stands: the contribution is
+the stage-importance decomposition and framework, not an
+absolute-accuracy win over classical methods.
+
+\textbf{Multi-patient ECG.} ECG5000 is a single-patient recording
+(BIDMC chf07), so the time-series result could in principle be
+patient-specific. This is addressed with the MIT-BIH Arrhythmia
+benchmark (48 records, 47 patients; AAMI-5 class protocol;
+patient-disjoint 5-fold CV; beat windows of 256 samples at 360~Hz,
+Takens-embedded to $254 \times 3$). [B2 results to be inserted on
+sweep completion.]
+
+% ────────────────────────────────────────────────────────────
+% ────────────────────────────────────────────────────────────
 \section{Operational Guidelines for Pipeline Selection}
 % ────────────────────────────────────────────────────────────
 
