@@ -1309,6 +1309,33 @@ is not an artefact of the specific ECG200 instance; a full
 multiclass generalisation claim would require multiple datasets
 (the probe is single-patient).
 
+\textbf{Beyond accuracy.} Plain accuracy on ECG5000 is dominated by
+the majority class (58.38\% in the full recording; 28.0\% in the
+balanced subsample). Re-running the grid and capturing per-fold
+probabilities (AUROC one-vs-rest macro, per-class
+precision/recall/$F_1$, multiclass Brier;
+\texttt{data/tda/beyond\_accuracy\_ecg5000.db}) shows three things.
+First, vectorization dominance holds on the rank scale: the vectorizer
+AUROC marginal range is 19.38pp (Betti Curve 77.6\%, Silhouette 77.5\%,
+Persistence Entropy 58.2\%) versus 11.90pp for the classifier and
+3.31pp for filtration --- the vectorizer is \emph{more} dominant
+under a class-imbalance-robust metric than under accuracy, because
+Persistence Entropy (a degenerate scalar) is worst on AUROC too.
+Second, the classifier range is driven by SVM-RBF's near-chance AUROC
+(0.47) on the entropy feature, i.e. the RBF classifier collapsed to the
+majority class there. Third, per-class recall exposes a severe
+imbalance failure that accuracy hides: the minor classes are largely
+unlearned (class 2, 96 samples, 17.6\% recall; class 3, 194 samples,
+34.5\%; class 4, 24 samples, 1.4\%, with Betti Curve and Silhouette at
+0\%), while the majority classes 0 and 1 are recovered at 76.5\% and
+72.0\%. So the reported accuracy (65.8\% best configuration) is
+carried almost entirely by the two largest classes; on extreme
+imbalance the TDA pipeline, like most discriminative classifiers,
+defaults to the majority. Calibration is likewise classifier-dependent:
+the multiclass Brier for the best configs (Random Forest) is 0.46--0.49
+versus 0.55--0.75 for SVM-RBF (Platt-scaled), so Random Forest is both
+better ranked and better calibrated here.
+
 \textbf{Cubical robustness check.} CubicalPersistence on ECG200
 operates on the $94 \times 3$ Takens-embedded array as a pixel grid
 (intensities are treated as coordinates), not on a point-cloud
