@@ -126,8 +126,8 @@ Statuses reflect the repo state at the time of recording (HEAD `c3ae98b`). "Part
 | # | Tier | Item | Status | Notes |
 |---|---|---|---|---|
 | 1 | 1 | Diversify the filtration menu (DTM, weighted Rips, lower-star, cubical variants) | 🔲 Open | Single most important change |
-| 2 | 1 | Equal-footing stage stats (ω² lead, levels-matched, exclude degenerate scalars) | 🔲 Open | 7-vs-3 confound |
-| 3 | 1 | Two-way interaction ANOVA | 🔲 Open | Data already in hand |
+| 2 | 1 | Equal-footing stage stats (ω² lead, levels-matched, exclude degenerate scalars) | ✅ Done | 7-vs-3 confound; committed 28cc16e |
+| 3 | 1 | Two-way interaction ANOVA | ✅ Done | Data already in hand; committed dd51349 + 736a634 |
 | 4 | 2 | Scale panel + make it stage-capable | 🟡 Partial | 9-dataset VR-only panel exists; needs 2–3 filtrations + growth |
 | 5 | 2 | Repeated CV everywhere claims are | 🟡 Partial | ECG200 r=25 ✅; MNIST r=5; ECG5000/genus/panel single-split |
 | 6 | 2 | Topology-wins regime (Outex, dynamical systems, ModelNet, proteins) | 🔲 Open | Matched-genus = halfway |
