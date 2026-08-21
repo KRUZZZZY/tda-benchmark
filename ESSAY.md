@@ -6,7 +6,7 @@
 > Its numbers predate the final 616-configuration sweep and are OUTDATED.
 > The authoritative source is `dissertation.tex` (6 chapters + 5 appendices).
 > Key corrections: 616 executed configs (not 88); ECG200 vectorizer range
-> 6.39pp, CI [6.13, 6.65] (not 1.9pp); MNIST cubical 98.0% vs VR 96.25%; noise survives to
+> 6.39pp, CI [6.13, 6.65] (not 1.9pp; now 6.39pp); MNIST cubical 98.0% vs VR 96.25%; noise survives to
 > σ=0.30 (not degrading after 0.15); Weak Alpha 3-21% faster than VR (not
 > 20-30%). This file is kept for structure/methodology reference only.
 

@@ -16,9 +16,10 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-# The runner resolves data paths relative to the parent project root
-# (runner.py: project_root = Path(__file__).parent.parent.parent),
-# i.e. AI_KOS_PROJECT/data/tda — matching the repo's AGENTS.md layout.
+# Dataset paths resolve relative to the parent project root
+# (AI_KOS_PROJECT/data/tda); the results DB path is fixed below by
+# rewriting the config's db_path to $DATA_DIR so write/delete/analysis
+# all hit the canonical location.
 DATA_DIR="$(cd ../.. && pwd)/data/tda"
 mkdir -p "$DATA_DIR/synthetic" "$DATA_DIR/ucr" "$DATA_DIR/images"
 

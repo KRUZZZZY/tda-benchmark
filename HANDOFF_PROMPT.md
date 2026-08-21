@@ -9,8 +9,8 @@ following the established process. Read everything before acting.
 ## PROJECT LOCATION
 - Paper + code: /home/kruzzzzy/Documents/AI_KOS_PROJECT/projects/tda-benchmark
   (repo: github.com/KRUZZZZY/tda-benchmark, branch main)
-- Current HEAD: 1392486 "fix: audit round 1 — tie-averaged Friedman/Nemenyi, Appendix D, peak-memory, r=25 harmonisation"
-- Paper: dissertation.tex (2325 lines, 54pp, compiles clean, 0 undefined refs, 0 multiply-defined)
+- Current HEAD: c3ae98b "fix: project-audit wave-1 writeback — run_all.sh heredoc+DB-path criticals, README/AGENTS/ESSAY/HANDOFF doc sync, ecg5000_lean __main__ guard, appendix script names, regenerate stale fig_noise_pds"
+- Paper: dissertation.tex (2326 lines, 54pp, compiles clean, 0 undefined refs, 0 multiply-defined)
 - STATUS: Batch A (A1-A9) and Batch B (B1-B3) are COMPLETE (commits 2f0d57d..1392486); wave-2 audit fixes in progress.
 - Venv: /home/kruzzzzy/Documents/AI_KOS_PROJECT/.venv-tda/bin/python
   (giotto-tda 0.6.2, sklearn 1.3.2, numpy 1.26.4, ripser 0.6.15, gudhi 3.13.0)
@@ -140,8 +140,8 @@ B3. TDA+raw concatenation ablation: does TDA add value ON TOP of raw features? T
 5. Commit + push after each batch. Write KB articles documenting outcomes.
 
 ## KEY NUMBERS TO RE-VERIFY (ground truth, from the DBs)
-- ECG200: vec 6.09pp [5.84,6.34], fil 0.70pp [0.35,1.04], clf 3.18pp [2.57,3.78];
-  eta^2 0.217/0.098/0.003; ordering stable 5/5; Friedman Q=10, p~0.0008
+- ECG200: vec 6.39pp [6.13,6.65], fil 0.69pp [0.57,0.81], clf 3.50pp [3.28,3.71];
+  eta^2 0.217/0.098/0.003; ordering stable 25/25; Friedman Q=50, p~1.4e-11
 - MNIST: vec 3.22pp, fil 1.65pp; eta^2 0.302 vs 0.166; best cubical 98.0 vs VR 96.25
 - sigma=0.30: mean 99.85% (112 configs), min 98.5%
 - Bottleneck: max 0.434 vs bound 2*sigma*sqrt(2 ln 100) ~ 1.82 (0.91 at sigma=0.15)
@@ -149,8 +149,8 @@ B3. TDA+raw concatenation ablation: does TDA add value ON TOP of raw features? T
 - Matched genus-1/2: norms 48-58%, TDA 99.75% clean / 95.83% sigma=0.30 (min 91%)
 - ECG5000: vec 24.89pp, fil 3.60pp (10 valid configs of 12; 2 NaN silhouette-on-weak-alpha)
 - Without-cubical ECG200: best 79.5%, vec 6.58pp, fil 0.34pp
-- Per-config SD across reps: mean 1.09pp, max 3.11pp; 83.0% best is 4th by repeated-CV
-  mean (79.6%, SD 1.98pp); cubical+PI+RF best in 4/5 reps (83.2%)
+- Per-config SD across reps: mean 1.09pp, max 3.11pp; single-split 83.0% ranks 3rd by
+  25-rep mean 79.30%; best cubical/PI/RF 82.82% mean
 
 ## DELIVERABLE WHEN DONE
 - All Batch A fixes applied + verified + committed + pushed

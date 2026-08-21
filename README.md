@@ -19,10 +19,12 @@ python scripts/generate_datasets.py --data-dir ../../data/tda
 # 3. Run benchmark (616-config sweep — takes ~2h serial)
 bash run_all.sh            # full pipeline incl. analysis
 
-# ...or run the sweep directly:
+# ...or run the sweep directly. Run from the AI_KOS_PROJECT root so the
+# config's relative db_path (data/tda/expanded_results.db) resolves to the
+# canonical data directory (cd ../.. from the repo root):
 python - <<'PY'
 import sys, importlib.util, os
-pkg_dir = os.path.abspath('.')
+pkg_dir = os.path.abspath('projects/tda-benchmark')
 spec = importlib.util.spec_from_file_location(
     "tda_benchmark", os.path.join(pkg_dir, "__init__.py"),
     submodule_search_locations=[pkg_dir])
@@ -30,11 +32,11 @@ pkg = importlib.util.module_from_spec(spec)
 sys.modules["tda_benchmark"] = pkg
 spec.loader.exec_module(pkg)
 from tda_benchmark.runner import run_benchmark
-run_benchmark("expanded_config.yaml", n_jobs=1)
+run_benchmark(os.path.join(pkg_dir, "expanded_config.yaml"), n_jobs=1)
 PY
 
 # 4. Analyze results
-python analysis.py ../../data/tda/expanded_results.db
+python projects/tda-benchmark/analysis.py data/tda/expanded_results.db
 ```
 
 > The repo directory is hyphenated (`tda-benchmark`), so it cannot be

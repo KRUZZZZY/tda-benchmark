@@ -9,6 +9,8 @@ venv/
 data/
 datasets/
 *.db
+*.npy
+*.arff
 
 # LaTeX build artifacts
 *.aux
