@@ -127,8 +127,7 @@ filtration, vectorization, and classifier --- each with multiple
 available methods. Which stage matters most? Benchmarking all three
 stages simultaneously in a controlled factorial sweep --- 616
 configurations across 6 dataset instances, 4 filtrations, 7
-vectorizers, and 4 classifiers (56 runs failed where point-cloud
-filtrations are incompatible with image data) --- we find that the
+vectorizers, and 4 classifiers (56 runs failed and were excluded) --- we find that the
 vectorization stage dominates classification-accuracy variance on both
 real datasets: on ECG200 time series (Takens-embedded) it has a
 marginal range of 6.39pp across 7 vectorizers (95\% CI [6.13, 6.65];
@@ -263,8 +262,7 @@ stage. Specifically:
     time series with Takens embedding, vectorization dominates
     classification accuracy: a 6.39pp marginal range across 7
     vectorizers (95\% CI [6.13, 6.65]), versus 0.69pp across 3
-    filtrations (95\% CI [0.57, 0.81]; small but statistically
-    non-zero) and 3.50pp across 4 classifiers (95\% CI [3.28,
+    filtrations (95\% CI [0.57, 0.81]; small but with a repeated-CV CI excluding zero) and 3.50pp across 4 classifiers (95\% CI [3.28,
     3.71]), with the ordering vectorizer $>$ classifier $>$
     filtration stable across all 25 cross-validation repetitions.
     On binary MNIST the vectorizer again dominates (marginal range
@@ -702,7 +700,7 @@ The silhouette of a diagram weights the landscape tent functions of
 with $q = 1$ in our configuration; evaluating $\phi$ at
 $n_{\text{bins}}$ points yields $n_{\text{bins}}$ features per
 homology dimension. Silhouette is the top-performing vectorizer on
-ECG200 (\S4.1).
+ECG200 in the single-split marginal (\S4.1).
 
 \paragraph{Amplitude}.
 The amplitude of a diagram is its distance to the empty diagram in a
@@ -726,7 +724,7 @@ normalise $q_i = \pers_i / \sum_j \pers_j$ and define
 \end{equation}
 one scalar per homology dimension measuring how concentrated the
 persistence mass is. Entropy is the weakest vectorizer on ECG200
-(marginal 69.3\%, \S4.1): information content is not monotone in
+(single-split marginal 69.3\%, \S4.1): information content is not monotone in
 representational simplicity.
 
 \begin{figure}[H]
@@ -747,7 +745,7 @@ executed in Chapter~4:
 \begin{itemize}
   \item \textbf{Simplicial complex size} (\S2.1--\S2.2): VR's
     $O(n^3)$ 2-simplex count versus weak Alpha's $O(n^2)$ drives the
-    3--21\% wall-clock speed gap measured in \S4.3. The Nerve
+    3--27\% wall-clock speed gap measured in \S4.3. The Nerve
     Theorem guarantees that the full Alpha complex's speed advantage
     does not cost geometric fidelity; the executed
     \texttt{WeakAlphaPersistence} is an approximation of that
@@ -896,7 +894,7 @@ which captures the between-split variance directly;
 per-configuration intervals use the Nadeau--Bengio corrected
 resampled estimator $\mathrm{SE}^2 = (1/(kr) + n_2/n_1)\, s^2$ over
 the $kr = 25$ fold accuracies. Per-configuration accuracy varies
-across repetitions with mean SD 1.09pp (max 3.11pp), so single-split
+across repetitions with mean SD 1.09pp (max 3.11pp, $r{=}5$), so single-split
 point estimates are noisy. Stage dominance is quantified primarily
 by an $\eta^2$ variance decomposition --- a main-effects-only
 three-way ANOVA over per-config means and over fold-level
@@ -960,7 +958,7 @@ while cubical + Persistence Image + Random Forest is best in 4 of 5
 repetitions (83.2\% mean, $r{=}5$; \S4.1). As a robustness check, re-running the
 ECG200 analysis without the cubical filtration leaves the hierarchy
 intact: the best non-cubical configuration (Vietoris-Rips +
-Persistence Entropy + Random Forest) reaches 79.5\%, with vectorizer
+Persistence Entropy + Random Forest) reaches 79.5\% (single-split), with vectorizer
 range 6.58pp versus filtration 0.34pp (\S4.1). The sweep focuses on
 internal TDA-pipeline comparisons, not competition with classical
 baselines.
@@ -1052,10 +1050,11 @@ is an order of magnitude larger than filtration (0.69pp across 3
 filtrations in the 25-repetition sweep; 0.70pp across 4 including
 Sparse Rips at $r{=}5$), and the ordering vectorizer $>$ classifier
 $>$ filtration was stable across all 25 CV repetitions. This
-ordering is significant under exact non-parametric inference on the
+ordering is significant under non-parametric inference on the
 25 repetition-level stage rankings: the Friedman statistic
 $Q = \frac{12n}{k(k+1)}\sum_j (\bar{R}_j - \frac{k+1}{2})^2 = 50$
-for $k{=}3$ stages and $n{=}25$ repetitions ($p \approx 1.4\times10^{-11}$); pairwise, the vectorizer-margin
+for $k{=}3$ stages and $n{=}25$ repetitions (asymptotic $\chi^2$-tail
+$p \approx 1.4\times10^{-11}$; exact permutation $p \approx 2\times10^{-19}$); pairwise, the vectorizer-margin
 exceeds the filtration-margin in all 25 repetitions (one-sided sign
 test $p = (1/2)^{25} = 3\times10^{-8}$). The variance
 decomposition of Table~\ref{tab:eta2} is the primary evidence for
@@ -1068,9 +1067,9 @@ Cubical filtration leads at 73.15\%, with Vietoris-Rips (72.89\%)
 and Weak Alpha (72.74\%) within 0.41pp.
 
 \textbf{Simple versus complex.} Persistence Statistics matches
-kernel-based methods on ECG200: its marginal accuracy (74.8\%) is
-within 0.3pp of Persistence Landscapes (75.1\%), and the two split
-the 16 filtration--classifier cells (Statistics wins 8 of 16).
+kernel-based methods on ECG200: its $r{=}5$ marginal accuracy (74.8\%) is
+within 0.3pp of Persistence Landscapes (75.1\%), and it wins or ties
+in most of the 16 $r{=}5$ filtration--classifier cells.
 Statistics likewise leads Persistence Images (72.9\%). On MNIST
 binary, Persistence Statistics reaches 95.9\% marginal accuracy,
 within 2.1pp of the best configuration overall (Cubical + Betti
@@ -1218,7 +1217,7 @@ replicates the hierarchy: vectorizer marginal range 24.89pp versus
 filtration 3.60pp (plain accuracy, point estimate, single split);
 balanced accuracy per vectorizer is 0.46--0.47 (Betti Curve,
 Silhouette) versus 0.28 (Persistence Entropy) and macro-$F_1$
-0.50--0.51 versus 0.12--0.34, so vectorization dominates under
+0.50--0.51 versus 0.12--0.38, so vectorization dominates under
 class-balanced metrics too. Vectorization dominance on time series
 is not an artefact of the specific ECG200 instance; a full
 multiclass generalisation claim would require multiple datasets
@@ -1229,7 +1228,7 @@ operates on the $94 \times 3$ Takens-embedded array as a pixel grid
 (intensities are treated as coordinates), not on a point-cloud
 filtration. Excluding cubical from the ECG200 analysis leaves the
 hierarchy intact: the best non-cubical configuration
-(Vietoris-Rips + Persistence Entropy + Random Forest) reaches 79.5\%,
+(Vietoris-Rips + Persistence Entropy + Random Forest) reaches 79.5\% (single-split),
 the vectorizer range widens slightly to 6.58pp, and the filtration
 range drops to 0.34pp.
 
@@ -1264,7 +1263,7 @@ numbers of \S4.1):
   \centering
   \caption{Non-topological baselines (25-repetition repeated CV, mean
   $\pm$ 95\% CI over repetitions). Majority-class rows give the
-  trivial-separator floor.}
+  trivial-separator floor. TDA best rows are single-split point estimates.}
   \label{tab:baselines}
   \small
   \begin{tabular}{llccc}
@@ -1433,12 +1432,12 @@ of the library floor.
   \label{fig:pareto}
 \end{figure}
 
-Weak Alpha is 3--21\% faster than VR at identical accuracy on
+Weak Alpha is 3--27\% faster than VR at identical accuracy on
 sphere/torus with Landscape+SVM (measured 3.5--3.9s vs.~3.9--4.4s
 across the four noise levels; the gap narrows at $\sigma=0.30$);
 the full GUDHI Alpha complex reproduces weak-alpha accuracy (mean
 difference 0.0--0.8pp) at 2--5$\times$ the cost. Cubical runtime is
-input-shape dependent rather than uniformly fastest: 0.6--2.3s per
+input-shape dependent rather than uniformly fastest: 0.6--2.2s per
 configuration on the sphere/torus and ECG200 instances, but
 3.1--12.7s on $28 \times 28$ MNIST images. The
 Nerve Theorem
@@ -1609,7 +1608,7 @@ dataset (binary MNIST); the image claim rests on one dataset.
 (giotto-tda); cross-library variance unknown. (6)~No learned
 vectorizers (PersLay \cite{carriere2020}, Hofer input layers \cite{hofer2017}). (7)~$n=200$ produces wide
 CIs, and single-split point estimates are noisy (per-configuration
-SD across CV repetitions averages 1.09pp). Each limitation suggests
+SD across CV repetitions averages 1.09pp, $r{=}5$). Each limitation suggests
 a concrete future-work item:
 $H_2$ via Flood Complex \cite{graf2025}; additional multi-class
 datasets (full MNIST, Outex) to test whether Conti et al.'s large
@@ -1768,7 +1767,7 @@ MNIST binary cubical + Betti Curve + logistic achieves 100.0\%
 (concat) versus 99.65\% (raw-only, 25-rep) and 98.0\% (TDA-only);
 ECG200 weak-alpha + Betti Curve + logistic achieves 87.0\% (concat)
 versus 85.28\% (raw logistic, 25-rep) and 72.5\% (TDA-only, same
-configuration). The improvement is modest (0.25--1.5pp)
+configuration). The improvement is modest (0.35--1.72pp against the 25-repetition raw baselines)
 but consistent and never harmful when the classifier handles TDA
 features; SVM-RBF collapses to the majority class on TDA features
 (66.5\% on ECG200) in both TDA-only and concatenated arms, so the
@@ -1825,9 +1824,9 @@ would strengthen or qualify each entry.
     \toprule
     Data Modality & Filtration & Vectorizer & Classifier & Rationale \\
     \midrule
-    Low-dim.~point clouds ($\le 3$D, clean) & Weak Alpha & Pers.~Statistics or Landscapes & SVM (RBF) or Logistic & Weak Alpha 3--21\% faster than VR at identical accuracy; full-complex fidelity verified empirically (0.0--0.8pp at 2--5$\times$ cost) \\
-    Delay-embedded time series ($d \ge 3$) & VR or Weak Alpha & Pers.~Landscapes & RF or SVM (RBF) & Vectorization dominates variance (6.39pp on ECG200; 24.89pp on ECG5000) \\
-    High-noise clouds ($\sigma \ge 0.15$) & Weak Alpha or VR & Pers.~Landscapes & SVM (RBF) & All vectorizers maintain $\ge 98.5\%$ at $\sigma=0.30$ (minimum over configurations); measured $d_B$ far below the stability bound \\
+    Low-dim.~point clouds ($\le 3$D, clean) & Weak Alpha & Pers.~Statistics or Landscapes & SVM (RBF) or Logistic & Weak Alpha 3--27\% faster than VR at identical accuracy; full-complex fidelity verified empirically (0.0--0.8pp at 2--5$\times$ cost) \\
+    Delay-embedded time series ($d \ge 3$) & VR or Weak Alpha & Betti Curves & RF or SVM (RBF) & Vectorization dominates variance (6.39pp on ECG200; 24.89pp on ECG5000) \\
+    High-noise clouds ($\sigma \ge 0.15$) & Weak Alpha or VR & Betti Curves & SVM (RBF) & All vectorizers maintain $\ge 98.5\%$ at $\sigma=0.30$ (minimum over configurations); measured $d_B$ far below the stability bound \\
     Large-scale clouds ($n \ge 10^3$) & Sparse Rips & Pers.\ Images or Betti Curves & Random Forest & Sparse Rips designed for $n \ge 10^3$; its benefit is untestable at $n=100$ in this sweep \\
     \bottomrule
   \end{tabularx}
@@ -2115,16 +2114,17 @@ configuration subsets.
 \begin{quote}\small
 \textbf{Provenance note.} The Takens sensitivity sweep below is
 produced by the repository's own runner worker on the full grid
-$d \in \{2,3,4\} \times \tau \in \{1,2,3\}$ (72 completed runs;
+$d \in \{2,3,4\} \times \tau \in \{1,2,3\}$ (72 grid cells;
 \texttt{data/tda/takens\_sweep.db}, CV seeds 43), additive and fully
 reproducible. At $d{=}2$ the weak-alpha filtration on 2-D embedded
-clouds produces essential $H_1$ classes (death $= +\infty$), and the
+clouds produces essential $H_1$ classes (death $= +\infty$), so the
 six $d{=}2$ weak-alpha $\times$ persistence-image cells crash
-giotto-tda (the infinite deaths reach PersistenceImage's internal
-integer cast); these six cells are excluded from the table below.
-The table therefore reports the 72 completed runs. This exclusion
-is the standard treatment equivalent to giotto's own landscape/Betti
-handling of essential classes.
+giotto-tda natively (the infinite deaths reach PersistenceImage's
+internal integer cast). These cells were completed by clipping the
+infinite deaths to the maximum finite death (flagged in the database,
+runs 73--78), and the table below includes these clipped cells. This
+clipping is the standard treatment equivalent to giotto's own
+landscape/Betti handling of essential classes.
 \end{quote}
 
 \subsection*{Takens Embedding Sensitivity}
