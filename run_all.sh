@@ -40,8 +40,13 @@ fi
 echo "[3/4] Running benchmark sweep (fresh DB, this takes ~2h)..."
 # Idempotency: start from a clean results DB so a re-run cannot double rows.
 rm -f "$DATA_DIR/expanded_results.db"
-python - <<'PY'
-import sys, importlib.util, os
+# NJOBS must be assigned BEFORE the heredoc: the heredoc is unquoted (<<PY)
+# so ${NJOBS} / ${DATA_DIR} below expand at heredoc-parse time. A quoted
+# heredoc (<<'PY') would pass the literal text to Python and raise
+# SyntaxError on ${NJOBS}.
+NJOBS=${TDA_NJOBS:-1}
+python - <<PY
+import sys, importlib.util, os, tempfile
 # The repo dir is hyphenated (tda-benchmark), so register it as the
 # importable package name tda_benchmark (matches relative imports in *.py).
 pkg_dir = os.path.abspath(os.getcwd())
@@ -52,7 +57,24 @@ pkg = importlib.util.module_from_spec(spec)
 sys.modules["tda_benchmark"] = pkg
 spec.loader.exec_module(pkg)
 from tda_benchmark.runner import run_benchmark
-run_benchmark("expanded_config.yaml", n_jobs=${TDA_NJOBS:-1})
+# The config's output.db_path is relative to CWD (repo root), but the
+# rm -f above and analysis.py below use the canonical absolute path
+# AI_KOS_PROJECT/data/tda/expanded_results.db. Rewrite the config with the
+# canonical path so the fresh DB is written where it is deleted/analysed.
+with open(os.path.join(pkg_dir, "expanded_config.yaml")) as fh:
+    cfg_text = fh.read()
+if "db_path: data/tda/expanded_results.db" not in cfg_text:
+    raise SystemExit("expanded_config.yaml: expected db_path line not found")
+cfg_text = cfg_text.replace(
+    "db_path: data/tda/expanded_results.db",
+    "db_path: ${DATA_DIR}/expanded_results.db")
+fd, tmp_cfg = tempfile.mkstemp(suffix=".yaml")
+with os.fdopen(fd, "w") as fh:
+    fh.write(cfg_text)
+try:
+    run_benchmark(tmp_cfg, n_jobs=${NJOBS})
+finally:
+    os.remove(tmp_cfg)
 PY
 
 echo "[4/4] Generating analysis report..."

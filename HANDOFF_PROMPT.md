@@ -9,8 +9,9 @@ following the established process. Read everything before acting.
 ## PROJECT LOCATION
 - Paper + code: /home/kruzzzzy/Documents/AI_KOS_PROJECT/projects/tda-benchmark
   (repo: github.com/KRUZZZZY/tda-benchmark, branch main)
-- Current HEAD: 61d0a1d "fix: round-2 review responses — integrity, EVT arithmetic, disclosures"
-- Paper: dissertation.tex (~2080 lines, 50pp, compiles clean, 0 undefined refs, 0 multiply-defined)
+- Current HEAD: 1392486 "fix: audit round 1 — tie-averaged Friedman/Nemenyi, Appendix D, peak-memory, r=25 harmonisation"
+- Paper: dissertation.tex (2325 lines, 54pp, compiles clean, 0 undefined refs, 0 multiply-defined)
+- STATUS: Batch A (A1-A9) and Batch B (B1-B3) are COMPLETE (commits 2f0d57d..1392486); wave-2 audit fixes in progress.
 - Venv: /home/kruzzzzy/Documents/AI_KOS_PROJECT/.venv-tda/bin/python
   (giotto-tda 0.6.2, sklearn 1.3.2, numpy 1.26.4, ripser 0.6.15, gudhi 3.13.0)
 - Results DBs: /home/kruzzzzy/Documents/AI_KOS_PROJECT/data/tda/

@@ -73,10 +73,10 @@ projects/tda-benchmark/
 
 ## Key Findings
 
-1. **Stage importance is modality-dependent** — vectorization dominates on time series (ECG200: 6.1pp marginal range across 7 vectorizers, 95% CI [4.8, 7.4]); filtration dominates on images (MNIST: cubical 98.0% vs Vietoris-Rips 96.25%). Qualifies the widely cited claim that filtration always dominates.
-2. **Simple beats complex** — Persistence Statistics match kernel-based vectorizers on real data with zero hyperparameters (ECG200: 75.2% vs Landscapes 74.7%)
+1. **Stage importance is modality-dependent** — vectorization dominates on time series (ECG200: 6.39pp marginal range across 7 vectorizers, 95% CI [6.13, 6.65]); the vectorizer ordering transfers across a 9-dataset panel. Filtration effects are small on time series (0.69pp) and modest on images (cubical 98.0% vs Vietoris-Rips 96.25% best-of-family).
+2. **Simple beats complex** — Persistence Statistics match kernel-based vectorizers on real data with zero hyperparameters (ECG200: Landscapes 75.32% marginal)
 3. **Cubical wins on images** — the grid-aligned filtration captures image topology that point-cloud filtrations destroy
-4. **Alpha > VR on 3D point clouds** — 11-21% faster at identical accuracy (measured on sphere/torus, Landscape+SVM)
+4. **Weak Alpha > VR on 3D point clouds** — 3-21% faster at identical accuracy (measured on sphere/torus, Landscape+SVM)
 5. **Noise robustness** — the topological signal survives Gaussian noise to σ=0.30 (99.85% mean accuracy on the 112 sphere/torus configs at that level, min 98.5%)
 6. **Non-linear classifiers help on real data** — little benefit on clean synthetic
 7. **Stages interact** — best vectorizer depends on filtration and classifier choice
@@ -113,7 +113,7 @@ If you use this benchmark in your research, please cite:
   author = {AI-KOS TDA Benchmark},
   title = {A Systematic Benchmark of Persistent Homology Pipelines for Classification},
   year = {2026},
-  note = {616-configuration benchmark: 6 datasets × 4 filtrations × 7 vectorizations × 4 classifiers},
+  note = {616-configuration benchmark: 6 datasets × 112 configurations each (672 grid, 56 image-incompatible excluded)},
 }
 ```
 
