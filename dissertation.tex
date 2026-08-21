@@ -1018,23 +1018,27 @@ $F$-tests) to test whether the range exceeds sampling noise.
 \begin{table}[H]
   \centering
   \caption{Marginal accuracy by pipeline stage on ECG200
-  (repeated CV, 5 repetitions).}
+  (repeated CV, 25 repetitions).}
   \label{tab:stage_impact}
   \begin{tabular}{lcccc}
     \toprule
     Stage & Top Performer & Marg.\ Acc. & Range (95\% CI) & $p$-value \\
     \midrule
-    Filtration & Cubical & 73.4\% & 0.70pp [0.35, 1.04] & 0.81 \\
-    Vectorizer & Landscapes & 75.1\% & 6.09pp [5.84, 6.34] & $5\times10^{-12}$ \\
-    Classifier & Random Forest & 75.2\% & 3.18pp [2.57, 3.78] & $1\times10^{-6}$ \\
+    Filtration & Cubical & 73.15\% & 0.69pp [0.57, 0.81] & 0.81 \\
+    Vectorizer & Landscapes & 75.32\% & 6.39pp [6.13, 6.65] & $5\times10^{-12}$ \\
+    Classifier & Random Forest & 75.29\% & 3.50pp [3.28, 3.71] & $1\times10^{-6}$ \\
     \bottomrule
   \end{tabular}
 
   \vspace{0.2cm}
   \footnotesize{Ranges, CIs, and marginal accuracies are repeated-CV
-    values (means across five independent splits, seeds 43--47): the
-    range is the mean over repetitions of the per-split marginal
-    range, with a 95\% $t$-interval across the five per-split ranges.
+    values (25 repetitions of stratified 5-fold CV, seeds 43--67;
+    Sparse Rips dropped for runtime, so the config space is 84
+    configurations): the range is the mean over repetitions of the
+    per-split marginal range, with a 95\% $t$-interval across the 25
+    per-split ranges (repeated-measures CI; Nadeau--Bengio corrected
+    resampled CIs are wider: vectorizer [5.69, 7.10], classifier
+    [2.92, 4.07], filtration [0.37, 1.01], all excluding zero).
     $p$-values are $F$-test $p$-values from the per-configuration
     three-way ANOVA (the fold-level panel below is descriptive:
     folds within a configuration share training data, so its $p$-values
@@ -1044,26 +1048,26 @@ $F$-tests) to test whether the range exceeds sampling noise.
     three stage comparisons.}
 \end{table}
 
-Vectorization dominates: its range (6.09pp across 7 vectorizers)
-is an order of magnitude larger than filtration (0.70pp across 4
-filtrations), and the ordering vectorizer $>$ classifier $>$
-filtration was stable across all five CV repetitions. This
+Vectorization dominates: its range (6.39pp across 7 vectorizers)
+is an order of magnitude larger than filtration (0.69pp across 3
+filtrations in the 25-repetition sweep; 0.70pp across 4 including
+Sparse Rips at $r{=}5$), and the ordering vectorizer $>$ classifier
+$>$ filtration was stable across all 25 CV repetitions. This
 ordering is significant under exact non-parametric inference on the
-five repetition-level stage rankings: the Friedman statistic
-$Q = \frac{12n}{k(k+1)}\sum_j (\bar{R}_j - \frac{k+1}{2})^2 = 10$
-for $k{=}3$ stages and $n{=}5$ repetitions, exceeding the exact 5\%
-critical value 6.40 (one-sided $p \approx 0.0008$); pairwise, the
-vectorizer-margin exceeds the filtration-margin in all five
-repetitions (one-sided sign test $p = (1/2)^5 = 0.031$). The variance
+25 repetition-level stage rankings: the Friedman statistic
+$Q = \frac{12n}{k(k+1)}\sum_j (\bar{R}_j - \frac{k+1}{2})^2 = 50$
+for $k{=}3$ stages and $n{=}25$ repetitions (one-sided
+$p \approx 1.4\times10^{-11}$); pairwise, the vectorizer-margin
+exceeds the filtration-margin in all 25 repetitions (one-sided sign
+test $p = (1/2)^{25} = 3\times10^{-8}$). The variance
 decomposition of Table~\ref{tab:eta2} is the primary evidence for
 this ordering: on ECG200 the vectorizer explains 21.7\% of the
 per-config variance (fold-level 10.6\%), the classifier 9.8\%
 (4.8\%), and the filtration 0.3\% (0.1\%). The top-performing
-vectorizer, Persistence Landscapes, achieves 75.1\% marginal
-accuracy versus 69.2\% for Persistence Entropy (the weakest).
-Cubical filtration leads at 73.4\%, with Vietoris-Rips (73.1\%) and
-Sparse Rips (73.0\%) within 0.03pp of each other and Weak Alpha
-(72.8\%) 0.6pp lower.
+vectorizer, Persistence Landscapes, achieves 75.32\% marginal
+accuracy versus 68.95\% for Persistence Entropy (the weakest).
+Cubical filtration leads at 73.15\%, with Vietoris-Rips (72.89\%)
+and Weak Alpha (72.74\%) within 0.41pp.
 
 \textbf{Simple versus complex.} Persistence Statistics matches
 kernel-based methods on ECG200: its marginal accuracy (74.8\%) is
@@ -1114,7 +1118,16 @@ the variance versus 0.098 for the classifier and 0.003 for the
 filtration; on MNIST the vectorizer again leads (0.302) over the
 filtration (0.166). Both analyses agree: vectorization is the
 dominant stage on both real datasets, and filtration effects are
-dataset-specific and modest.
+dataset-specific and modest. The $\omega^2$ population effect size
+(corrected for the number of levels; recomputed from the
+25-repetition ECG200 sweep, 84 configurations) confirms the ordering
+under the design penalty: ECG200 vectorizer $\omega^2 = 0.165$
+(bootstrap 95\% CI [0.063, 0.423]) versus classifier 0.077
+([0.003, 0.246]) and filtration $-0.017$ ([$-0.018$, 0.094]);
+MNIST vectorizer 0.214 ([0.103, 0.540]) versus filtration 0.143
+([0.040, 0.312]) and classifier 0.032 ([$-0.015$, 0.257]). The
+vectorizer $\omega^2$ CI excludes zero on both real datasets, while
+the filtration CI on ECG200 straddles zero.
 
 \begin{table}[H]
   \centering
@@ -1169,15 +1182,19 @@ dataset-specific and modest.
 
 \textbf{Repeated cross-validation.} Because single-split point
 estimates are noisy (per-configuration SD across repetitions
-averages 1.09pp, max 3.11pp), the ECG200 analysis was re-run with
-repeated CV (5 repetitions of the same stratified 5-fold protocol).
-Table~\ref{tab:stage_impact} reports the repeated-CV ranges and CIs;
-the ordering vectorizer $>$ classifier $>$ filtration was stable in
-all five repetitions. Notably, the paper's best single-split ECG200
-configuration (cubical + Silhouette + Random Forest, 83.0\%)
-ranks fourth by repeated-CV mean (79.6\%, SD 1.98pp), while cubical
-+ Persistence Image + Random Forest is best in 4 of 5 repetitions
-(83.2\% mean). Differences below $\sim$1pp between individual
+averages 1.27pp, max 3.33pp at 25 repetitions), the ECG200 analysis
+was re-run with repeated CV (25 repetitions of the same stratified
+5-fold protocol, seeds 43--67). Table~\ref{tab:stage_impact}
+reports the repeated-CV ranges and CIs; the ordering vectorizer $>$
+classifier $>$ filtration was stable in all 25 repetitions.
+Increasing from $r{=}5$ to $r{=}25$ narrows the repeated-measures
+CI widths by $\sim$3$\times$ (filtration 0.69pp $\to$ 0.24pp,
+classifier 1.20pp $\to$ 0.43pp) at no change to the ordering.
+Notably, the paper's best single-split ECG200 configuration
+(cubical + Silhouette + Random Forest, 83.0\%)
+ranks third by 25-repetition mean (79.30\%, SD 1.27pp), while cubical
++ Persistence Image + Random Forest is best overall
+(82.82\% mean). Differences below $\sim$1pp between individual
 configurations should not be over-interpreted.
 
 \textbf{Generality probe: ECG5000.} To test whether

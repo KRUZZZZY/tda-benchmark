@@ -97,6 +97,10 @@ def anova_3way(rows: list[tuple]) -> dict:
             s += len(ys) * (ys.mean() - grand) ** 2
         ss[k] = float(s)
     ss_err = ss_tot - sum(ss.values())
+    # Clamp: with bootstrap-resampled rows (duplicates), the between-level SS can
+    # overshoot ss_tot by ~1e-5 (numerical artifact), which would make ms_err
+    # negative and F/omega2 NaN. True residual SS is >= 0 by definition.
+    ss_err = max(ss_err, 0.0)
     dfs = {k: len(levels[k]) - 1 for k in idx}
     df_err = len(y) - 1 - sum(dfs.values())
     ms_err = ss_err / df_err if df_err > 0 else float("nan")
@@ -113,20 +117,31 @@ def anova_3way(rows: list[tuple]) -> dict:
 
 
 def bootstrap_omega2(rows: list[tuple], n_iter: int = N_BOOT, seed: int = 42) -> dict:
-    """Resample configurations with replacement; percentile CI for omega2 per stage."""
+    """Resample configurations with replacement; percentile CI for omega2 per stage.
+
+    Degenerate draws (resamples where the naive main-effects SS decomposition
+    overshoots SS_total, making ms_err <= 0 and omega2 undefined) are dropped
+    and counted; they are ~1% of draws at N=56 and ~0% at N=84.
+    """
     arr = np.array(rows, dtype=object)
     rng = np.random.default_rng(seed)
     boot = {"filtration": [], "vectorizer": [], "classifier": []}
+    dropped = 0
     for _ in range(n_iter):
         idx = rng.integers(0, len(arr), size=len(arr))
         a = anova_3way(list(arr[idx]))
+        o = {k: a[k]["omega2"] for k in boot}
+        if any(np.isnan(v) for v in o.values()):
+            dropped += 1
+            continue
         for k in boot:
-            boot[k].append(a[k]["omega2"])
+            boot[k].append(o[k])
     out = {}
     for k, vals in boot.items():
         lo, hi = np.percentile(vals, [100 * ALPHA / 2, 100 * (1 - ALPHA / 2)])
         out[k] = {"omega2_mean": float(np.mean(vals)),
-                  "ci95": [float(lo), float(hi)], "n_iter": n_iter}
+                  "ci95": [float(lo), float(hi)], "n_iter": len(vals),
+                  "n_dropped": dropped}
     return out
 
 
