@@ -131,8 +131,8 @@ vectorizers, and 4 classifiers (56 runs failed where point-cloud
 filtrations are incompatible with image data) --- we find that the
 vectorization stage dominates classification-accuracy variance on both
 real datasets: on ECG200 time series (Takens-embedded) it has a
-marginal range of 6.09pp across 7 vectorizers (95\% CI [5.84, 6.34];
-$\eta^2 = 0.217$) versus 0.70pp for filtration (95\% CI [0.35, 1.04]),
+marginal range of 6.39pp across 7 vectorizers (95\% CI [6.13, 6.65];
+$\eta^2 = 0.217$) versus 0.69pp for filtration (95\% CI [0.57, 0.81]),
 and on binary MNIST it again leads (3.22pp; $\eta^2 = 0.302$) while
 the filtration effect is modest (cubical 98.0\% vs.\ Vietoris--Rips
 96.25\% best of family, 1.75pp). A second time series, ECG5000,
@@ -192,8 +192,8 @@ authors themselves did not claim one.
 This paper asks the same question across two real datasets of
 different modalities and finds that vectorization is the dominant
 stage on both: ECG200 time series and binary MNIST. On ECG200,
-vectorization moves accuracy by 6.09pp (95\% CI [5.84, 6.34]) versus
-0.70pp for filtration (95\% CI [0.35, 1.04]); on binary MNIST the
+vectorization moves accuracy by 6.39pp (95\% CI [6.13, 6.65]) versus
+0.69pp for filtration (95\% CI [0.57, 0.81]); on binary MNIST the
 vectorizer range (3.22pp) is twice the filtration range (1.65pp), and
 cubical beats Vietoris-Rips by $\sim$1.75pp best-of-family. Filtration
 effects are dataset-specific and modest on binary MNIST, not the
@@ -262,12 +262,12 @@ stage. Specifically:
     implementations in Appendix~C.
   \item \textbf{Verified finding: vectorization dominates.} On ECG200
     time series with Takens embedding, vectorization dominates
-    classification accuracy: a 6.09pp marginal range across 7
-    vectorizers (95\% CI [5.84, 6.34]), versus 0.70pp across 4
-    filtrations (95\% CI [0.35, 1.04]; small but statistically
-    non-zero) and 3.18pp across 4 classifiers (95\% CI [2.57,
-    3.78]), with the ordering vectorizer $>$ classifier $>$
-    filtration stable across all five cross-validation repetitions.
+    classification accuracy: a 6.39pp marginal range across 7
+    vectorizers (95\% CI [6.13, 6.65]), versus 0.69pp across 3
+    filtrations (95\% CI [0.57, 0.81]; small but statistically
+    non-zero) and 3.50pp across 4 classifiers (95\% CI [3.28,
+    3.71]), with the ordering vectorizer $>$ classifier $>$
+    filtration stable across all 25 cross-validation repetitions.
     On binary MNIST the vectorizer again dominates (marginal range
     3.22pp versus 1.65pp for filtration), and cubical beats
     Vietoris-Rips by $\sim$1.75pp best-of-family (98.0\% vs.\
@@ -1108,7 +1108,7 @@ artifact: repeated 5-fold CV (5 repetitions, seeds 43--47;
 repetitions (vectorizer 2.91--3.22pp vs.\ filtration 1.49--1.65pp,
 pooled 3.03pp vs.\ 1.55pp), and the best configuration
 (cubical + Betti Curve + Logistic, 98.0\%) is stable across
-repetitions (97.5--98.2\%). Filtration effects are real but
+repetitions (97.5--98.0\%). Filtration effects are real but
 modest --- cubical beats Vietoris-Rips by $\sim$1.75pp best-of-family
 --- while the vectorizer moves accuracy roughly twice as much.
 Table~\ref{tab:eta2} reports the complementary variance
@@ -1123,7 +1123,7 @@ dataset-specific and modest. The $\omega^2$ population effect size
 25-repetition ECG200 sweep, 84 configurations) confirms the ordering
 under the design penalty: ECG200 vectorizer $\omega^2 = 0.165$
 (bootstrap 95\% CI [0.063, 0.423]) versus classifier 0.077
-([0.003, 0.246]) and filtration $-0.017$ ([$-0.018$, 0.094]);
+([0.003, 0.246]) and filtration $-0.017$ ([$-0.017$, 0.093]);
 MNIST vectorizer 0.214 ([0.103, 0.540]) versus filtration 0.143
 ([0.040, 0.312]) and classifier 0.032 ([$-0.015$, 0.257]). The
 vectorizer $\omega^2$ CI excludes zero on both real datasets, while
@@ -1241,8 +1241,8 @@ Betti Curve + SVM-RBF falls from 80.5\% to 66.5\% and the
 Persistence Image family from 76.5--82.0\% to 64.0--76.5\%.
 Column shuffling is milder (mean 72.45\%; the Takens-coordinate order
 carries less information than the time-window order), and
-Persistence Landscape is essentially permutation-invariant (75.5--80.0\%
-unshuffled vs.\ 78.0--83.5\% shuffled). The cubical result is
+Persistence Landscape is essentially permutation-invariant (72.5--80.0\%
+unshuffled vs.\ 79.0--83.5\% shuffled). The cubical result is
 therefore partly grid-structure-driven: the time-window layout of the
 embedded signal contributes real signal for the top vectorizers, so
 the cubical-on-grid accuracy should not be read as a pure
@@ -1380,9 +1380,9 @@ completion. Peak memory was measured in dedicated subprocess runs
 (resource.getrusage high-water mark, 12 representative ECG200
 configurations, \texttt{data/tda/peak\_memory.db}): all filtrations peak at
 136--144~MB, with Sparse Rips the largest (143--144~MB) and slowest
-(16--22~s per configuration vs.\ 1.8--3.3~s for the others); the bare
+(22--31~s per configuration vs.\ 0.7--9.0~s for the others); the bare
 interpreter with numpy/sklearn/gtda/gudhi imported already uses
-103.5~MB, so the filtration pipelines add roughly 33--41~MB on top
+103.1~MB, so the filtration pipelines add roughly 33--41~MB on top
 of the library floor.
 
 \begin{table}[H]
@@ -1500,12 +1500,12 @@ operate on the same metric space $(Y, d_E)$; their filtrations are
 not identical --- VR and the full Alpha complex are multiplicatively
 interleaved, which bounds their bottleneck distance rather than
 equating their diagrams --- and the empirical filtration range on
-ECG200 is just 0.70pp (repeated-CV mean). The embedding captures the
-dynamical structure; the filtration merely reads it out. The
-bottleneck then shifts to vectorization: how well does the chosen
+ECG200 is just 0.69pp (25-repetition repeated-CV mean). The embedding
+captures the dynamical structure; the filtration merely reads it out.
+The bottleneck then shifts to vectorization: how well does the chosen
 method capture the diagram's structure in a fixed-length vector that
-a classifier can use? On ECG200 the vectorizer range is 6.09pp
-versus 0.70pp for filtration; on ECG5000 it is 24.89pp versus
+a classifier can use? On ECG200 the vectorizer range is 6.39pp
+versus 0.69pp for filtration; on ECG5000 it is 24.89pp versus
 3.60pp.
 
 This mechanism explains the findings without contradiction. Conti
@@ -1531,7 +1531,7 @@ full GUDHI Alpha complex reproduces weak-alpha accuracy to within
     Modality & Dominant Stage & Range & $n$ (datasets) \\
     \midrule
     Point clouds (clean) & None & $\approx$0pp & 1\textsuperscript{*} \\
-    Time series (embedded) & Vectorizer & 6.09pp; 24.89pp & 2 \\
+    Time series (embedded) & Vectorizer & 6.39pp; 24.89pp & 2 \\
     Images (binary MNIST) & Vectorizer & 3.22pp vs.~1.65pp & 1 \\
     \bottomrule
   \end{tabular}
@@ -1713,19 +1713,17 @@ filtration that is not portable across datasets).
 \end{figure}
 
 The Friedman test rejects the null of equal configurations at
-$\chi^2(7) = 33.22$ ($p = 2.4\times10^{-5}$; Iman--Davenport
-$F(7,56) = 8.93$, $p = 2.5\times10^{-7}$) over the 8 common
-configurations, and the Nemenyi critical difference is 2.58 mean
+$\chi^2(7) = 32.41$ ($p = 3.4\times10^{-5}$; Iman--Davenport
+$F(7,56) = 8.47$, $p = 4.9\times10^{-7}$) over the 8 common
+configurations, and the Nemenyi critical difference is 2.48 mean
 rank units. The best configuration --- Vietoris-Rips + Betti Curve
-+ Random Forest --- achieves a mean rank of 1.22 (best on six of
++ Random Forest --- achieves a mean rank of 1.28 (best on seven of
 the nine datasets) and is separated from the four weakest
 configurations by more than the CD. The vectorizer effect
-generalises: Betti Curve is the top vectorizer under both
-classifiers (mean rank 1.11 with random forest, 1.89 with SVM-RBF),
-Persistence Landscape is the weakest under both (3.78, 3.11), and
-the gap between them (2.67 units with random forest) exceeds the
-CD. The classifier effect is smaller (random forest beats SVM-RBF
-by 0.4--0.8 rank units, within the CD), matching the stage-impact
+generalises: the vectorizer family ordering (Betti Curve 2.83,
+Persistence Image 4.22, Silhouette 4.69, Persistence Landscape 6.25
+mean rank over the full 9x8 matrix) is stable, with the
+Betti-to-Landscape gap (3.42) exceeding the CD. The classifier effect is smaller (random forest 3.51 vs SVM-RBF 5.49, gap 1.98 within the CD), matching the stage-impact
 result that vectorization moves accuracy more than the classifier.
 The cross-dataset ranking is therefore consistent with the
 within-dataset finding of \S4.1: \emph{vectorizer choice is the
@@ -1798,7 +1796,7 @@ would strengthen or qualify each entry.
     Data Modality & Filtration & Vectorizer & Classifier & Rationale \\
     \midrule
     Low-dim.~point clouds ($\le 3$D, clean) & Weak Alpha & Pers.~Statistics or Landscapes & SVM (RBF) or Logistic & Weak Alpha 3--21\% faster than VR at identical accuracy; full-complex fidelity verified empirically (0.0--0.8pp at 2--5$\times$ cost) \\
-    Delay-embedded time series ($d \ge 3$) & VR or Weak Alpha & Pers.~Landscapes & RF or SVM (RBF) & Vectorization dominates variance (6.09pp on ECG200; 24.89pp on ECG5000) \\
+    Delay-embedded time series ($d \ge 3$) & VR or Weak Alpha & Pers.~Landscapes & RF or SVM (RBF) & Vectorization dominates variance (6.39pp on ECG200; 24.89pp on ECG5000) \\
     High-noise clouds ($\sigma \ge 0.15$) & Weak Alpha or VR & Pers.~Landscapes & SVM (RBF) & All vectorizers maintain $\ge 98.5\%$ at $\sigma=0.30$ (minimum over configurations); measured $d_B$ far below the stability bound \\
     Large-scale clouds ($n \ge 10^3$) & Sparse Rips & Pers.\ Images or Betti Curves & Random Forest & Sparse Rips designed for $n \ge 10^3$; its benefit is untestable at $n=100$ in this sweep \\
     \bottomrule
@@ -1817,12 +1815,12 @@ conditional thesis.
 \label{chap:conclusion}
 
 Vectorization is the dominant pipeline stage on both real datasets
-in this study. On ECG200 time series, vectorization produced a 6.09pp
-marginal accuracy range across 7 vectorizers (95\% CI [5.84, 6.34]),
-while filtration contributed 0.70pp across 4 filtrations (95\% CI
-[0.35, 1.04]; small but statistically non-zero) and classifiers
-3.18pp (95\% CI [2.57, 3.78]); the ordering was stable across all
-five cross-validation repetitions. On binary MNIST the same hierarchy
+in this study. On ECG200 time series, vectorization produced a 6.39pp
+marginal accuracy range across 7 vectorizers (95\% CI [6.13, 6.65]),
+while filtration contributed 0.69pp across 3 filtrations (95\% CI
+[0.57, 0.81]; small but statistically non-zero) and classifiers
+3.50pp (95\% CI [3.28, 3.71]); the ordering was stable across all
+25 cross-validation repetitions. On binary MNIST the same hierarchy
 holds --- vectorizer range 3.22pp versus filtration 1.65pp, with
 cubical beating Vietoris-Rips by $\sim$1.75pp best-of-family --- and
 a second time-series dataset (ECG5000) replicates it (24.89pp versus
@@ -2086,12 +2084,13 @@ configuration subsets.
 \begin{quote}\small
 \textbf{Provenance note.} The Takens sensitivity sweep below is
 produced by the repository's own runner worker on the full grid
-$d \in \{2,3,4\} \times \tau \in \{1,2,3\}$ (72 runs;
+$d \in \{2,3,4\} \times \tau \in \{1,2,3\}$ (78 runs (72 native + 6 essential-class-clipped);
 \texttt{data/tda/takens\_sweep.db}, CV seeds 43), additive and fully
 reproducible. At $d{=}2$ the weak-alpha filtration on 2-D embedded
 clouds produces essential $H_1$ classes (death $= +\infty$); the six
 affected cells are completed by clipping infinite deaths to the
-maximum finite death in the batch (flagged in the database), the
+maximum finite death in the batch (flagged in the database); the
+table below includes these clipped cells. This is the
 standard treatment equivalent to giotto's own landscape/Betti
 handling of essential classes.
 \end{quote}
@@ -2111,9 +2110,9 @@ vectorizers $\times$ 2 classifiers):
     \toprule
     $(d, \tau)$ & Fil.\ Range & Vec.\ Range & Clf.\ Range \\
     \midrule
-    (2, 1) & 0.00pp & 2.63pp & 8.00pp \\
-    (2, 2) & 0.00pp & 1.13pp & 6.83pp \\
-    (2, 3) & 1.13pp & 2.63pp & 3.00pp \\
+    (2, 1) & 0.38pp & 2.12pp & 7.62pp \\
+    (2, 2) & 1.00pp & 1.75pp & 7.75pp \\
+    (2, 3) & 0.12pp & 2.62pp & 3.88pp \\
     (3, 1) & 1.13pp & 1.38pp & 9.63pp \\
     (3, 2) & 1.00pp & 6.00pp & 8.75pp \\
     (3, 3) & 0.13pp & 2.88pp & 7.38pp \\
