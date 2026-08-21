@@ -33,6 +33,7 @@ from pathlib import Path
 
 import numpy as np
 from scipy import stats as sstats
+from scipy.stats import rankdata
 
 DATA = Path("/home/kruzzzzy/Documents/AI_KOS_PROJECT/data/tda")
 DB = DATA / "multidataset_sweep.db"
@@ -97,8 +98,15 @@ def main() -> None:
     # Friedman on configs x datasets
     X = np.array([[mat[ds][c] for c in common] for ds in DATASETS])  # (n_ds, n_cfg)
     n_ds, n_cfg = X.shape
-    # ranks within each dataset (1 = best)
-    ranks = X.argsort(axis=1)[:, ::-1].argsort(axis=1) + 1  # rank per dataset
+    # ranks within each dataset (1 = best), TIE-AVERAGED (the DemSar 2006
+    # standard): scipy rankdata with method="average". The paper's published
+    # statistics (chi2=32.41, F=8.47, CD=2.48, mean ranks 1.28 / 2.83 /
+    # 4.22 / 4.69 / 6.25) are computed with this convention. An earlier
+    # draft used argsort ranks (no tie averaging), which gave arbitrary tie
+    # order on rows with tied accuracies (e.g. Wafer 99.9 x2, 89.6 x2) and
+    # produced 33.22 / 8.93 / 2.58 — NOT the published numbers. Fixed
+    # 2026-08-21 (audit cycle, wave 0).
+    ranks = np.array([rankdata(-row, method="average") for row in X])
     mean_ranks = ranks.mean(axis=0)
     # Friedman chi-square (DemSar 2006, form 1):
     #   chi2 = 12/(n*k*(k+1)) * sum_j R_j^2 - 3*n*(k+1)
@@ -113,8 +121,11 @@ def main() -> None:
     F_id = (n_ds - 1) * chi2 / (n_ds * (n_cfg - 1) - chi2)
     p_id = sstats.f.sf(F_id, n_cfg - 1, (n_cfg - 1) * (n_ds - 1))
 
-    # Nemenyi CD
-    q_alpha = 3.163  # q_{0.05, 16} for 16 configs (DemSar Table A3)
+    # Nemenyi CD. q_alpha is the DemSar (2006) Table A3 critical value for
+    # k = n_cfg = 8 configurations at alpha=0.05: q = 3.031. (3.163 is the
+    # k=10 value and was used in an earlier draft — it gave CD=2.58 instead
+    # of the published 2.48. Fixed 2026-08-21.)
+    q_alpha = 3.031
     cd = q_alpha * np.sqrt(n_cfg * (n_cfg + 1) / (12 * n_ds))
 
     order = np.argsort(mean_ranks)
