@@ -1,160 +1,196 @@
-# TDA BENCHMARK PAPER — HANDOFF PROMPT (2026-08-20)
+# TDA BENCHMARK PAPER — HANDOFF PROMPT (2026-08-21, expansion-plan pause point)
 
 ## ROLE
-You are picking up the TDA benchmark paper revision project mid-cycle. The paper has
-completed a full audit-revision-reaudit cycle and reached "accept with minor revision"
-consensus. Your job is to execute the remaining limitation-fixes (detailed below),
-following the established process. Read everything before acting.
+You are picking up the TDA benchmark paper mid-expansion. The paper completed a
+full audit-revision-reaudit cycle (data audit + 2 project-audit waves + 2
+academic-audit waves, 3-agent consensus each) and converged to **accept-with-
+minor-revision at dissertation standards** (54pp, 0 undefined refs, all numbers
+DB-verified). The user then received EXTERNAL FEEDBACK (20-item expansion plan)
+and approved executing all of A+B+C, deferring #6/#8/#9/#11/#13/#15/#20.
+**The session was paused mid-Phase-1** (one expansion item done, #3). Your job:
+continue the expansion execution per this handoff.
 
 ## PROJECT LOCATION
 - Paper + code: /home/kruzzzzy/Documents/AI_KOS_PROJECT/projects/tda-benchmark
   (repo: github.com/KRUZZZZY/tda-benchmark, branch main)
-- Current HEAD: c3ae98b "fix: project-audit wave-1 writeback — run_all.sh heredoc+DB-path criticals, README/AGENTS/ESSAY/HANDOFF doc sync, ecg5000_lean __main__ guard, appendix script names, regenerate stale fig_noise_pds"
-- Paper: dissertation.tex (2326 lines, 54pp, compiles clean, 0 undefined refs, 0 multiply-defined)
-- STATUS: Batch A (A1-A9) and Batch B (B1-B3) are COMPLETE (commits 2f0d57d..1392486); wave-2 audit fixes in progress.
+- HEAD: dd51349 "feat(expansion #3): two-way interaction ANOVA ..."
+  (UNPUSHED — push it, then continue)
+- Paper: dissertation.tex (~2330 lines, 54pp, compiles clean, 0 undefined refs)
 - Venv: /home/kruzzzzy/Documents/AI_KOS_PROJECT/.venv-tda/bin/python
-  (giotto-tda 0.6.2, sklearn 1.3.2, numpy 1.26.4, ripser 0.6.15, gudhi 3.13.0)
+  (giotto-tda 0.6.2, sklearn 1.3.2, numpy 1.26.4, ripser 0.6.15, gudhi 3.13.0,
+  pandas installed for interaction ANOVA)
 - Results DBs: /home/kruzzzzy/Documents/AI_KOS_PROJECT/data/tda/
-  (expanded_results.db = ground truth 616/672 runs; repeated_cv.db = 560 runs/5 reps;
-   baseline_experiments.db; ecg5000 files; synthetic_matched/)
-- Package is hyphenated (tda-benchmark): import via importlib shim registering it as
-  'tda_benchmark' (see run_all.sh / scripts for the pattern). Run sweeps from CWD
-  /home/kruzzzzy/Documents/AI_KOS_PROJECT (runner resolves paths relative to project root).
-- IMPORTANT: verify every number against the DBs yourself (sqlite3). Never trust a
-  number from prose or a prior agent's report without re-deriving it.
+- Expansion plan (verbatim feedback + status tracker): EXPANSION_PLAN.md
+  (committed b93cfa7); KB mirror: tda-benchmark-expansion-plan-2026-08-21
+- Execution plan (approved scope + cost map): .hermes/plans/2026-08-21_143000-tda-expansion-execution.md
+- Package gotcha: hyphenated dir 'tda-benchmark' — import via importlib shim as
+  'tda_benchmark', or symlink projects/tda_benchmark -> tda-benchmark +
+  sys.path.insert(0, 'projects'). Run sweeps from CWD=AI_KOS_PROJECT root.
+- IMPORTANT: verify every number against the DBs yourself (sqlite3). Never
+  trust prose or prior agent reports without re-deriving.
 
 ## WHAT HAS BEEN DONE (verified, do not re-litigate)
-Round-1 academic review (3 reviewers) = MAJOR REVISION. Fixed via:
-1. New experiments (all DB-verified): repeated 5-fold CV (5 reps, seeds 43-47) with
-   corrected CIs [5.84,6.34]/[0.35,1.04]/[2.57,3.78]; eta^2 variance decomposition
-   (ECG200 vec 0.217 vs fil 0.003; MNIST vec 0.302 > fil 0.166); MNIST marginal ranges
-   (vec 3.22pp > fil 1.65pp); non-topological baselines (raw-pixel logistic 99.75% vs
-   TDA 98.0% MNIST; raw-signal 85.5% vs 83.0% ECG200); matched genus-1/genus-2 torus
-   synthetic (norms at chance 48-58%, TDA 99.75% clean/95.83% at sigma=0.30);
-   measured bottleneck distances (max 0.434 vs corrected bound ~1.82); true GUDHI alpha
-   vs weak-alpha parity (0-0.8pp at 2-5x cost); ECG5000 second time-series (vec 24.89pp
-   vs fil 3.60pp).
-2. Thesis reframed: "vectorization dominates classification-accuracy variance on both
-   real datasets" (NOT "filtration dominates on images"). Conti et al. reframed as
-   complementary case study (18% was their H0-only naive cubical; 94% joint
-   filtration+vectorization redesign; no general principle claimed; 10-class MNIST,
-   10-split CV, grid search, no time series). Abstract condensed to ~242 words.
-3. Bibliography fixed: conti2022/sulowska2026/telyatnikov2024 corrected; hatwar2026
-   (unverifiable) removed -> ali2023 + hensel2021; graf2025 authors fixed;
-   chazal2014 split into chazalSilh2014 + chazalDesilvaOudot2015.
-4. Stability bound: re-attributed to Chazal-de Silva-Oudot (Thm 5.2) for d_B <= 2 d_GH,
-   CEH 2007 for function-level/cubical; EVT made honest (d=3 correction 1.16x,
-   threshold exceeded ~93% in d=3); exact Friedman Q=10 > 6.40 p~0.0008 for the stage
-   ordering; fold-level F re-scoped to descriptive (fold dependence); bound 0.91/1.82.
-5. Weak-alpha framing corrected (subcomplex of Rips, not alpha; Nerve Theorem does not
-   apply). Cubical-on-ECG200 artifact disclosed (94x3 pixel images) with without-cubical
-   robustness check (best 79.5%, hierarchy intact: vec 6.58pp vs fil 0.34pp).
+1. **Batch A** (limitation fixes, commits 2f0d57d + 088946e): ECG200 r=25
+   repeated CV (2100 cells, vec 6.39pp [6.13,6.65] / fil 0.69 [0.57,0.81] /
+   clf 3.50 [3.28,3.71], ordering stable 25/25, Friedman Q=50 p=1.4e-11,
+   Nadeau-Bengio + repeated-measures CIs); baselines at 25-rep parity; MNIST
+   repeated CV; ECG5000 balanced-acc + macro-F1 + disclosures; real Appendix D
+   (d,tau) sweep; peak memory; cubical shuffle ablation; omega^2 + bootstrap
+   CIs + Holm/BH multiplicity; majority-class rows.
+2. **Batch B** (multi-dataset lifts, commits ca8112d + a5f6c61 + c5e649f):
+   9-dataset Friedman/Nemenyi panel (tie-averaged chi2(7)=32.41 p=3.4e-5,
+   Iman-Davenport F(7,56)=8.47 p=4.9e-7, CD=2.48, betti_curve best rank 1.28
+   on 7/9 datasets, vectorizer family 2.83/4.22/4.69/6.25); MIT-BIH
+   multi-patient ECG (48 patients, patient-disjoint CV, betti 38.75 > PI
+   36.08 > sil 30.55 > land 27.65, chance 25%); TDA+raw concat ablation
+   (best concat beats both arms: MNIST 100.0 vs 99.75/98.0, ECG200 87.0 vs
+   85.28/72.5); weak-alpha fragility finding (giotto IndexError on quantized
+   series).
+3. **Audit cycle** (8 commits 1392486..b0e9818): all numbers DB-verified by
+   3+ independent auditors per wave. Key fixes: tie-averaged Friedman/
+   Nemenyi; Appendix D d=2 rows + provenance honesty; peak-memory DB values;
+   abstract/intro/conclusions r=25 harmonisation; run_all.sh 2 CRITICAL bugs
+   (heredoc SyntaxError + DB-path mismatch — now genuinely reproducible);
+   README/AGENTS/ESSAY/HANDOFF sync; CdSO bibitem corrected (Geometriae
+   Dedicata 173(1):193-214, 2014); matched-genus raw-coordinate 100% baseline
+   disclosed; MIT-BIH 4-class + de Chazal framing; guidelines table now
+   recommends Betti Curve per the panel; 'typically' vs 'with high
+   probability' bound; per-config p-values; r5/r25 labels everywhere.
+4. **a99d4f8**: analysis_multidataset_friedman.py fixed to regenerate the
+   paper's published stats (tie-averaged ranks, q=3.031 for k=8); CD figure
+   regenerated (CD 2.48).
+5. **2ed6f8b**: MIT-BIH window-length sensitivity check (256-sample windows;
+   betti top + landscape bottom robust, PI/silhouette middle order window-
+   sensitive; disclosed in paper).
+6. **dd51349 (expansion #3, DONE but UNPUSHED)**: two-way interaction ANOVA
+   (scripts/analysis_interaction_anova.py, /tmp/tda_expansion3_interaction.md).
+   FINDING: on ECG200 (r=25 fold-level) two-way interactions carry
+   omega^2=0.1874 = **147% of main effects (0.1271)**; filtration:vectorizer
+   (0.0924) is the LARGEST effect in the model, vectorizer:classifier
+   (0.0889) rivals vectorizer main (0.0858). MNIST: interactions 50% of main.
+   => Stages are NOT cleanly separable; the paper's stage-dominance framing
+   needs qualification (vectorizer still largest MAIN effect, but 'which
+   stage matters' depends on other stages). **The paper text has NOT yet been
+   updated for this finding** — that is the next step for #3.
 
-Round-2 review (3 reviewers) = MINOR REVISION consensus (B: accept-with-minor, C: minor,
-A: major-borderline-minor). All 12 headline numbers independently re-verified. All
-findings fixed in 61d0a1d.
-
-## REPORTS AVAILABLE (read these first)
-- /tmp/tda_experiment_stats.md — repeated CV, eta^2, MNIST marginals
-- /tmp/tda_experiment_baselines.md — baselines, matched synthetic, bottleneck
-- /tmp/tda_experiment_alpha_data.md — true alpha, cubical artifact, ECG5000
-- /tmp/tda_research_R1.md, R2.md, R3.md — deep research (literature validation,
-  statistical conventions, TDA theory)
-- /tmp/tda_round2_A.md, B.md, C.md — round-2 reviews
-- /tmp/alpha_experiment_results.json, /tmp/cubical_artifact_results.json,
-  /tmp/ecg5000_lean_results.json
-- KB articles (AI-KOS): tda-benchmark-audit-round4-2026-08-20,
-  tda-benchmark-academic-review-2026-08-20, tda-benchmark-round2-acceptance-2026-08-20
+## REPORTS AVAILABLE (read first)
+- /tmp/tda_expansion3_interaction.md — interaction ANOVA (expansion #3)
+- /tmp/tda_A8_omega2_report.md — omega^2 + bootstrap CIs + Holm/BH (18 tests)
+- /tmp/tda_A1_r25_report.md — r=25 repeated-CV stats + Nadeau-Bengio CIs
+- /tmp/tda_B1_friedman_report.md — 9-dataset Friedman/Nemenyi
+- /tmp/mitbih_w256.log, /tmp/mitbih_sweep_fast.log — MIT-BIH sweeps
+- KB articles (AI-KOS): tda-benchmark-batch-a-limitation-fixes-2026-08-21,
+  tda-benchmark-batch-b-multidataset-lifts-2026-08-21,
+  tda-benchmark-audit-cycle-2026-08-21,
+  tda-benchmark-expansion-plan-2026-08-21
 
 ## PROCESS RULES (established, non-negotiable)
-1. ADDITIVE-ONLY for data/code: never delete or modify existing DBs, datasets, or
-   committed code. New experiments write NEW DBs/scripts. dissertation.tex IS editable.
-2. The user's standing rule: additive systems only, never destroy real data. Deletes
-   need explicit confirmation. Don't rm anything without asking.
-3. Verify every number yourself against the DBs (sqlite3) — subagent reports are
-   self-reports, not facts.
-4. For multi-agent work: 3-agent consensus waves (identical prompts), merge by
-   2-of-3 consensus, verify decisive claims yourself before acting.
-5. LaTeX edits: use Python line-surgery, NOT the patch tool (backslash-doubling
-   corrupts \item, \%, \cite). After edits: pdflatex TWICE, check 0 undefined refs,
-   grep multiply-defined, note page count.
-6. Commit + push to main after each logical unit. Commit messages must be specific.
-7. After ANY dev task, write a KB article (AI-KOS) documenting what changed.
-8. User preference: plan first, then execute. Fan out subagents during implementation.
-9. Sparse Rips is slow (~41s/config). For repeated runs, drop it or accept runtime.
-10. The user cares about mathematical rigor and evidence over claims.
+1. ADDITIVE-ONLY for data/code: never delete/modify existing DBs, datasets, or
+   committed code. New experiments write NEW scripts + NEW DBs. dissertation.tex
+   IS editable (line-surgery only).
+2. Verify every number yourself against the DBs (sqlite3) — subagent reports
+   are self-reports, not facts. Verify decisive findings independently before
+   acting.
+3. Multi-agent work: 3-agent consensus waves (identical prompts), merge by
+   2-of-3, verify claims yourself.
+4. LaTeX edits: Python line-surgery (exact-string replace, assert count==1),
+   NEVER the patch tool. pdflatex TWICE after; check 0 undefined refs /
+   multiply-defined; note page count.
+5. Commit + push after each logical unit; specific messages.
+6. KB article after ANY dev task (AI-KOS, creation protocol).
+7. Plan first, then execute. Fan out subagents during implementation.
+8. **Single-CPU constraint (user directive): one sim at a time, serial,
+   n_jobs=1, no delegation for compute.** Background sweeps with
+   notify_on_complete; verify DB after.
+9. Sparse Rips is slow (~41s/config shipped). VR on 254-point Takens clouds
+   ~6 min/config serial (126-point ~1 min).
+10. User cares about mathematical rigor and evidence over claims. Honest
+    results only — never fabricate a win.
 
-## REMAINING WORK — THE LIMITATION FIXES (prioritized)
+## REMAINING WORK — THE EXPANSION PLAN (approved scope A+B+C)
+Deferred (do NOT attempt): #6 (topology-wins regime), #8 (learned
+vectorizers), #9 (H2 homology), #11 (cross-library replication), #13
+(predictive theory), #15 (hierarchical model), #20 (package+CI+companion).
 
-### BATCH A — CHEAP, CLOSE EVERY REMAINING "UNDER-POWERED/MISMATCHED" OBJECTION
-A1. Repeated CV r=5 -> r>=25 on ECG200 (112 configs x 25 reps, drop sparse_rips or
-    accept ~4-5h at 20 workers). Recompute Nadeau-Bengio CIs; update the paper's CIs
-    and the "r=5 was a compute trade-off" statement. Reference: Schulz-Kumpel et al.
-    2024 (arXiv:2409.18836) recommends >=25 reps for corrected resampled CI.
-A2. Re-run the 4 non-topological baselines (MNIST raw-pixel logistic/RF, ECG200
-    raw-signal logistic/RF) under the SAME 25-repetition protocol so baseline CIs are
-    directly comparable to TDA repeated-CV numbers (fixes round-2 F4 protocol mismatch).
-A3. MNIST repeated CV (56 configs x 5+ reps) — currently single-split with overlapping
-    bootstrap CIs [2.00,6.14] vs [0.74,2.69]; repeated CV settles whether vectorizer >
-    filtration on images is real.
-A4. ECG5000: re-run with balanced accuracy + macro-F1 (classes 2919/1767/96/194/24,
-    severely imbalanced); disclose the 714-sample subsample and 2 NaN exclusions in the
-    paper; add per-vectorizer CI.
-A5. Appendix D (d,tau) sensitivity: actually run it through the runner and store a DB
-    (currently flagged as unreproducible/illustrative — make it real).
-A6. peak_memory_mb: measure with resource/tracemalloc instead of the dead 0.0 column.
-A7. Cubical shuffle ablation (round-2 M6): row/column-shuffle the 94x3 grids; if the
-    signal collapses, the cubical result is grid-structure-driven (strengthens the
-    disclosure).
-A8. eta^2: add omega^2 + bootstrap CIs; extend the multiplicity footnote (Holm/BH) to
-    all 18 F-tests in Table 4.4; state cross-dataset eta^2 comparability limits.
-A9. Add a trivial majority-class baseline row to every dataset table (benchmark hygiene).
+### PHASE 1 — Batch A: analysis of existing data (no new sweeps, hours)
+- A1 (#2) equal-footing stats: lead with omega^2; levels-matched analysis
+  (best-3 vectorizers vs 3 filtrations; swap-one-stage-hold-others-at-best
+  deltas); report ranges EXCLUDING degenerate scalar vectorizers (entropy,
+  amplitude) — tests whether 6.39pp/24.89pp headline is a single-number-
+  representation floor effect. (analysis_equal_footing.py)
+- A2 (#3) interaction ANOVA — **DONE (dd51349), script committed; paper text
+  NOT yet updated.** Next: write the qualification paragraph into the paper
+  (interactions 147% of main on ECG200; fil:vec largest effect; stages not
+  cleanly separable; vectorizer still largest main effect), pdflatex x2,
+  push.
+- A3 (#7a) full 10-class MNIST under paper protocol — data ALREADY BUILT
+  (data/tda/images/mnist10_1000_{X,y}.npy: 1000 samples, 100/class). Run
+  cubical+VR x 4 vec x 2 clf, r=5 repeated CV → mnist10_sweep.db (~15 min
+  serial). Direct Conti et al. 10-class test at scale.
+- A4 (#14) beyond accuracy: AUROC (OvR), per-class precision/recall/F1,
+  Brier calibration on ECG5000 + MIT-BIH from existing fold predictions.
+  (analysis_beyond_accuracy.py)
 
-### BATCH B — HIGHER-VALUE SCIENTIFIC LIFTS (recommended)
-B1. THE BIG ONE — multi-dataset sweep. The thesis "vectorization dominates on time
-    series" rests on n=2 datasets. Add 5-10 UCR time-series datasets (FordA, FordB,
-    Wafer, ElectricDevices, HandOutlines, etc.) + 2-3 image datasets (FMNIST subset,
-    etc.) through the existing framework (YAML config). Run the canonical DemSar
-    cross-dataset test: Friedman + Nemenyi ACROSS datasets. This upgrades the paper
-    from "2-dataset case study" to "multi-dataset benchmark" — the exact objection
-    round-2 reviewers raised (family-level claims need a sample of datasets).
-B2. Multi-patient ECG: MIT-BIH arrhythmia or PhysioNet 2017 (ECG5000 is single-patient
-    BIDMC chf07). One download + run kills the single-patient objection.
-B3. TDA+raw concatenation ablation: does TDA add value ON TOP of raw features? The
-    baselines beat TDA alone (99.75 vs 98.0); concatenated features may show
-    complementarity — the honest positive story. Round-2 flagged as "small, high value".
+### PHASE 2 — Batch B: new sweeps (serial, one at a time, hours-day)
+- B1 (#1) DIVERSE FILTRATIONS — the scientific crux: 3 of 4 current
+  filtrations (VR, weak Alpha, Sparse Rips) approximate the same Rips-type
+  geometry, so 'filtration barely matters' is partly baked in. Add DTM
+  filtration, lower-star on height/curvature, weighted/kernel-density Rips,
+  signed-distance cubical (Conti family). Sweep ECG200 + sphere/torus x 4 vec
+  x 2 clf → filtration_diversity_sweep.db. Either outcome publishable.
+- B2 (#4) stage-capable panel: rerun 9-dataset panel with 2-3 WORKING
+  filtrations (VR + weak_alpha where it works + cubical where applicable),
+  report DISTRIBUTION of vectorizer-range vs filtration-range across datasets.
+  → multidataset_sweep_fil2.db (~2-3h).
+- B3 (#10) hyperparameter arm: tune each vectorizer's key hyperparameter per
+  dataset (PI sigma/n_bins, landscape n_layers, silhouette power, betti
+  n_bins); report how stage ranges change. Answers 'is dominance a
+  default-settings artefact?' → hyperparam_sweep.db (~1-2h).
+- B4 (#12) FPS ablation: farthest-point sampling vs uniform-random on
+  point-cloud datasets; closes limitation #1 → fps_ablation.db (~30-60 min).
+- B5 (#7b) n >= 10^3 clouds: Sparse Rips design point (sphere/torus at
+  n=1000/3000) → large_n_sweep.db (~1-2h).
 
-### NOT SOLVABLE (do NOT attempt)
-- "TDA beats raw features": the data says raw features win; fabricating a win would be
-  fraud. The honest framing (contribution = stage-importance decomposition + framework,
-  not beating raw features) is correct and already in the paper.
+### PHASE 3 — Batch C (#5): repeated CV everywhere claims are
+- ECG5000 r>=5 (12 configs, ~40-60 min), matched-genus r>=5 (~10 min),
+  panel r=5 (~1h). No headline claim should rest on a single-split estimate.
 
-## EXECUTION ORDER
-1. Read all reports in /tmp + the paper + the DB schemas.
-2. Plan Batch A (A1-A9) as a delegation batch: 3 agents (stats/repeated-CV,
-   baselines+metrics, appendix/ablation/memory), additive-only, verify outputs yourself.
-3. Apply text updates to dissertation.tex for each completed fix (Python line-surgery,
-   pdflatex twice after).
-4. Ask the user before starting Batch B (B1-B3) — B1 is a multi-hour compute + download
-   decision; confirm scope first.
-5. Commit + push after each batch. Write KB articles documenting outcomes.
+### PHASE 4 — Batch D: paper surgery
+- #16 Fig 4.1 label legibility + Appendix A line-83 \texttt leak.
+- #17 Ch. 6 practitioner decision tree with evidence grades per branch.
+- #18 threats-to-validity (construct/internal/external; content scattered
+  in §5.2).
+- #19 pre-registration protocol file (dated) in repo.
+- Update EXPANSION_PLAN.md status tracker per item.
 
 ## KEY NUMBERS TO RE-VERIFY (ground truth, from the DBs)
-- ECG200: vec 6.39pp [6.13,6.65], fil 0.69pp [0.57,0.81], clf 3.50pp [3.28,3.71];
-  eta^2 0.217/0.098/0.003; ordering stable 25/25; Friedman Q=50, p~1.4e-11
-- MNIST: vec 3.22pp, fil 1.65pp; eta^2 0.302 vs 0.166; best cubical 98.0 vs VR 96.25
-- sigma=0.30: mean 99.85% (112 configs), min 98.5%
-- Bottleneck: max 0.434 vs bound 2*sigma*sqrt(2 ln 100) ~ 1.82 (0.91 at sigma=0.15)
-- Baselines: MNIST raw-pixel logistic 99.75%, RF 99.0%; ECG200 raw-signal 85.5%, RF 85.0%
-- Matched genus-1/2: norms 48-58%, TDA 99.75% clean / 95.83% sigma=0.30 (min 91%)
-- ECG5000: vec 24.89pp, fil 3.60pp (10 valid configs of 12; 2 NaN silhouette-on-weak-alpha)
-- Without-cubical ECG200: best 79.5%, vec 6.58pp, fil 0.34pp
-- Per-config SD across reps: mean 1.09pp, max 3.11pp; single-split 83.0% ranks 3rd by
-  25-rep mean 79.30%; best cubical/PI/RF 82.82% mean
+- ECG200 r=25: vec 6.39pp [6.13,6.65], fil 0.69pp [0.57,0.81], clf 3.50pp
+  [3.28,3.71]; NB CIs vec [5.69,7.10] fil [0.37,1.01] clf [2.92,4.07];
+  ordering stable 25/25; Friedman Q=50 p=1.4e-11 (exact perm p ~2e-19).
+- Interaction ANOVA (NEW, expansion #3): ECG200 fold-level two-way omega^2
+  total 0.1874 = 147% of main 0.1271; fil:vec 0.0924 largest effect;
+  vec:clf 0.0889; MNIST interactions 50% of main.
+- Panel: chi2(7)=32.41 p=3.4e-5; F(7,56)=8.47 p=4.9e-7; CD=2.48 (q=3.031);
+  betti_curve rank 1.28 best 7/9; family 2.83/4.22/4.69/6.25; clf RF 3.51
+  vs svm 5.49.
+- MIT-BIH: 48 patients, patient-disjoint CV, chance 25%; 128-window
+  betti 38.75 > PI 36.08 > sil 30.55 > land 27.65; 256-window betti 38.48 >
+  sil 36.1 > PI 31.2 > land 30.1 (middle order window-sensitive);
+  weak_alpha fails (giotto IndexError).
+- Baselines r=25: MNIST 99.65 [99.60,99.70] / 99.29 [99.19,99.39];
+  ECG200 85.28 [84.92,85.64] / 86.30 [85.68,86.92].
+- MNIST: vec 3.03pp > fil 1.55pp (r=5 pooled); best cubical/betti/logistic
+  98.0% (97.5-98.0 across reps).
+- sigma=0.30: mean 99.85% min 98.5% (112 configs); bottleneck max 0.434 vs
+  bound 1.82; matched-genus TDA 95.83% vs norms 48-58% (raw-coords 100% —
+  disclosed).
+- Concat: MNIST 100.0 vs raw 99.65 vs TDA 98.0; ECG200 87.0 vs 85.28 vs
+  72.5 (same-config).
 
 ## DELIVERABLE WHEN DONE
-- All Batch A fixes applied + verified + committed + pushed
-- Paper compiles clean, all CIs updated, disclosures complete
-- Batch B scoped with the user and executed if approved
-- KB articles written for each work unit
-- A final summary of what was solved and what remains (with reasons)
+- All approved expansion items (A+B+C) executed, verified, committed, pushed.
+- Paper updated per item (interactions qualification FIRST for #3),
+  compiles clean with updated stats and disclosures.
+- EXPANSION_PLAN.md tracker updated (17 open -> done/partial per item).
+- KB articles per work unit + final summary of solved vs remaining
+  (deferred items #6/#8/#9/#11/#13/#15/#20 with reasons).
