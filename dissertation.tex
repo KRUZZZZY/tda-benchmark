@@ -1633,6 +1633,26 @@ interleaved, which bounds their bottleneck distance rather than
 equating their diagrams --- and the empirical filtration range on
 ECG200 is just 0.69pp (25-repetition repeated-CV mean). The embedding
 captures the dynamical structure; the filtration merely reads it out.
+
+\textbf{Diverse-filtration check.} The filtration range above is over a
+menu in which two of three filtrations are Rips-type (Vietoris-Rips,
+weak Alpha; Sparse Rips at $r{=}5$), all approximating the same Rips
+geometry, so \emph{``filtration barely matters'' is partly an artefact
+of that menu}. Adding a genuinely different filtration --- the DTM-
+weighted Rips (giotto-tda \texttt{WeightedRipsPersistence}, vertex and
+edge weights from a distance-to-measure estimate; Anai et al.), robust
+to outliers --- raises the ECG200 filtration marginal range to 2.81pp
+and makes DTM the best filtration (76.2\% versus 73.4\% for
+Vietoris-Rips), winning 7 of 8 vectorizer--classifier pairs (best
+configuration DTM + Landscapes + Random Forest, 81.0\%; \texttt{data/tda/filtration\_diversity\_sweep.db}, 48 configurations,
+single split). Vectorization remains the largest stage (5.62pp), so
+the headline ordering survives; but the empirical filtration range is
+not a universal constant --- it is sensitive to the filtration menu,
+and a genuinely non-Rips filtration both matters (2.81pp) and performs
+better than the Rips-type baseline. On the clean synthetic
+sphere/torus pair all 16 diverse-pool configurations reach 100\%,
+regardless of filtration, so no stage matters there.
+
 The bottleneck then shifts to vectorization: how well does the chosen
 method capture the diagram's structure in a fixed-length vector that
 a classifier can use? On ECG200 the vectorizer range is 6.39pp
