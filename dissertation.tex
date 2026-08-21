@@ -1064,7 +1064,41 @@ per-config variance (fold-level 10.6\%), the classifier 9.8\%
 vectorizer, Persistence Landscapes, achieves 75.32\% marginal
 accuracy versus 68.95\% for Persistence Entropy (the weakest).
 Cubical filtration leads at 73.15\%, with Vietoris-Rips (72.89\%)
-and Weak Alpha (72.74\%) within 0.41pp.
+and Weak Alpha (72.74%) within 0.41pp.
+
+\textbf{Equal-footing re-analysis.} The ranges above compare stage
+menus of different sizes (7 vectorizers versus 3 filtrations on
+ECG200) and include ``degenerate'' scalar vectorizers --- Persistence
+Entropy and Amplitude, each of which maps a diagram to a single
+number --- that are structurally handicapped. To test whether the
+6.39pp (ECG200) and 24.89pp (ECG5000) vectorizer ranges are an
+artefact of that handicap, we re-measure the stage effects on an
+equal footing: under the design-penalised $\omega^2$, and by
+re-computing the marginal ranges excluding the degenerate scalar
+vectorizers and matching the number of levels. By $\omega^2$ the
+vectorizer remains the largest single stage main effect on both real
+datasets (ECG200 $0.165$ versus classifier $0.077$ and filtration
+$-0.017$; MNIST $0.214$ versus $0.143$ and $0.032$), so its dominance
+is not an artefact of level counts. The marginal-range \emph{size},
+however, is: excluding Amplitude and Persistence Entropy cuts the
+ECG200 vectorizer range from 6.39pp to 3.10pp, and on the ECG5000
+probe the 24.89pp range collapses to 0.24pp (Persistence Entropy at
+36.9\% versus Betti Curve 61.5\% and Silhouette 61.8\%, which are
+within 0.24pp of each other). Matching the number of levels ---
+best-3 vectorizers versus 3 filtrations on ECG200 --- narrows the
+vectorizer edge to 1.21pp versus 0.69pp; on MNIST the best-2
+vectorizer range (0.44pp) falls below the 2-filtration range (1.55pp),
+and on ECG5000 the best-2 vectorizer range (0.24pp) likewise falls
+below the filtration range (3.60pp). The isolated contribution ---
+swapping one stage while holding the other two at their marginal-best
+--- is still largest for the vectorizer on ECG200 (10.22pp) and MNIST
+(2.1pp). The honest reading is that vectorization is the largest
+single stage effect, but its measured \emph{margin} is sensitive to
+the vectorizer menu and to the number of levels compared: the
+published 6.39pp and 24.89pp numbers are substantially inflated by
+degenerate scalar vectorizers, and once those are excluded and the
+stage counts are matched the vectorizer-vs-filtration gap narrows
+substantially (ECG200) or reverses (MNIST, ECG5000).
 
 \textbf{Simple versus complex.} Persistence Statistics matches
 kernel-based methods on ECG200: its $r{=}5$ marginal accuracy (74.8\%) is
@@ -1555,7 +1589,11 @@ The bottleneck then shifts to vectorization: how well does the chosen
 method capture the diagram's structure in a fixed-length vector that
 a classifier can use? On ECG200 the vectorizer range is 6.39pp
 versus 0.69pp for filtration; on ECG5000 it is 24.89pp versus
-3.60pp.
+3.60pp. These full-range figures are prior to the equal-footing
+re-analysis of \S4.1, which shows they are substantially inflated by
+the degenerate scalar vectorizers (Amplitude, Persistence Entropy):
+excluding them reduces the ECG200 vectorizer range to 3.10pp and
+collapses the ECG5000 range to 0.24pp.
 
 This mechanism explains the findings without contradiction. Conti
 et al.'s image results are a complementary case study (10-class
