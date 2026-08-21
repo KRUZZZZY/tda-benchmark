@@ -844,20 +844,35 @@ subsampling}: $n_{\text{target}}$ points are drawn without
 replacement from the full cloud, seeded deterministically per
 dataset. Uniform random sampling does not preserve metric-space
 geometry as well as farthest-point sampling would; we use it for
-simplicity and reproducibility. We measured whether the choice
-matters: farthest-point sampling (FPS) was compared against this
-uniform-random scheme on the synthetic sphere/torus clouds at
-two reduced resolutions ($k \in \{50, 15\}$ points per cloud)
-under both noise levels, over 2 filtrations $\times$ 2
-vectorizers $\times$ 2 classifiers (\texttt{fps\_ablation.db}).
-FPS provides no accuracy benefit on this task: the arms are
-indistinguishable at $k{=}50$ (100.00\% both), and at the
-degraded $k{=}15$ resolution uniform-random actually scores
-higher under $\sigma{=}0.30$ noise (99.81\% vs.~98.94\%); the
-overall FPS $-$ uniform delta is $-0.25$pp. On these
-classification tasks the uniform-random subsampling is
-adequate, so the paper's headline results are not an artefact
-of the subsampling scheme.
+simplicity and reproducibility. We tested whether the choice matters:
+greedy farthest-point sampling (FPS) was compared against this
+uniform-random scheme on the synthetic sphere/torus clouds, reduced to
+$k \in \{50, 15\}$ points (the native clouds carry 100 points, so the
+runner's \texttt{subsample\_points} knob never fires and the
+subsampling choice must be made below the native resolution to be
+nontrivial), under both noise levels and over
+$\{$\texttt{vietoris\_rips}, \texttt{weighted\_rips}(DTM)$\} \times$
+$\{$\texttt{betti\_curve}, \texttt{persistence\_landscape}$\} \times$
+$\{$\texttt{random\_forest}, \texttt{svm\_rbf}$\}$
+(8 configurations per arm, stratified 5-fold CV, seed 42, rep 1;
+\texttt{fps\_ablation.db}). At the design resolution ($k{=}50$) both
+methods attain 100.00\% mean accuracy at both $\sigma{=}0$ and
+$\sigma{=}0.30$ --- the task saturates and the two arms are
+indistinguishable. In the only regime where a difference emerges
+($k{=}15$), FPS is \emph{not} better: at $\sigma{=}0$ FPS scores
+99.88\% vs.\ uniform 100.00\% ($-0.12$\,pp), and at $\sigma{=}0.30$
+FPS scores 98.94\% vs.\ uniform 99.81\% ($-0.88$\,pp). Across all 64
+runs the minimum configurational accuracy is 98.5\%, even after a
+$7\times$ reduction in point count. We therefore do not find support
+for the premise underlying the earlier deferral: uniform-random
+subsampling is not materially inferior to FPS on these point clouds ---
+if anything it is marginally \emph{better} once the task is pushed
+below saturation. Because the sphere/torus problem is robustly
+separable under even aggressive subsampling, it does not expose a
+regime where sampling density matters; a dataset with fragile or
+heterogeneously sampled topology would be needed to observe a gap. The
+subsampling-method choice is therefore immaterial for the synthetic
+class, and the earlier FPS-future-work note is withdrawn.
 
 \textbf{Noise model.} For the synthetic sphere/torus benchmark,
 additive isotropic Gaussian noise is applied directly to spatial
@@ -1904,54 +1919,82 @@ dominant, portable stage; the best vectorizer is data-set stable
 (Betti Curve), while filtration and classifier effects are
 secondary and dataset-specific.}
 
-
-\textbf{Stage-capable panel (two working filtrations per dataset).}
-The panel above ran a single filtration (Vietoris-Rips) on the
-time-series arm, so it could rank configurations but not compare the
-filtration stage against the vectorization stage on equal footing.
-To make the panel stage-capable, the same 9 datasets were re-run with
-two genuinely different working filtrations per modality ---
-Vietoris-Rips and the DTM-weighted Rips (giotto-tda
-\texttt{WeightedRipsPersistence}, weights $=$ DTM; Anai et al.)
-for the seven time series, cubical and Vietoris-Rips for the two image
-datasets --- across the same 4 vectorizers $\times$ 2 classifiers
-(16 configurations per dataset, 5-fold CV, seed as the sweep;
-\texttt{panel\_stagecapable.db}). The vectorizer stage still shows the
-larger range on seven of the nine datasets: the median vectorizer
-range is 3.32pp versus 1.37pp for the filtration stage. The
-filtration stage wins on the other two, and by comparable margins:
-HandOutlines (filtration range 4.22pp, driven by DTM at 75.74\%
-versus Vietoris-Rips 71.51\%) and 10-class MNIST (4.41pp, with
-Vietoris-Rips 33.61\% beating cubical 29.20\%). ECG200 reproduces the
-\S4.6 diverse-filtration result exactly (filtration range 2.81pp;
-DTM 76.19\% vs.~73.38\%), so the two sweeps are internally
-consistent. The stage ordering is therefore dataset-dependent: on
-most of the panel the vectorizer remains the binding constraint, but
-the filtration choice can matter as much on specific datasets, and
-this is visible only when the panel carries more than one genuinely
-different filtration per modality.
-
-\textbf{Hyperparameter-sensitivity: dominance is not a
-default-settings artefact.} The vectorizers differ in how many knobs
-they expose, so the marginal ranges above could in principle reflect
-unlucky defaults rather than representational capacity. To test
-this, each vectorizer's key hyperparameter (PersistenceImage
-$\sigma$/$n_\text{bins}$, PersistenceLandscape
-$n_\text{layers}$/$n_\text{bins}$, Silhouette and Betti
-$n_\text{bins}$) was swept one-parameter-at-a-time around the paper
-default on ECG200 (Vietoris-Rips) and binary MNIST (cubical), all
-other parameters held at the default, with the same
-$\{ \text{random\_forest}, \text{svm\_rbf} \}$ classifiers
-(\texttt{hyperparam\_sweep.db}). Giving every vectorizer its best
-tuned setting shrinks the vectorizer marginal range only slightly:
-5.75pp to 4.75pp on ECG200 and 1.75pp to 1.62pp on binary MNIST
-(classifier-averaged means). The dominance ordering survives at the
-per-vectorizer optimum on both datasets, and the best-tuned setting
-is often the default itself (Silhouette and Betti Curve on ECG200;
-three of four on MNIST). The reported stage ranges are therefore not
-an artefact of default hyperparameters; the one-parameter-at-a-time
-grid is a mild lower bound on tuning benefit because it does not
-search interactions, which favours the null hypothesis we reject.
+\textbf{Panel with a diverse filtration set.} We re-ran the
+nine-dataset panel with more than one \emph{working} filtration per
+modality so that the filtration stage and the vectorization stage could
+be compared on equal footing (each stage now has at least two
+alternatives). For the seven time-series datasets the two filtrations
+were Vietoris--Rips and the DTM-weighted Rips filtration
+(\texttt{WeightedRipsPersistence} with \texttt{weights='DTM'}, a
+genuinely non-Rips construction); weak alpha was excluded from the
+time-series arm because it does not complete on the quantized series
+(Wafer, ElectricDevices, ECG5000), which is itself a portability result.
+For the two image datasets the filtrations were cubical and
+Vietoris--Rips. The four vectorizers (persistence image, persistence
+landscape, Betti curve, silhouette) and two classifiers (RBF-SVM,
+random forest) were unchanged, and evaluation used the same 5-fold
+stratified CV with seed 42 (rep 1). Across the nine datasets the
+filtration marginal range and the vectorization marginal range (each
+computed as the spread of stage-level means of per-config fold-mean
+accuracies) are summarized as follows. The vectorization range exceeds
+the filtration range on $7$ of the $9$ datasets; only HandOutlines
+($1.90$ vs.\ $4.22$ pp) and mnist10 ($2.80$ vs.\ $4.41$ pp) favour
+filtration. Across datasets the filtration range spans a minimum of
+$0.31$ pp, a median of $1.37$ pp, and a maximum of $4.41$ pp (mean
+$2.17$ pp), while the vectorization range spans a minimum of $0.62$ pp,
+a median of $3.32$ pp, and a maximum of $15.00$ pp (mean $5.11$ pp).
+Vectorization therefore still dominates on average, roughly $2.4\times$
+the filtration range; however the comparison is now built on a genuinely
+diverse non-Rips filtration rather than Vietoris--Rips alone, and the
+filtration range is no longer negligible (the previous single-filtration
+panel fixed that stage, making its contribution invisible). The
+vectorization lead is concentrated in the range's upper tail: removing
+the single largest value (fmnist10, $15.00$ pp) lowers the vectorization
+mean to $3.87$ pp, still above the filtration mean ($2.17$ pp) but by a
+narrower margin ($1.8\times$), so the headline that vectorization
+dominates is robust to the outlier while the magnitude of the lead is
+sensitive to it.
+\paragraph{Hyperparameter sensitivity (expansion B3).}
+To test whether the vectorizer effect is an artefact of the manuscript's
+default hyperparameters, we re-ran the two headline datasets (ECG200, Takens
+$d{=}3,\tau{=}1 \to$ Vietoris--Rips; binary MNIST at cubical),
+sweeping each of the four vectorizers' key hyperparameter one-parameter-at-a-time
+over a small grid with all other vectorizer parameters fixed at the manuscript
+defaults: persistence\_image $\sigma \in \{0.05,0.1,0.2,0.5\}$ and
+$n_{\textrm{bins}} \in \{10,20,50\}$; persistence\_landscape
+$n_{\textrm{layers}} \in \{1,3,5\}$ and $n_{\textrm{bins}} \in \{20,50,100\}$;
+silhouette and betti\_curve $n_{\textrm{bins}} \in \{10,20,50,100\}$, under
+random\_forest and svm\_rbf with 5-fold CV (seed 42, single split).
+\textbf{Tuning each vectorizer to its best setting on its own grid narrows
+rather than eliminates the vectorizer marginal range.} On ECG200 the range falls
+from $5.75$pp (defaults; vectorizer means $70.75$--$76.50\%$) to $4.75$pp
+(best-tuned; $71.75$--$76.50\%$)---a $1.00$pp ($\approx 17\%$) contraction---because
+tuning lifts the \emph{weakest} vectorizers: persistence\_image improves
+$70.75 \to 73.00$ (best at $\sigma{=}0.5$), overtaking betti\_curve ($71.75$),
+while the winner silhouette is already at its default ($76.50$). On binary MNIST
+the corresponding range is small throughout: $1.75$pp ($95.25$--$97.00\%$) at
+defaults vs $1.62$pp ($95.88$--$97.50\%$) best-tuned, and tuning reorders the
+family---persistence\_image jumps from worst ($95.25\%$) to best ($97.50\%$,
+$\sigma{=}0.5$), displacing betti\_curve ($97.38\%$).
+\textbf{Vectorizer dominance is therefore not a default-settings artefact: the
+$\approx 5$--$6$pp ECG200 vectorizer spread survives each vectorizer being tuned,
+and tuning neither creates nor destroys the small ($\lesssim 2$pp) MNIST spread;
+what it does do is compress the field from below, pulling the weakest vectorizers
+up toward the leader.} The best-tuned hyperparameters are persistence\_image
+$\{\sigma{=}0.5,\, n_{\textrm{bins}}{=}20\}$, persistence\_landscape
+$\{n_{\textrm{layers}}{=}5,\, n_{\textrm{bins}}{=}50\}$ (ECG200) /
+$\{n_{\textrm{layers}}{=}1,\, n_{\textrm{bins}}{=}50\}$ (MNIST), silhouette
+$\{n_{\textrm{bins}}{=}50\}$ (ECG200, already default) /
+$\{n_{\textrm{bins}}{=}100\}$ (MNIST), and betti\_curve
+$\{n_{\textrm{bins}}{=}50\}$ (ECG200, already default) /
+$\{n_{\textrm{bins}}{=}100\}$ (MNIST). These ranges are computed over a reduced
+configuration space (four vectorizers $\times$ one filtration $\times$ two
+classifiers), so their absolute values are not directly comparable to the
+headline $6.39$pp (ECG200) / $3.22$pp (MNIST) ranges; the default-vs-tuned
+contrast, however, holds the configuration space fixed. Best-tuned values carry
+mild selection optimism (each is selected on the same folds that score the
+range), which would tend to \emph{inflate} the tuned range, so the observed
+contraction is conservative.
 \textbf{TDA and raw features are complementary.} The classical
 baselines of \S4.3 beat TDA alone on both real datasets. To test
 whether TDA still adds value on top of raw features, the
