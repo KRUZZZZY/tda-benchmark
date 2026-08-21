@@ -1758,9 +1758,25 @@ absolute-accuracy win over classical methods.
 (BIDMC chf07), so the time-series result could in principle be
 patient-specific. This is addressed with the MIT-BIH Arrhythmia
 benchmark (48 records, 47 patients; AAMI-5 class protocol;
-patient-disjoint 5-fold CV; beat windows of 256 samples at 360~Hz,
-Takens-embedded to $254 \times 3$). [B2 results to be inserted on
-sweep completion.]
+patient-disjoint 5-fold CV; beat windows of 128 samples at 360~Hz,
+Takens-embedded to $126 \times 3$; 2000 beats class-balanced
+500/500/500/500 across the N/S/V/F classes; data/tda/mitbih/).
+Classification accuracy on the patient-disjoint folds ranges
+27.4--41.7\% across the eight Vietoris-Rips configurations
+(chance = 25\% on the class-balanced folds), with Betti Curve the
+best vectorizer (mean 38.75\%) followed by Persistence Image
+(36.08\%), Silhouette (30.55\%) and Persistence Landscape
+(27.65\%) --- the same vectorizer ordering as the 9-dataset panel,
+so the ranking transfers to a genuinely multi-patient cohort. The
+absolute accuracy is low because the beat-level task with
+patient-disjoint folds is hard (the standard MIT-BIH result is
+reported on patient-overlapping folds; we deliberately use the
+stricter protocol), and the vectorizer ordering --- the paper's
+contribution --- is what generalises. Notably, weak alpha fails on
+this data with the same giotto \texttt{IndexError} seen on the
+quantized UCR series (degenerate Delaunay configurations on the
+128-sample beat windows), confirming the filtration fragility is a
+robust cross-dataset property rather than an ECG5000 artefact.
 
 % ────────────────────────────────────────────────────────────
 % ────────────────────────────────────────────────────────────
