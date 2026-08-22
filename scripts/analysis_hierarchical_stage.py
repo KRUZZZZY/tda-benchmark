@@ -180,11 +180,12 @@ def fit_and_report(df: pd.DataFrame, db_name: str, label: str) -> str:
     lines.append(f"- residual variance: {resid:.3f} (SD {np.sqrt(resid):.2f} pp)")
     lines.append(f"- ICC (dataset share of total variance): {icc:.3f}")
 
-    # per-dataset BLUPs
+    # per-dataset BLUPs (statsmodels returns dict[str, Series] for a single
+    # random intercept — length-1 Series, NOT 1x1 DataFrames; use iloc[0])
     re = fit.random_effects
     lines.append("\n## Per-dataset random intercepts (BLUPs, pp)")
-    for ds in sorted(re, key=lambda k: -re[k].iloc[0, 0]):
-        lines.append(f"- {ds:<18} {re[ds].iloc[0, 0]:+.2f}")
+    for ds in sorted(re, key=lambda k: -re[k].iloc[0]):
+        lines.append(f"- {ds:<18} {re[ds].iloc[0]:+.2f}")
     return "\n".join(lines)
 
 
