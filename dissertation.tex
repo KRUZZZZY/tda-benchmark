@@ -187,8 +187,8 @@ Practitioners face a combinatorial problem: the TDA classification
 pipeline has three stages --- filtration, vectorization, and
 classification --- each with 5--15 available methods (surveys: Ali et al.\ \cite{ali2023} and Hensel et al.\ \cite{hensel2021}). The literature's most cited answer to ``which stage matters most?''
 comes from Conti et al.\ \cite{conti2022}, who showed that filtration
-choice on MNIST images can be catastrophic: accuracy ranged from 18\%
-(their cubical pipeline) to 94\% (improved filtrations), under 10-split
+choice on MNIST images can be catastrophic: accuracy ranged from 18\% (their H0-only naive cubical-binary
+pipeline) to 94\% (improved filtrations), under 10-split
 cross-validation with grid search. That study has sometimes been read
 as a general principle --- ``filtration dominates'' --- although the
 authors themselves did not claim one.
@@ -611,7 +611,7 @@ bottleneck implementation; 80 cloud/dimension pairs; \S4.2) are far
 below this: at $\sigma=0.15$ the mean is 0.144 and the maximum 0.300;
 at $\sigma=0.30$ the maximum is 0.434. The torus $H_1$ diagrams move
 by $d_B$ on average 0.283 at $\sigma=0.30$ --- below the measured
-$H_1$ persistence range [0.608, 1.156] --- so the features
+$H_1$ persistence range [0.556, 1.156] --- so the features
 comfortably survive the perturbation.
 
 % ────────────────────────────────────────────────────────────
@@ -765,7 +765,7 @@ executed in Chapter~4:
     2\sigma\sqrt{2\ln n}$, predicts that $\sigma = 0.15$ noise
     perturbs diagrams by $\lesssim 0.91$ (and $\sigma=0.30$ by
     $\lesssim 1.82$), while torus $\Betti_1$ features have measured
-    top-2 persistence range [0.608, 1.156] (ripser on the shipped
+    top-2 persistence range [0.556, 1.156] (ripser on the shipped
     clouds). \S4.2 confirms that classification survives this
     perturbation (measured $d_B$: max 0.300 at $\sigma=0.15$, max
     0.434 at $\sigma=0.30$).
@@ -823,9 +823,14 @@ where:
     By Takens' Delay Embedding Theorem \cite{takens1981}, if the signal $x$
     is a generic smooth measurement of a dynamical system on a
     compact manifold $M$ of dimension $d_M$, then $\Phi_{(d,\tau)}$
-    is an embedding provided $d > 2 d_M$. We use $d = 3$, $\tau = 1$
-    throughout (chosen to satisfy $d > 2 d_M$ for a 1D attractor;
-    sensitivity to $(d, \tau)$ is examined in Appendix~D).
+    is an embedding provided $d > 2 d_M$. We use the pragmatic defaults $d = 3$, $\tau = 1$ throughout.
+    Delay-embedding TDA is standard practice for time-series
+    classification \cite{perea2015,umed2017}; the recorded signals are
+    not established as generic measurements of a known-dimension
+    attractor, so the theorem's $d > 2 d_M$ condition is not asserted.
+    Embedding-parameter selection criteria are discussed by Kennel et
+    al.\ \cite{kennel1992} and Fraser--Swinney \cite{fraserswinney1986}.
+    Sensitivity to $(d, \tau)$ is examined in 
   \item \textbf{Filt}. Constructs a filtration $\{K_\varepsilon\}$
     from $Y$ and computes the persistence diagram
     $\mathcal{D} = \Dgm_0 \cup \Dgm_1$ (homology dimensions 0 and 1).
@@ -1363,11 +1368,12 @@ Persistence Entropy (a degenerate scalar) is worst on AUROC too.
 Second, the classifier range is driven by SVM-RBF's near-chance AUROC
 (0.47) on the entropy feature, i.e. the RBF classifier collapsed to the
 majority class there. Third, per-class recall exposes a severe
-imbalance failure that accuracy hides: the minor classes are largely
-unlearned (class 2, 96 samples, 17.6\% recall; class 3, 194 samples,
-34.5\%; class 4, 24 samples, 1.4\%, with Betti Curve and Silhouette at
-0\%), while the majority classes 0 and 1 are recovered at 76.5\% and
-72.0\%. So the reported accuracy (65.8\% best configuration) is
+imbalance failure that accuracy hides: pooling per-class recall over the
+10 completed configurations and 5 folds, the minor classes are largely
+unlearned (class 2, 96 samples, 16.3\% recall; class 3, 194 samples,
+31.8\%; class 4, 24 samples, 1.7\%, with Betti Curve and Silhouette at
+0\%), while the majority classes 0 and 1 are recovered at 73.9\% and
+71.8\%. So the reported accuracy (65.8\% best configuration) is
 carried almost entirely by the two largest classes; on extreme
 imbalance the TDA pipeline, like most discriminative classifiers,
 defaults to the majority. Calibration is likewise classifier-dependent:
@@ -1495,7 +1501,7 @@ well above the 50\% chance baseline, and the maximum measured
 bottleneck distance at this level is 0.434, less than a quarter of
 the corrected bound. The torus $H_1$ diagrams move on average by
 $d_B = 0.283$ at this level --- below the measured $H_1$ persistence
-range [0.608, 1.156] (top-2 persistences of the clean torus clouds,
+range [0.556, 1.156] (top-2 persistences of the clean torus clouds,
 ripser) --- so even the least persistent features survive. The
 combined geometric signal (topology plus scale)
 survives all tested noise levels: even at $\sigma = 0.30$, the
@@ -1653,9 +1659,9 @@ rows, so the pixel-grid topology is absent from the outset.
 Consistently, cubical beats Vietoris-Rips by $\sim$1.75pp
 best-of-family on binary MNIST (98.0\% vs.~96.25\%). Conti et
 al.~(2022) showed the same mechanism can be catastrophic at scale:
-on MNIST their accuracy ranged from 18\% (their cubical pipeline) to
-94\% (improved filtrations), under 10-split cross-validation with
-grid search. That study is a complementary case study of filtration
+on MNIST their accuracy ranged from 18\% (their H0-only naive
+cubical-binary pipeline) to 94\% (improved filtrations), under
+10-split cross-validation with grid search. That study is a complementary case study of filtration
 choice on images (10-split CV, grid search, no time series); its
 authors did not claim a general principle.
 
@@ -2424,9 +2430,9 @@ vectorizers $\times$ 2 classifiers):
     (2, 1) & 0.38pp & 2.12pp & 7.62pp \\
     (2, 2) & 1.00pp & 1.75pp & 7.75pp \\
     (2, 3) & 0.12pp & 2.62pp & 3.88pp \\
-    (3, 1) & 1.13pp & 1.38pp & 9.63pp \\
+    (3, 1) & 1.12pp & 1.38pp & 9.62pp \\
     (3, 2) & 1.00pp & 6.00pp & 8.75pp \\
-    (3, 3) & 0.13pp & 2.88pp & 7.38pp \\
+    (3, 3) & 0.12pp & 2.88pp & 7.38pp \\
     (4, 1) & 0.50pp & 5.50pp & 6.50pp \\
     (4, 2) & 0.00pp & 3.75pp & 8.25pp \\
     (4, 3) & 1.00pp & 2.00pp & 7.25pp \\
@@ -2590,6 +2596,30 @@ Comparative evaluation of persistence diagram vectorisation methods
 in classification tasks.
 \textit{Advances in Science and Technology Research Journal},
 20(7):54--70, 2026. DOI 10.12913/22998624/218660.
+
+\bibitem{perea2015}
+J.~A.~Perea and J.~Harer.
+Sliding windows and persistence: An overview of topological
+techniques for time series analysis.
+In \textit{Applied and Computational Topology}, AMS, 2015.
+
+\bibitem{umed2017}
+Y.~Umeda.
+Time series classification via topological data analysis.
+\textit{Transactions of the Japanese Society for Artificial
+Intelligence} 32(3), 2017.
+
+\bibitem{kennel1992}
+M.~B.~Kennel, R.~Brown, and H.~D.~I.~Abarbanel.
+Determining embedding dimension for phase-space reconstruction using
+a geometrical construction.
+\textit{Physical Review A} 45(6):3403--3411, 1992.
+
+\bibitem{fraserswinney1986}
+A.~M.~Fraser and H.~L.~Swinney.
+Independent coordinates for strange attractors from mutual
+information.
+\textit{Physical Review A} 33(2):1134--1140, 1986.
 
 \bibitem{takens1981}
 F.~Takens.
