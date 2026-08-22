@@ -1,0 +1,146 @@
+% ═══════════════════════════════════════════════════════════════════════════
+%  DRAFT — expansion item #17: "A decision tree for practitioners"
+%  Target: Chapter 6 (Conclusion and Operational Guidelines), insert after the
+%  closing paragraph ("...artefacts of this specific sweep.") and before the
+%  \newpage that precedes Appendix A (tex line ~2139).
+%
+%  STATUS: DRAFT for review. Not yet \input into dissertation.tex.
+%  Evidence grades: A = repeated-CV / CI-backed or replicated across datasets;
+%  B = single-split or r=5 with consistent replication; C = single observation.
+%  Every branch cites the paper's own tables/figures (§4.1–§4.3, §5.2, Table
+%  \ref{tab:stage_impact}, Figure \ref{fig:pareto}, Table \ref{tab:pareto}).
+%
+%  NOTE for the author: the reviewer's paraphrase "betti/PI top, landscape
+%  weakest" does NOT match the paper's numbers — Persistence Landscapes is the
+%  TOP vectorizer on ECG200 (75.32%, Table \ref{tab:stage_impact}) and
+%  Persistence Entropy is the weakest (68.95%); Betti Curve + Silhouette top
+%  ECG5000. The tree below uses the paper's actual numbers.
+% ═══════════════════════════════════════════════════════════════════════════
+
+\section{A Decision Tree for Practitioners}
+\label{sec:decision_tree}
+
+The conditionality established in this dissertation can be collapsed into a
+small decision tree. Each branch names the evidence that supports it and the
+grade of that evidence; grades follow the definitions above. The tree is
+deliberately conservative --- where the evidence is thin, the branch says so
+rather than pretending otherwise.
+
+\begin{enumerate}
+  \item \textbf{Modality.} The first question is the data modality.
+    \begin{enumerate}
+      \item \emph{Time series (after Takens embedding, $d{=}3$, $\tau{=}1$):}
+        spend your design budget on the \textbf{vectorizer}, not the
+        filtration. Vectorization is the dominant stage (ECG200 marginal range
+        $6.39$pp, 95\% CI [6.13, 6.65]; ECG5000 $24.89$pp; \S4.1, Table
+        \ref{tab:stage_impact}), while filtration contributes $0.69$pp
+        (CI [0.57, 0.81]) on ECG200. \emph{Grade A} (r$=$25, Nadeau--Bengio
+        corrected CIs exclude zero for the vectorizer only).
+      \item \emph{Images:} if the task is \textbf{binary}, vectorization still
+        leads (MNIST binary $3.22$pp vs.\ filtration $1.65$pp; r$=$5) but
+        filtration is no longer negligible --- prefer the \textbf{cubical}
+        filtration over Vietoris--Rips ($\sim$1.75pp best-of-family, 98.0\%
+        vs.\ 96.25\%; \S4.2). \emph{Grade B} (r$=$5, stable across all five
+        repetitions). If the task is \textbf{multi-class} ($\ge$10 classes),
+        the ordering flips: filtration becomes the larger marginal stage
+        (10-class MNIST: $4.53$pp vs.\ vectorizer $3.44$pp), though the swing
+        (9--10pp within a filtration) is far below Conti et al.'s 18--94\%
+        grid-search result (\S4.2). \emph{Grade B} (single sweep, 1000 samples).
+      \item \emph{Point clouds:} if the classes differ in topology (genus,
+        number of components) the pipeline separates them nearly perfectly and
+        no stage dominates (sphere/torus $\ge$99.5\% at $\sigma{=}0$, mean
+        99.99\%; \S4.2). If you must choose a stage to tune, choose the
+        classifier (its $3.50$pp range is the only non-negligible one on
+        saturated tasks). \emph{Grade A} for saturation; the matched-genus
+        control shows TDA retains 95.83\% at $\sigma{=}0.30$ where norm
+        features collapse to 48--58\% (\S4.2). \emph{Grade A}.
+    \end{enumerate}
+
+  \item \textbf{Budget: accuracy vs.\ runtime.} If wall-clock time is the
+    constraint:
+    \begin{enumerate}
+      \item \emph{Large $n$ ($\ge$10$^3$ points):} Sparse Rips is the only
+        filtration whose design point applies; Vietoris--Rips at $n{=}3000$ is
+        infeasible ($O(n^3)$ 2-simplices). \emph{Grade B} (B5 large-n sweep;
+        runtime row of the recommendation table).
+      \item \emph{Small $n$:} any of Vietoris--Rips, weak Alpha, or Cubical;
+        the 3--27\% wall-clock gap between them (\S4.3) rarely justifies
+        accuracy risk. Avoid weak Alpha on quantized UCR series (giotto
+        crashes; fragility is a first-class result, expansion \#11).
+        \emph{Grade A} (wall-clock recorded per configuration in the results
+        DBs).
+      \item \emph{Classifier:} prefer Random Forest or logistic regression on
+        TDA features; SVM-RBF collapses to the majority class (66.5\% on
+        ECG200) on both TDA-only and concatenated features (\S5.2).
+        \emph{Grade B}.
+    \end{enumerate}
+
+  \item \textbf{Noise level.} In the studied regime ($\sigma \le 0.30$
+    additive spatial Gaussian noise, $n{=}100$), noise robustness is not a
+    differentiator: mean accuracy across the 112 configurations at
+    $\sigma{=}0.30$ is 99.85\% (min 98.5\%), and measured bottleneck distances
+    (max 0.434) sit far below the corrected stability bound
+    ($2\sigma\sqrt{2\ln n} \approx 1.82$) --- the bound is conservative, not
+    tight (\S4.2). If your application lives in this regime, do not trade
+    accuracy for noise-robust filtrations (e.g.\ DTM-weighting gained range
+    but not headroom on ECG200; B1). \emph{Grade A}.
+
+  \item \textbf{Which vectorizer?} Prefer \emph{distributional} vectorizers
+    over scalar summaries:
+    \begin{enumerate}
+      \item Persistence Entropy --- the single-scalar-per-dimension
+        representation --- is the weakest vectorizer on ECG200 (69.3\%
+        single-split marginal; 68.95\% in the r$=$25 table) and catastrophic
+        on ECG5000 (36.9\% vs.\ 61.5\% for Betti Curve). \emph{Grade A}.
+      \item Top performers by dataset: Persistence Landscapes (ECG200,
+        75.32\%), Betti Curve and Silhouette (ECG5000, 61.5\%/61.8\%),
+        Betti Curve (10-class MNIST, 33.4\%). \emph{Grade B}.
+      \item Persistence Statistics is a zero-parameter, cheap default: within
+        0.3pp of Landscapes on ECG200 (74.8\%) and 2.1pp of the best MNIST
+        configuration (95.9\%; \S4.1). \emph{Grade B}.
+    \end{enumerate}
+
+  \item \textbf{Raw features vs.\ TDA.} On the datasets studied, raw features
+    beat TDA alone (ECG200 raw logistic 85.28\% vs.\ 83.0\% best TDA under
+    r$=$25; MNIST raw-pixel logistic 99.65\% vs.\ 98.0\%; \S4.3). Do not use
+    TDA as your \emph{only} feature source on such data. If you want the
+    geometric signal, \textbf{concatenate}: $[\text{raw} \| \text{TDA}]$
+    adds 0.35--1.72pp over the 25-repetition raw baselines (ECG200 87.0\%
+    vs.\ 85.28\%; MNIST 100.0\% vs.\ 99.65\%), never hurts with logistic or
+    Random Forest, and the benefit is confined to those two classifiers
+    (\S5.2). \emph{Grade B} (single protocol, both datasets).
+
+  \item \textbf{Is topology the target?} If the scientific question is about
+    shape --- cycle structure, genus, component counts (dynamical systems,
+    shape/geometry benchmarks) --- TDA is not a feature extractor to be
+    benchmarked against raw baselines; it is the object of study. The
+    matched-genus experiment is the proof of concept: TDA retains 95.83\%
+    where norm/scale features fail (48--58\%). The topology-wins regime
+    (expansion \#6) is designed to map this branch with the full stage
+    decomposition; until it runs, treat this branch as \emph{Grade C}.
+\end{enumerate}
+
+\begin{table}[H]
+  \centering
+  \caption{Decision tree summary with evidence grades (expansion \#17 draft).}
+  \label{tab:decision_tree}
+  \begin{tabularx}{\textwidth}{@{}l l X c@{}}
+    \toprule
+    Branch & Decision & Evidence (paper) & Grade \\
+    \midrule
+    Time series & tune vectorizer & ECG200 6.39pp [6.13, 6.65] r$=$25; ECG5000 24.89pp (\S4.1, Table \ref{tab:stage_impact}) & A \\
+    Image, binary & vectorizer first; cubical $>$ VR & MNIST 3.22 vs.\ 1.65pp r$=$5; 98.0 vs.\ 96.25\% (\S4.2) & B \\
+    Image, multi-class & filtration first & 10-class MNIST 4.53 vs.\ 3.44pp (\S4.2) & B \\
+    Point cloud & no stage dominates & $\ge$99.5\% all configs, $\sigma{=}0$; 99.85\% at $\sigma{=}0.30$ (\S4.2) & A \\
+    Speed, large $n$ & Sparse Rips & B5 large-n sweep (design point) & B \\
+    Speed, small $n$ & VR/weak Alpha/Cubical; no weak Alpha on quantized UCR & wall-clock in DBs (\S4.3); fragility finding & A \\
+    Classifier & RF / logistic; not SVM-RBF on TDA features & 66.5\% majority-class collapse (\S5.2) & B \\
+    Noise $\le 0.30$ & no robustness trade-off needed & 99.85\% mean; bottleneck 0.434 $\ll$ 1.82 (\S4.2) & A \\
+    Vectorizer & distributional $>$ scalar; entropy last & entropy 68.95\%/36.9\%; landscape 75.32\% (Tables \ref{tab:stage_impact}, \S4.1--\S4.2) & A \\
+    Raw available & concat $[\text{raw}\|\text{TDA}]$ with RF/logistic & +0.35--1.72pp over raw baselines (\S5.2) & B \\
+    Topology is the target & TDA as object of study & matched-genus 95.83 vs.\ 48--58\% (\S4.2); \#6 pending & C \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+%% END OF DRAFT — insertion point: Chapter 6, before the \newpage at tex ~line 2139.

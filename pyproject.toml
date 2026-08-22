@@ -1,0 +1,98 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# tda-benchmark — installable framework package (expansion item #20).
+#
+# Layout note: the framework package LIVES AT THE REPO ROOT (top-level
+# __init__.py with relative imports: .config, .factories, .runner, .storage).
+# The drivers in scripts/ load it via an importlib shim that registers the
+# repo-root __init__.py as the module "tda_benchmark". Installing this package
+# makes plain `import tda_benchmark` work, so the shim becomes redundant for
+# installed environments while remaining in place for the scripts/ workflow.
+#
+# Packaging: [tool.setuptools.package-dir] maps the package name tda_benchmark
+# to the repo root, so setuptools treats the root as the package directory.
+# Only root-level .py files are packaged; scripts/, tests/, drafts/, .github/
+# and data/ are excluded by the explicit `packages` list.
+# ─────────────────────────────────────────────────────────────────────────────
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tda-benchmark"
+version = "0.1.0"
+description = "Systematic benchmark of persistent homology pipelines for classification (filtration x vectorization x classifier x dataset)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Zachariah Markusson" }]
+keywords = [
+    "topological-data-analysis",
+    "persistent-homology",
+    "benchmark",
+    "classification",
+    "giotto-tda",
+]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+
+# Mirrors the production venv (.venv-tda, Python 3.12): sklearn 1.3.2,
+# gudhi 3.13.0, ripser 0.6.15, statsmodels 0.14.6. giotto-tda is required at
+# runtime (the factories import gtda lazily); it has no manylinux wheel for
+# Python 3.11+, so CI installs build-essential.
+dependencies = [
+    "giotto-tda>=0.6.2,<0.7",
+    "scikit-learn>=1.3.2",
+    "gudhi>=3.13.0",
+    "ripser>=0.6.15",
+    "numpy>=1.26,<2",
+    "scipy>=1.11",
+    "statsmodels>=0.14",
+    "matplotlib>=3.8",
+    "networkx>=3.0",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+# Test/dev extras (CI uses: pip install -e ".[dev]").
+dev = [
+    "pytest>=7",
+]
+# #8 learned vectorizers — deliberately a SEPARATE extra: torch must NOT go
+# into the production venv (see requirements-learned.md). Use a dedicated
+# .venv-perslay.
+learned = [
+    "torch>=2.0",
+    "perslay",
+]
+
+[project.scripts]
+tda-benchmark = "tda_benchmark.cli:main"
+
+[tool.setuptools]
+# Explicit package list: the root directory IS the tda_benchmark package.
+packages = ["tda_benchmark"]
+
+[tool.setuptools.package-dir]
+tda_benchmark = "."
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# --import-mode=importlib is REQUIRED here: the repo root contains
+# __init__.py (the tda_benchmark package lives at the root) and the root
+# directory is hyphenated ("tda-benchmark"), so pytest's default "prepend"
+# mode degenerates to importing the root __init__.py as a test module.
+# importlib mode imports each test module by file path — no package walk.
+# consider_namespace_packages=false stops pytest 9's package-root walk from
+# climbing through tests/ into the hyphenated root package (which cannot be
+# imported by name and breaks relative imports).
+addopts = "-q --import-mode=importlib"
+consider_namespace_packages = false

@@ -1,0 +1,161 @@
+% ═══════════════════════════════════════════════════════════════════════════
+%  DRAFT — expansion item #18: "Threats to validity"
+%  Target: Chapter 5, after "Non-Topological Context and Limitations" (\S5.2)
+%  or as a restructured replacement for it. The content is drawn from the
+%  paper's existing Limitations paragraph (\S5.2, tex lines 1751-1781) and the
+%  methodological caveats scattered through \S4.1-\S4.3 and \S5.2, reorganised
+%  into the standard construct / internal / external validity categories.
+%
+%  STATUS: DRAFT for review. Not yet \input into dissertation.tex.
+%  Each threat: description -> severity -> mitigation (done / planned
+%  expansion). Cross-references use the expansion numbering of
+%  EXPANSION_PLAN.md.
+% ═══════════════════════════════════════════════════════════════════════════
+
+\section{Threats to Validity}
+\label{sec:threats}
+
+We structure the limitations of \S5.2 into the three
+standard validity categories. The purpose is not to multiply caveats but to
+make explicit, for each threat, what was done to mitigate it and which
+expansion item closes the residual gap.
+
+\subsection{Construct Validity}
+\label{sec:threats_construct}
+
+Construct validity asks whether the measured quantity --- the marginal
+accuracy range of a pipeline stage --- actually captures ``stage importance''
+as claimed.
+
+\begin{enumerate}
+  \item \textbf{Range is confounded by the number of stage levels.} The
+    headline comparison (7 vectorizers vs.\ 3--4 filtrations) stacks the deck:
+    a stage with more levels can span a larger range by chance. \emph{Severity:
+    moderate.} \emph{Mitigation (done):} the $\omega^2$ population effect size
+    corrects for level counts (ECG200 vectorizer $\omega^2{=}0.165$, CI
+    [0.063, 0.423], vs.\ filtration $-0.017$; MNIST vectorizer 0.214 vs.\
+    filtration 0.143 --- the vectorizer CI excludes zero on both real datasets,
+    the ECG200 filtration CI straddles it); the equal-footing analysis matches
+    best-3 vectorizers against 3 filtrations; the two-way interaction ANOVA
+    (\S4.1) shows the stage decomposition is not an artefact of
+    main-effects-only modelling. \emph{Residual:} the levels-matched analysis
+    still compares the \emph{best} three vectorizers, which is mildly
+    favourable to the vectorizer stage.
+  \item \textbf{Scalar vectorizers create a floor effect.} Persistence Entropy
+    and Amplitude are single scalars; their poor accuracy inflates the
+    vectorizer range from the bottom. \emph{Severity: moderate.}
+    \emph{Mitigation (done):} ranges are also reported excluding the
+    degenerate scalar vectorizers (ECG200 vectorizer range contracts from
+    6.39pp to 3.10pp but remains the largest stage; \S4.1). \emph{Residual:}
+    the exclusion rule was applied post hoc, so the headline 6.39pp includes
+    the floor effect by design and the paper says so.
+  \item \textbf{Single-split point estimates are noisy.} Per-configuration
+    accuracy varies by 1.09pp on average across the five splits (max 3.11pp;
+    50 of 112 configurations exceed 1pp); the headline 83.0\% configuration
+    drops to 79.6\% at $r{=}5$ (rank 4). \emph{Severity: high for any
+    single-split number.} \emph{Mitigation (done):} all headline claims rest
+    on the r$=$25 repeated-CV protocol with Nadeau--Bengio corrected CIs
+    (vectorizer [5.69, 7.10], classifier [2.92, 4.07], filtration [0.37,
+    1.01], all excluding zero) and Friedman/sign-test inference on the
+    repetition-level ordering; single-split numbers are labelled as such
+    throughout. \emph{Residual:} MNIST binary is r$=$5, ECG5000 and the panel
+    were single-split at the time of writing (expansion \#5 closes this).
+  \item \textbf{Accuracy is the only outcome for most of the sweep.} F1,
+    precision, and recall are stored per fold but the analysis is
+    accuracy-centric. \emph{Severity: low-to-moderate.} \emph{Mitigation
+    (done):} beyond-accuracy analysis on ECG5000 (balanced accuracy, per-class
+    breakdowns; expansion \#14). \emph{Residual:} calibration and AUROC are
+    not uniform across datasets.
+\end{enumerate}
+
+\subsection{Internal Validity}
+\label{sec:threats_internal}
+
+Internal validity concerns confounds and measurement artefacts within the
+study.
+
+\begin{enumerate}
+  \item \textbf{Single implementation library.} Every filtration and
+    vectorizer runs through giotto-tda. \emph{Severity: moderate} --- the
+    weak-Alpha fragility (IndexError on quantized UCR series) proves
+    implementation dependence is real. \emph{Mitigation (planned):}
+    cross-library replication in GUDHI-native and Ripser-native paths
+    (expansion \#11), with the fragility reported as a first-class result.
+  \item \textbf{Homology capped at $H_1$.} $H_2$ requires $O(n^4)$ simplices
+    for Vietoris--Rips; the torus's $\beta_2$ is never measured.
+    \emph{Severity: moderate.} \emph{Mitigation (planned):} Alpha complex in
+    3D for $H_2$ (expansion \#9).
+  \item \textbf{Binary-only classification.} All datasets except ECG5000
+    (5 classes) are binary. \emph{Severity: moderate} --- the 10-class MNIST
+    probe shows the stage ordering flips at multi-class scale (filtration
+    4.53pp vs.\ vectorizer 3.44pp), so the binary result is a boundary
+    condition, not a law (\S4.2). \emph{Mitigation (done):} the flip is
+    reported; \emph{planned:} multi-class breadth (expansion \#6 datasets).
+  \item \textbf{Fixed hyperparameters.} No grid search on any stage, by
+    design. \emph{Severity: low} --- the hyperparameter arm (B3) shows
+    vectorizer dominance contracts but persists under one-parameter-at-a-time
+    tuning (ECG200 5.75$\rightarrow$4.75pp; MNIST 1.75$\rightarrow$1.62pp), so
+    dominance is not a default-settings artefact. \emph{Residual:} best-tuned
+    values carry mild selection optimism (selected on the same folds that
+    score the range), which would \emph{inflate} the tuned range --- the
+    observed contraction is therefore conservative.
+  \item \textbf{Subsampling choices.} Uniform random subsampling caps point
+    clouds; farthest-point sampling was deferred. \emph{Severity: low.}
+    \emph{Mitigation (done):} the FPS ablation (B4) finds no benefit
+    ($-0.25$pp overall; uniform wins at $k{=}15$, $\sigma{=}0.30$).
+  \item \textbf{The sphere/torus norm confound.} The classes differ in scale
+    as well as topology. \emph{Severity: moderate.} \emph{Mitigation (done):}
+    the matched genus-1/genus-2 control (identical norm distributions) shows
+    TDA retains 95.83\% where norm features collapse to 48--58\% at
+    $\sigma{=}0.30$. \emph{Residual caveat:} the matched pair is still
+    linearly separable in raw coordinates (logistic 100\% at both noise
+    levels, \texttt{baseline\_experiments.db}) --- the control isolates the
+    norm/scale confound, not linear separability in general.
+  \item \textbf{Determinism and exclusion discipline.} Seeds are fixed (base
+    42; per-repetition 43--67; per-dataset CRC32 subsampling), and the
+    56/672 excluded configurations (point-cloud filtrations on image data)
+    are counted and disclosed rather than silently dropped. ECG200 is
+    energy-normalised (sum of squares constant at 95.00 across all 200
+    signals), so the trivial-separator concern does not apply to the executed
+    data (\S4.1).
+\end{enumerate}
+
+\subsection{External Validity}
+\label{sec:threats_external}
+
+External validity asks how far the findings generalise beyond the studied
+configuration space.
+
+\begin{enumerate}
+  \item \textbf{Dataset breadth.} Two time series (ECG200, ECG5000), one
+    image pair (binary MNIST), and synthetic point clouds. \emph{Severity:
+    high.} \emph{Mitigation (done):} the 9-dataset panel (B2) replicates the
+    vectorizer $>$ filtration ordering on 7/9 datasets (median 3.32 vs.\
+    1.37pp; filtration wins on HandOutlines and 10-class MNIST), and the
+    within-filtration vectorizer span remains large even where filtration
+    leads (10-class MNIST: 9--10pp). \emph{Planned:} topology-wins datasets
+    (\#6), further UCR coverage, multi-patient ECG (MIT-BIH).
+  \item \textbf{Single-patient ECG5000.} ECG5000 is BIDMC chf07 --- one
+    patient. The time-series result could be patient-specific.
+    \emph{Severity: moderate.} \emph{Mitigation (planned):} multi-patient
+    MIT-BIH arrhythmia sweep; the panel adds ECG200/ECG5000 diversity but not
+    patient diversity.
+  \item \textbf{Hardware dependence of runtime results.} Wall-clock numbers
+    come from one workstation (8-core, 16GB). \emph{Severity: low for
+    ordering claims} (the 3--27\% filtration speed gap is structural: simplex
+    counts differ by construction, \S4.3), \emph{moderate for absolute
+    numbers}. \emph{Mitigation:} per-configuration wall times and peak memory
+    are stored in the results DBs; peak memory was not measured per stage.
+  \item \textbf{Missing method families.} No learned vectorizers (PersLay,
+    Hofer; \#8), no $H_2$ features (\#9), no cross-library replication
+    (\#11), no protein/graph modalities. \emph{Severity: moderate} --- each
+    is a named boundary of the current claim, and each maps to a registered
+    expansion. The paper's contribution is scoped accordingly: the internal
+    stage-importance decomposition and the framework, not an
+    absolute-accuracy win over classical methods (raw baselines beat TDA on
+    the studied sets; \S4.3, \S5.2).
+\end{enumerate}
+
+%% END OF DRAFT — reorganises \S5.2's Limitations paragraph into the three
+%% standard categories; safe to insert as-is or to replace the Limitations
+%% paragraph once the author has merged the two.

@@ -1,0 +1,88 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# tda-benchmark CI (expansion item #20).
+#
+# Two jobs, both non-compute:
+#   test   — Python 3.11, install the package from pyproject.toml, run the
+#            smoke test suite (tests/, <30 s, no sweeps).
+#   latex  — compile-check dissertation.tex with pdflatex (two passes for
+#            refs/TOC); fails on the first LaTeX error.
+#
+# Notes:
+#   * giotto-tda 0.6.2 has no manylinux wheel for CPython 3.11+, so the test
+#     job installs build-essential and compiles it. The gtda-dependent smoke
+#     tests use pytest.importorskip("gtda") and skip cleanly if it fails.
+#   * The repository's committed figures (figures/*.pdf) are used by the
+#     latex job; no figure regeneration happens in CI.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: smoke tests (py3.11)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install system build deps (giotto-tda compiles on 3.11)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential
+
+      - name: Install package + test deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Run smoke tests (light, no sweeps)
+        # pytest cannot collect this repo: the framework lives at the root
+        # (__init__.py) and the root dir is hyphenated ("tda-benchmark") —
+        # pytest 8/9 imports the root __init__.py under an invalid name and
+        # dies. tests/run_smoke.py runs the identical 6 tests directly
+        # (verified 6/6, 2026-08-22). See its docstring.
+        run: python tests/run_smoke.py
+
+  latex:
+    name: pdflatex compile check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install TeX Live (latex-base, latex-extra, science, fonts)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            texlive-latex-base \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-science \
+            lmodern
+
+      - name: Compile dissertation.tex (two passes for refs/TOC)
+        run: |
+          pdflatex -interaction=nonstopmode -halt-on-error dissertation.tex
+          pdflatex -interaction=nonstopmode -halt-on-error dissertation.tex
+
+      - name: Assert PDF produced
+        run: |
+          test -s dissertation.pdf
+          echo "dissertation.pdf OK ($(stat -c%s dissertation.pdf) bytes)"
