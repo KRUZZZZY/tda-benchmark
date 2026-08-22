@@ -128,14 +128,20 @@ available methods. Which stage matters most? Benchmarking all three
 stages simultaneously in a controlled factorial sweep --- 616
 configurations across 6 dataset instances, 4 filtrations, 7
 vectorizers, and 4 classifiers (56 runs failed and were excluded) --- we find that the
-vectorization stage dominates classification-accuracy variance on both
-real datasets: on ECG200 time series (Takens-embedded) it has a
-marginal range of 6.39pp across 7 vectorizers (95\% CI [6.13, 6.65];
-$\eta^2 = 0.217$) versus 0.69pp for filtration (95\% CI [0.57, 0.81]),
-and on binary MNIST it again leads (3.22pp; $\eta^2 = 0.302$) while
-the filtration effect is modest (cubical 98.0\% vs.\ Vietoris--Rips
-96.25\% best of family, 1.75pp). A second time series, ECG5000,
-replicates the hierarchy (24.89pp vs.\ 3.60pp). These results
+vectorization stage is the largest single main effect on
+classification-accuracy variance on both real datasets: on ECG200 time
+series (Takens-embedded) it has a marginal range of 6.39pp across 7
+vectorizers (95\% CI [6.13, 6.65]; $\eta^2 = 0.217$) versus 0.69pp for
+filtration (95\% CI [0.57, 0.81]). The raw margin is sensitive to the
+vectorizer menu: excluding the two single-scalar vectorizers
+(Amplitude, Persistence Entropy) cuts it to 3.10pp, and under
+level-matched comparison it narrows further (\S4.1). On binary MNIST it
+again leads (3.22pp; $\eta^2 = 0.302$) while the filtration effect is
+modest (cubical 98.0\% vs.\ Vietoris--Rips 96.25\% best of family,
+1.75pp). A second time series, ECG5000, shows the raw-menu replication
+(24.89pp vs.\ 3.60pp, single split, 3-vectorizer menu; \S4.1), but the
+level-matched comparison reverses there (filtration 3.60pp vs.\
+vectorizer 0.24pp), so the ECG5000 ordering is menu-dependent. These results
 complement, rather than refute, the image-data case study of Conti et
 al.\ \cite{conti2022}: their 18\%--94\% range spans a joint
 filtration-and-vectorization redesign --- from the H0-only naive
@@ -268,10 +274,11 @@ stage. Specifically:
     On binary MNIST the vectorizer again dominates (marginal range
     3.22pp versus 1.65pp for filtration), and cubical beats
     Vietoris-Rips by $\sim$1.75pp best-of-family (98.0\% vs.\
-    96.25\%); a second time-series dataset (ECG5000) replicates the
-    hierarchy (24.89pp versus 3.60pp). Filtration effects are
-    dataset-specific and modest on binary MNIST, not the governing
-    stage. Conti et al.'s MNIST case study (18\% with their cubical
+    96.25\%); a second time-series dataset (ECG5000) shows the raw-menu
+    replication (24.89pp versus 3.60pp; the level-matched comparison
+    reverses, \S4.1). Filtration choice is a second-order factor on
+    the datasets tested (exceptions in \S4.1 and \S5.3). Conti et
+    al.'s MNIST case study (18\% with their cubical
     pipeline to 94\% with improved filtrations, 10-class, grid
     search) is a complementary demonstration that a badly-matched
     filtration can be catastrophic on images; it does not establish a
@@ -831,7 +838,7 @@ where:
     computed on the training fold only and applied to the test fold
     without re-fitting, preventing cross-validation data leakage.
   \item \textbf{CLF}. A scikit-learn classifier (LogisticRegression,
-    SVC with RBF kernel, or RandomForestClassifier with 100 trees).
+    SVC with linear or RBF kernel, or RandomForestClassifier with 100 trees).
 \end{itemize}
 
 % ────────────────────────────────────────────────────────────
@@ -1064,15 +1071,15 @@ $F$-tests) to test whether the range exceeds sampling noise.
     resampled CIs are wider: vectorizer [5.69, 7.10], classifier
     [2.92, 4.07], filtration [0.37, 1.01], all excluding zero).
     $p$-values are $F$-test $p$-values from the per-configuration
-    three-way ANOVA (Table~\ref{tab:eta2}); the fold-level panel
-    below is descriptive only, as folds within a configuration share
+    three-way ANOVA (Table~\ref{tab:eta2}); the fold-level panel of
+    that table is descriptive only, as folds within a configuration share
     training data, so its $p$-values are anti-conservative. No
     multiplicity correction is applied across the three stage
     comparisons.}
 \end{table}
 
-Vectorization dominates: its range (6.39pp across 7 vectorizers)
-is an order of magnitude larger than filtration (0.69pp across 3
+Vectorization dominates on the full menu: its range (6.39pp across 7
+vectorizers) is roughly nine times larger than filtration (0.69pp across 3
 filtrations in the 25-repetition sweep; 0.70pp across 4 including
 Sparse Rips at $r{=}5$), and the ordering vectorizer $>$ classifier
 $>$ filtration was stable across all 25 CV repetitions. This
@@ -1128,8 +1135,9 @@ substantially (ECG200) or reverses (MNIST, ECG5000).
 
 \textbf{Simple versus complex.} Persistence Statistics matches
 kernel-based methods on ECG200: its $r{=}5$ marginal accuracy (74.8\%) is
-within 0.3pp of Persistence Landscapes (75.1\%), and it wins or ties
-in most of the 16 $r{=}5$ filtration--classifier cells.
+within 0.3pp of Persistence Landscapes (75.1\%), and it is best or
+tied in 3 of the 16 $r{=}5$ filtration--classifier cells (all under
+SVM-linear), ranking above the median vectorizer in most cells.
 Statistics likewise leads Persistence Images (72.9\%). On MNIST
 binary, Persistence Statistics reaches 95.9\% marginal accuracy,
 within 2.1pp of the best configuration overall (Cubical + Betti
@@ -1198,8 +1206,10 @@ set (1000 samples, 100 per class; cubical and Vietoris-Rips filtrations,
 filtration marginal range (4.53pp: cubical 29.1\% versus Vietoris-Rips
 33.7\%) now exceeds the vectorizer range (3.44pp: Betti Curve 33.4\% to
 Landscapes 30.0\%) and the classifier range (2.03pp). Within a single
-filtration the vectorizer span is larger --- cubical 10.40pp,
-Vietoris-Rips 9.10pp --- so the stage-dominance question is
+filtration the configuration span (vectorizer $\times$
+classifier) is larger --- cubical 10.40pp (max over repetitions,
+SVM-RBF), Vietoris-Rips 9.10pp (pooled, random forest) --- so the
+stage-dominance question is
 filtration-dependent (an interaction, \S4.1). Absolute accuracy is
 much lower than binary MNIST (best 37.8\%; chance 10\%), because
 ten-way separation is intrinsically harder. This is consistent with
@@ -1310,9 +1320,8 @@ ranks third by 25-repetition mean (79.30\%, SD 1.57pp), while cubical
 (82.82\% mean, $r{=}25$). Differences below $\sim$1pp between individual
 configurations should not be over-interpreted.
 
-\textbf{Generality probe: ECG5000.} To test whether
-vectorization-dominance is specific to ECG200, the stage analysis was
-run on ECG5000 (UCR archive; 5 classes; 140 timesteps; single
+\textbf{Generality probe: ECG5000.} The ECG200 result could be instance-specific, so the stage analysis
+was repeated on a second UCR recording, ECG5000 (UCR archive; 5 classes; 140 timesteps; single
 patient recording, BIDMC chf07) with the same 5-fold protocol on a
 stratified subsample of 714 samples ($\le 200$ per class) drawn from
 the full 5000-sample recording (class counts 2919, 1767, 96, 194,
@@ -1323,6 +1332,10 @@ share is 28.0\%) and a pipeline subset (2 filtrations,
 weakest vectorizers from ECG200 to bound the range). Two of the
 twelve configurations fail on a technicality
 (silhouette-on-weak-alpha produces NaN features) and are excluded.
+Both failures are weak-alpha cells, so the weak-alpha marginal is
+computed over 4 configurations while the Vietoris-Rips marginal uses
+6 including silhouette --- the filtration range is therefore computed
+on non-matching vectorizer menus.
 Because the classes are severely imbalanced, we report balanced
 accuracy and macro-$F_1$ alongside plain accuracy. The result
 replicates the hierarchy: vectorizer marginal range 24.89pp versus
@@ -1383,8 +1396,10 @@ Betti Curve + SVM-RBF falls from 80.5\% to 66.5\% and the
 Persistence Image family from 76.5--82.0\% to 64.0--76.5\%.
 Column shuffling is milder (mean 72.45\%; the Takens-coordinate order
 carries less information than the time-window order), and
-Persistence Landscape is essentially permutation-invariant (72.5--80.0\%
-unshuffled vs.\ 79.0--83.5\% shuffled). The cubical result is
+Persistence Landscape is the only vectorizer whose accuracy \emph{rises}
+under row shuffling (72.5--80.0\% unshuffled, mean 75.5, vs.\ 79.0--83.5\%
+shuffled, mean 82.4; $+6.9$pp), so it is grid-antagonistic rather than
+grid-driven --- but it is not permutation-invariant. The cubical result is
 therefore partly grid-structure-driven: the time-window layout of the
 embedded signal contributes real signal for the top vectorizers, so
 the cubical-on-grid accuracy should not be read as a pure
@@ -1448,10 +1463,12 @@ applied as $\eta_i \sim \mathcal{N}(0, \sigma^2 I_3)$ to Euclidean
 coordinates (Equation~\ref{eq:noise}). Gaussian noise has unbounded
 support, so no deterministic bound on the perturbation exists; instead
 we use the corrected probabilistic bound of \S2.4
-(Equation~\ref{eq:db_bound}): typically the bottleneck
-distance between clean and noisy diagrams is at most
-$2\sigma\sqrt{2\ln n}$, i.e.\ $d_B \lesssim 0.91$ at
-$\sigma=0.15$ and $\lesssim 1.82$ at $\sigma=0.30$ for $n=100$.
+(Equation~\ref{eq:db_bound}). That bound is a typical-scale
+estimate whose threshold the perturbation maximum exceeds with
+probability $\approx 93\%$ at $d{=}3$ (\S2.4), so the empirical
+check is the measured $d_B$ itself, which stays far below the
+bound (max 0.300 at $\sigma{=}0.15$, max 0.434 at $\sigma{=}0.30$;
+the $2\sigma\sqrt{2\ln n}$ values are $0.91$ and $1.82$ for $n{=}100$).
 
 \begin{figure}[H]
   \centering
@@ -1791,7 +1808,7 @@ binary 0/1 subset \cite{lecun1998}. The main sweep's SQLite result
 database is regenerated by the bundled \texttt{run\_all.sh} script,
 and every follow-up analysis has a bundled producer:
 \path{scripts/sweep_repeated_cv_r25.py} writes
-\path{data/tda/repeated_cv_r25.db} (2100 runs: 84 configurations
+\path{data/tda/repeated_cv_r25.db} (2100 finished runs: 84 configurations
 $\times$ 25 repetitions), analysed by
 \path{scripts/analysis_repeated_cv_r25.py};
 \path{scripts/analysis_eta_omega2.py} produces the $\eta^2$/$\omega^2$
@@ -1832,19 +1849,17 @@ was not measured per stage (see Limitations).
 
 The stage-impact analysis of \S4.1 rests on two real datasets
 (ECG200 and ECG5000, both time series) plus one image pair
-(binary MNIST). To test whether the vectorization-dominance
-ordering is a general property rather than a property of these
-instances, the same pipeline machinery was run on a wider benchmark
-panel: five additional time-series datasets (FordA, FordB, Wafer,
-ElectricDevices, HandOutlines from the UCR archive) and two
-10-class image datasets (full MNIST and Fashion-MNIST, subsampled
-to 1000 stratified samples each for runtime), all through the
-repository's own runner with the paper's Takens embedding
-($d{=}3,\tau{=}1$; long series pre-subsampled to 100 points, uniform
-random with a fixed seed, matching the runner's subsampling
-convention --- disclosed because the runner's
-\texttt{subsample\_points} knob only fires on 3-D point-cloud
-input, so series length was capped at data-preparation time).
+(binary MNIST). To test whether the ordering is a general property rather than a
+property of these instances, the same machinery was run on a wider
+panel: five additional UCR time-series datasets (FordA, FordB, Wafer,
+ElectricDevices, HandOutlines) and two 10-class image datasets (full
+MNIST and Fashion-MNIST, subsampled to 1000 stratified samples each
+for runtime), all through the repository's own runner with the
+paper's Takens embedding ($d{=}3,\tau{=}1$). Long series were
+pre-subsampled to 100 points with a fixed-seed uniform draw; this
+was necessary because the runner's \texttt{subsample\_points} knob
+fires only on 3-D point-cloud input and never caps 2-D series, so
+series length was capped at data-preparation time.
 This is the canonical Dem\v{s}ar multi-dataset protocol: one
 accuracy estimate per (dataset, configuration), ranked within each
 dataset, Friedman test across configurations, Nemenyi post-hoc
@@ -1913,11 +1928,15 @@ Persistence Image 4.22, Silhouette 4.69, Persistence Landscape 6.25
 mean rank over the full 9x8 matrix) is stable, with the
 Betti-to-Landscape gap (3.42) exceeding the CD. The classifier effect is smaller (random forest 3.51 vs SVM-RBF 5.49, gap 1.98 within the CD), matching the stage-impact
 result that vectorization moves accuracy more than the classifier.
-The cross-dataset ranking is therefore consistent with the
-within-dataset finding of \S4.1: \emph{vectorizer choice is the
-dominant, portable stage; the best vectorizer is data-set stable
-(Betti Curve), while filtration and classifier effects are
-secondary and dataset-specific.}
+The configuration-ranking analysis therefore supports \emph{vectorizer
+choice as the portable driver of the ranking: the best vectorizer is
+data-set stable (Betti Curve), with a Betti-to-Landscape rank gap
+exceeding the critical difference}. The range analysis, however, is
+dataset-conditional: the vectorizer range exceeds the filtration range
+on 7 of the 9 panel datasets but not on HandOutlines or 10-class MNIST,
+where filtration leads (\S5.3); and the level-matched comparison
+reverses on ECG5000 and MNIST (\S4.1). Filtration and classifier
+effects are therefore not universally secondary.
 
 \textbf{Panel with a diverse filtration set.} We re-ran the
 nine-dataset panel with more than one \emph{working} filtration per
@@ -2007,8 +2026,11 @@ MNIST binary cubical + Betti Curve + logistic achieves 100.0\%
 ECG200 weak-alpha + Betti Curve + logistic achieves 87.0\% (concat)
 versus 85.28\% (raw logistic, 25-rep) and 72.5\% (TDA-only, same
 configuration). The improvement is modest (0.35--1.72pp against the 25-repetition raw baselines)
-but consistent and never harmful when the classifier handles TDA
-features; SVM-RBF collapses to the majority class on TDA features
+and, relative to the TDA-only arm, never harmful (every concatenated
+configuration reaches or exceeds its TDA-only counterpart); against
+the raw baselines, however, the gain is configuration-dependent and
+sometimes negative (e.g.\ ECG200 VR+PI+logistic concat 77.0\% vs.\ raw
+85.5\%). SVM-RBF collapses to the majority class on TDA features
 (66.5\% on ECG200) in both TDA-only and concatenated arms, so the
 concatenation benefit is confined to logistic and random forest.
 TDA therefore contributes complementary signal rather than
@@ -2228,7 +2250,7 @@ evaluation:
   repetitions: 1
 
 output:
-  db_path: \texttt{data/tda/expanded\_results.db}
+  db_path: data/tda/expanded_results.db
   log_level: WARNING
 \end{lstlisting}
 
@@ -2546,9 +2568,9 @@ repr\'esentations.
 
 \bibitem{perea2022}
 J.~A.~Perea, E.~Munch, and F.~Khasawneh.
-Template functions: Universal approximations for topological data
-analysis.
-\textit{Foundations of Computational Mathematics}, 2022.
+Approximating continuous functions on persistence diagrams using
+template functions.
+\textit{Foundations of Computational Mathematics} 23(4):1215--1272, 2023.
 
 \bibitem{rucco2016}
 M.~Rucco, F.~Castiglione, E.~Merelli, and M.~Pettini.
