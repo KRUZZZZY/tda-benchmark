@@ -2097,6 +2097,38 @@ vectorizers should be read as window-specific.
 
 % ────────────────────────────────────────────────────────────
 % ────────────────────────────────────────────────────────────
+
+\textbf{Sparse Rips at its design point (expansion B5).} The
+guideline row for large-scale clouds rested on the untested premise
+that Sparse Rips becomes advantageous at $n \ge 10^3$. To test this
+directly, sphere/torus clouds at $n{=}1000$ and $n{=}3000$ points
+(40 samples each, seed 42) were generated and Sparse Rips was run at
+both scales, with a Vietoris--Rips control at $n{=}1000$
+($n{=}3000$ Vietoris--Rips is infeasible: $C(3000,3)$ simplices);
+four configurations per arm (Betti Curve / Persistence Landscape
+$\times$ Random Forest / RBF-SVM), 5-fold stratified CV, seed 42,
+rep 1 (\texttt{data/tda/large\_n\_sweep\-db}, 8 finished runs). At
+$n{=}1000$ the two filtrations are accuracy-identical --- all eight
+configurations score $100.00\%$ ($+0.00$~pp mean difference) --- but
+Sparse Rips is roughly $30\times$ slower: $1.83$~h per configuration
+versus $3.6$~min for Vietoris--Rips (giotto-tda 0.6.2, single CPU).
+At $n{=}3000$ Sparse Rips did not complete a single configuration
+within $42$~h of wall time across two attempts (interrupted by
+hardware reboots; giotto-tda offers no mid-configuration
+checkpointing, so each restart re-runs the configuration from
+scratch). The design-point premise is therefore not supported in
+this implementation: at the scale where Sparse Rips is intended to
+pay off, giotto-tda 0.6.2's \texttt{SparseRipsPersistence} is
+substantially \emph{slower} than Vietoris--Rips at $n{=}1000$ and
+practically infeasible at $n{=}3000$ on this hardware. The guideline
+row for large-scale clouds is revised accordingly: Vietoris--Rips
+remains the pragmatic choice up to the largest $n$ at which it is
+feasible, and Sparse Rips is recommended only with an
+implementation-level benchmark at the target $n$ (its runtime is not
+monotone-friendly in giotto-tda 0.6.2 --- a portability finding in
+its own right).
+
+
 \section{Operational Guidelines for Pipeline Selection}
 % ────────────────────────────────────────────────────────────
 
@@ -2117,7 +2149,7 @@ would strengthen or qualify each entry.
     Low-dim.~point clouds ($\le 3$D, clean) & Weak Alpha & Pers.~Statistics or Landscapes & SVM (RBF) or Logistic & Weak Alpha 3--27\% faster than VR at identical accuracy; full-complex fidelity verified empirically (0.0--0.8pp at 2--5$\times$ cost) \\
     Delay-embedded time series ($d \ge 3$) & VR or Weak Alpha & Betti Curves & RF or SVM (RBF) & Vectorization dominates variance (6.39pp on ECG200; 24.89pp on ECG5000) \\
     High-noise clouds ($\sigma \ge 0.15$) & Weak Alpha or VR & Betti Curves & SVM (RBF) & All vectorizers maintain $\ge 98.5\%$ at $\sigma=0.30$ (minimum over configurations); measured $d_B$ far below the stability bound \\
-    Large-scale clouds ($n \ge 10^3$) & Sparse Rips & Pers.\ Images or Betti Curves & Random Forest & Sparse Rips designed for $n \ge 10^3$; its benefit is untestable at $n=100$ in this sweep \\
+    Large-scale clouds ($n \ge 10^3$) & Vietoris--Rips & Pers.\ Images or Betti Curves & Random Forest & Sparse Rips designed for $n \ge 10^3$; at $n{=}1000$ it is $30\times$ slower than VR at identical accuracy, and at $n{=}3000$ it did not finish in $42$~h (giotto-tda 0.6.2, \S5.4) --- benchmark the implementation before choosing it \\
     \bottomrule
   \end{tabularx}
 \end{table}
