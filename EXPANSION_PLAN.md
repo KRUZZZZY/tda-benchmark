@@ -131,7 +131,7 @@ Statuses reflect the repo state at the time of recording (HEAD `c3ae98b`). "Part
 | 4 | 2 | Scale panel + make it stage-capable | ✅ Done | B2 (30dba49): 9-dataset panel with 2 working filtrations per modality; vec range > fil range on 7/9 (median 3.32 vs 1.37pp); fil wins on HandOutlines + 10-class MNIST |
 | 5 | 2 | Repeated CV everywhere claims are | 🟡 Partial | ECG200 r=25 ✅; MNIST r=5; ECG5000/genus/panel single-split |
 | 6 | 2 | Topology-wins regime (Outex, dynamical systems, ModelNet, proteins) | 🔲 Open | Matched-genus = halfway |
-| 7 | 2 | Full 10-class MNIST + n≥10³ clouds | 🟡 Partial | 10-class MNIST ✅ (A3, 6f32a23); n≥10³ = B5 |
+| 7 | 2 | Full 10-class MNIST + n≥10³ clouds | 🟡 Partial | 10-class MNIST ✅ (A3, 6f32a23); n≥10³ = B5 (ac1162d): n=1000 8/8 configs 100.00% both filtrations, sparse 1.83h vs VR 3.6min (~30×); n=3000 INFEASIBLE on this hardware — 0 completions in ~42h across 2 reboot-killed attempts, no giotto mid-config checkpoint; guideline row revised to VR + benchmark-implementation-first |
 | 8 | 3 | Learned vectorizers (PersLay / Hofer) | 🔲 Open | Potential novelty driver |
 | 9 | 3 | H₂ homology (Alpha-3D / Flood Complex) | 🔲 Open | Torus β₂ currently thrown away |
 | 10 | 3 | Hyperparameter-sensitivity arm | ✅ Done | B3 (30dba49): one-param-at-a-time grids; vec range 5.75→4.75pp (ECG200), 1.75→1.62pp (MNIST); dominance not a default-settings artefact |

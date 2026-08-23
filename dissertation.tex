@@ -1612,9 +1612,9 @@ union-of-balls; the executed \texttt{WeakAlphaPersistence} is an
 approximation, and its accuracy matches the full complex (mean
 difference 0.0--0.8pp) at 2--5$\times$ lower cost. Sparse Rips takes
 12--77~s (mean 41~s; main 140-run sweep) with no accuracy gain at
-the 100-point scale; its design
-target ($n \ge 10^3$) is outside this benchmark's subsampling
-regime. Both speed multipliers are specific to the 100-point
+the 100-point scale; at its design target ($n \ge 10^3$) it is
+substantially slower than Vietoris--Rips at $n{=}1000$ and
+infeasible at $n{=}3000$ (\S5.4). Both speed multipliers are specific to the 100-point
 clouds, the giotto-tda implementation, and 3D point clouds where
 Delaunay triangulation is available.
 
