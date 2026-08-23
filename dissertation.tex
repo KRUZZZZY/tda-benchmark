@@ -2238,6 +2238,33 @@ carries the classification signal, and the filtration stage's
 contribution grows modestly rather than reversing the ordering.
 
 
+\paragraph{Cross-library replication (expansion 11).} The sweeps run
+entirely through giotto-tda, so the accuracy results could in
+principle be library-specific. A representative subset --- the
+sphere/torus pair at $\sigma{=}0$ and $\sigma{=}0.30$ and the
+Takens-embedded ECG200 clouds --- was therefore re-run through three
+independent persistence engines: gudhi's true Alpha complex and Rips
+complex, and Ripser's Vietoris--Rips, alongside the giotto reference
+arm, sharing the same vectorizers, classifiers, folds, and diagram
+format (5-fold CV seed 42 rep 1; three vectorizers $\times$ two
+classifiers;
+\texttt{data/tda/cross\_library\_sweep.db}, 90 finished runs). On the
+synthetic clouds the results are exactly library-invariant: all four
+arms score $100.00\%$ on every configuration at both noise levels. On
+ECG200 the Vietoris--Rips arms agree to the decimal across libraries
+(giotto, gudhi, and Ripser all give $77.0\%$/$75.0\%$/$73.0\%$/$76.0\%$
+on the four RF/landscape configurations), and the only visible
+deviation is the true gudhi Alpha complex --- a genuinely different
+complex on Takens-embedded points --- at $74.5\%$/$73.5\%$ on two
+configurations ($-2.5$/$-1.5$~pp), still within the single-split noise
+band. The SVM-RBF majority-class collapse ($66.5\%$ on ECG200)
+reproduces identically in all four libraries. The accuracy results are
+therefore library-invariant: they do not rest on giotto-tda-specific
+behaviour, and the previously documented filtration fragility
+(weak-alpha on quantized series) is the library-dependence that
+matters, not the accuracy outcomes.
+
+
 \section{Operational Guidelines for Pipeline Selection}
 % ────────────────────────────────────────────────────────────
 
