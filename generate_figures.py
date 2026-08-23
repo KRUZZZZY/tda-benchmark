@@ -144,23 +144,32 @@ def fig_stage_impact(cur):
         stages["Vectorizer"][vec] = stages["Vectorizer"].get(vec, []) + [acc]
         stages["Classifier"][clf] = stages["Classifier"].get(clf, []) + [acc]
 
-    fig, ax = plt.subplots(figsize=(9, 3.4))
+    fig, ax = plt.subplots(figsize=(9, 3.8))
     labels, means, errs, colors = [], [], [], []
     palette = [ORANGE, BLACK, GREY, LIGHT]
     for si, (stage, groups) in enumerate(stages.items()):
         order = sorted(groups.items(), key=lambda kv: -np.mean(kv[1]))
         for gi, (name, accs) in enumerate(order):
-            labels.append(f"{stage}\n{name}")
+            # Single-line tick labels; the stage name moves to the legend.
+            # Long snake_case names at 6.5pt were the legibility killer.
+            labels.append(name.replace("_", " "))
             means.append(np.mean(accs) * 100)
             errs.append(np.std(accs) * 100 / np.sqrt(len(accs)))
-            colors.append(palette[gi % len(palette)])
+            colors.append(palette[si % len(palette)])
     x = np.arange(len(labels))
     ax.bar(x, means, yerr=errs, capsize=3, color=colors, alpha=0.9,
            edgecolor="black", linewidth=0.4)
+    # Separators between the Filtration / Vectorizer / Classifier blocks
+    for cut in np.cumsum([len(g) for g in stages.values()])[:-1]:
+        ax.axvline(cut - 0.5, color=GREY, lw=0.8, ls=":")
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, fontsize=6.5)
+    ax.set_xticklabels(labels, fontsize=8, rotation=30, ha="right")
     ax.set_ylabel("Marginal accuracy (%)")
     ax.set_title("Stage impact on ECG200 (marginal accuracy, $\\pm$1 SE)", fontsize=10)
+    from matplotlib.patches import Patch
+    ax.legend(handles=[Patch(facecolor=palette[i], label=stage)
+                       for i, stage in enumerate(stages)],
+              loc="upper right", fontsize=8, frameon=False)
     ax.axhline(50, color=GREY, lw=0.8, ls="--")
     fig.tight_layout()
     fig.savefig(os.path.join(OUT, "fig_stage_impact.pdf"), bbox_inches="tight")

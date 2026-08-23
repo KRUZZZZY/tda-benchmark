@@ -137,12 +137,12 @@ Statuses reflect the repo state at the time of recording (HEAD `c3ae98b`). "Part
 | 10 | 3 | Hyperparameter-sensitivity arm | ✅ Done | B3 (30dba49): one-param-at-a-time grids; vec range 5.75→4.75pp (ECG200), 1.75→1.62pp (MNIST); dominance not a default-settings artefact |
 | 11 | 3 | Cross-library replication (GUDHI/Ripser-native) | ✅ Done | #11 (f95f441): cross_library_sweep.db 90/90 — sphere/torus exact parity across giotto/gudhi-alpha/gudhi-rips/ripser (100.00%); ECG200 VR arms agree to the decimal; svm_rbf collapse identical in all 4; results library-invariant |
 | 12 | 3 | FPS ablation | ✅ Done | B4 (30dba49): FPS vs uniform at k=50/15 on sphere/torus n0/n30; no benefit (−0.25pp overall; uniform wins at k=15/σ=0.30); limitation #1 closed |
-| 13 | 4 | Predictive theory (stability constant vs range) | 🟡 Partial | Analysis run 2026-08-22: NULL result — rho=−0.129, 95% CI [−0.672,+0.469] includes 0; paper must not claim a stability→range link; paper text pending |
+| 13 | 4 | Predictive theory (stability constant vs range) | ✅ Done | NULL result rho=−0.129 CI [−0.672,+0.469]; honest-null paragraph inserted (08db71b) |
 | 14 | 4 | Calibration / AUROC / per-class | ✅ Done | ECG5000 beyond-accuracy (92da848) |
-| 15 | 4 | Hierarchical model of stage effects | 🟡 Partial | Analysis run 2026-08-22 (MixedLM, commit 22602ef): classifier is the LARGEST fixed stage effect (clf 1.81 > fil 1.71 > vec 1.18pp, ICC 0.927) — qualifies the vectorizer-dominance headline; paper text pending |
-| 16 | 5 | Fig 4.1 labels + Appendix A \texttt leak | 🔲 Open | Line 83 |
-| 17 | 5 | Ch. 6 practitioner decision tree | 🔲 Open | With evidence grades |
-| 18 | 5 | Threats-to-validity section (§5.2 → construct/internal/external) | 🔲 Open | |
+| 15 | 4 | Hierarchical model of stage effects | ✅ Done | MixedLM clf-largest; paragraph inserted with both-orderings framing (08db71b) |
+| 16 | 5 | Fig 4.1 labels + Appendix A \texttt leak | ✅ Done | Appendix A leak already fixed (976bbd3); fig_stage_impact renderer fixed (rotation=30, fontsize=8, stage legend, block separators) + regenerated 2026-08-23 |
+| 17 | 5 | Ch. 6 practitioner decision tree | ✅ Done | §6.1 decision tree with A/B/C evidence grades + summary table (08db71b) |
+| 18 | 5 | Threats-to-validity section (§5.2 → construct/internal/external) | ✅ Done | §5.5 threats-to-validity with DB-verified mitigations (08db71b) |
 | 19 | 5 | Pre-register expansion sweeps (dated protocol file) | 🔲 Open | |
 | 20 | 5 | Installable framework package + CI; companion framework paper | 🔲 Open | TopoBench-style / NeurIPS D&B |
 

@@ -99,14 +99,14 @@ EXPANSION_PREP conventions):
 | B2 | #4 Stage-capable multi-dataset panel (9 datasets) | `scripts/sweep_panel_stagecapable.py` | `panel_stagecapable.db` | Done (commit 30dba49) |
 | B3 | #10 Hyperparameter-sensitivity arm | `scripts/sweep_hyperparam.py` | `hyperparam_sweep.db` | Done (commit 30dba49) |
 | B4 | #12 FPS vs uniform subsampling | `scripts/sweep_fps_ablation.py` | `fps_ablation.db` | Done (commit 30dba49) |
-| B5 | #7b Sparse Rips at design point, n ∈ {1000, 3000} | `scripts/sweep_large_n.py` | `large_n_sweep.db` | **RUNNING** (2026-08-22) |
-| #5r | #5 r=25 repeated CV residuals (ECG5000 subset, matched-genus, panel subset) | `scripts/sweep_r25_ecg5000.py`, `sweep_r25_genus.py`, `sweep_r25_panel.py` (pattern: `sweep_repeated_cv_r25.py`) | `repeated_cv_r25.db` (extended) | Prepared (not run) |
-| #6 | #6 Topology-wins regime (Lorenz/Rössler/double-well, Outex, ModelNet10, protein proxy) | `scripts/sweep_topology_wins.py` + `generate_dynamical_systems.py`, `download_outex.py`, `download_modelnet.py` | `topology_wins.db` (planned) | Prepared (not run) |
-| #8 | #8 Learned vectorizers (PersLay, Hofer deep-set) | `scripts/sweep_learned_vectorizers.py` (factory stubs already in `factories.py`, torch NOT in venv) | `learned_vectorizers.db` (planned) | Stubs prepared; sweep not run |
-| #9 | #9 H₂ homology (Alpha complex in 3D, sphere/torus β₂) | `scripts/sweep_h2_alpha.py` | `h2_alpha.db` (planned) | Prepared (not run) |
-| #11 | #11 Cross-library replication (gudhi-native, ripser-native, giotto) | `scripts/sweep_cross_library.py` | `cross_library.db` (planned) | Prepared (not run) |
-| #13 | #13 Predictive theory: stability constant vs empirical range (Spearman ρ + bootstrap CI) | `scripts/analysis_predictive_theory.py` (analysis-only, existing DBs) | reads `repeated_cv_r25.db`, `expanded_results.db`, `panel_stagecapable.db` | Script written (uncommitted); not run |
-| #15 | #15 Hierarchical stage model (statsmodels MixedLM; datasets = random effects) | `scripts/analysis_hierarchical_stage.py` (analysis-only) | reads `panel_stagecapable.db` | Script written (uncommitted); not run |
+| B5 | #7b Sparse Rips at design point, n ∈ {1000, 3000} | `scripts/sweep_large_n.py` | `large_n_sweep.db` | Done (commit ac1162d): n=1000 8/8 @100.00%, sparse ~30× slower than VR; n=3000 0/2 in ~42h — infeasible, disclosed |
+| #5r | #5 r=25 repeated CV residuals (ECG5000 subset, matched-genus, panel subset) | `scripts/sweep_r25_ecg5000.py`, `sweep_r25_genus.py`, `sweep_r25_panel.py` (pattern: `sweep_repeated_cv_r25.py`) | `r25_ecg5000.db`, `r25_genus.db`, `r25_panel.db` | RUNNING (2026-08-23); results pending |
+| #6 | #6 Topology-wins regime (Lorenz/Rössler/double-well, Outex, ModelNet10, protein proxy) | `scripts/sweep_topology_wins.py` + `generate_dynamical_systems.py`, `download_outex.py`, `download_modelnet.py` | `topology_wins_sweep.db` | Done (commit 1fff5a1): 80/80; VEC 3.75–13.75pp > FIL 1.04–5.10pp on dynamical sets; vectorization-dominance survives |
+| #8 | #8 Learned vectorizers (PersLay, Hofer deep-set) | `scripts/sweep_learned_vectorizers.py` (factory stubs already in `factories.py`, torch NOT in venv) | `learned_vectorizers_sweep.db` (planned) | Prepared-not-run: driver validated + resume bug fixed (b5522e8); needs torch+perslay in separate `.venv-perslay` |
+| #9 | #9 H₂ homology (Alpha complex in 3D, sphere/torus β₂) | `scripts/sweep_h2_alpha.py` | `h2_alpha_sweep.db` | Done (commit 870046f): 12/12 @100.00% both noise levels; honest negative — both classes β₂=1, H₂ adds neither signal nor harm |
+| #11 | #11 Cross-library replication (gudhi-native, ripser-native, giotto) | `scripts/sweep_cross_library.py` | `cross_library_sweep.db` | Done (commit f95f441): 90/90; ECG200 VR arms agree to the decimal across giotto/gudhi/ripser; results library-invariant |
+| #13 | #13 Predictive theory: stability constant vs empirical range (Spearman ρ + bootstrap CI) | `scripts/analysis_predictive_theory.py` (analysis-only, existing DBs) | reads `repeated_cv_r25.db`, `expanded_results.db`, `panel_stagecapable.db` | Done (commit 08db71b): ρ = −0.129, CI [−0.672, +0.469] — honest NULL, paragraph inserted |
+| #15 | #15 Hierarchical stage model (statsmodels MixedLM; datasets = random effects) | `scripts/analysis_hierarchical_stage.py` (analysis-only) | reads `panel_stagecapable.db` | Done (commit 08db71b): clf 1.81 > fil 1.71 > vec 1.18pp, ICC 0.927; paragraph inserted |
 
 DB names marked "(planned)" are the names fixed at driver creation; they are
 listed here so that results can be located unambiguously.
@@ -115,7 +115,10 @@ listed here so that results can be located unambiguously.
 
 | Date | Sweep | Deviation from this protocol | Reason |
 |------|-------|------------------------------|--------|
-| — | — | (none at filing) | — |
+| 2026-08-22/23 | B5 n=3000 | Sparse Rips at n=3000 never completed (0/2 runs in ~42h wall, two reboot-killed attempts) | Hardware boundary: giotto-tda 0.6.2 offers no mid-configuration checkpoint; n=3000 declared infeasible on this hardware and disclosed in the paper rather than silently dropped |
+| 2026-08-22 | r25 ECG200 | 5 orphaned rows (silhouette/RF, reps 5–9) started but never finished | Sweep interrupted and resumed; orphans carry no fold results, excluded via `finished_at IS NOT NULL` |
+| 2026-08-23 | #8 learned vectorizers | Not executed | Requires torch + perslay in a separate venv (1–2 GB install); deferred on environment decision, driver turnkey and resumable |
+| 2026-08-23 | #9 H₂ | Driver premise corrected post-hoc | Both sphere and torus are closed surfaces with β₂=1 (the pair does not differ in second homology); the executed H₂ sweep is an honest negative, not the planned discriminative test |
 
 Any deviation must be appended here by the orchestrator before the affected
 numbers are written into `dissertation.tex`.
@@ -127,4 +130,4 @@ rules above were fixed on 2026-08-22, before the deferred sweeps were executed
 and analysed.
 
 - [ ] Zachariah Markusson (author)
-- [ ] Orchestrator (Hermes, default profile) — applies patches to `dissertation.tex` after B5
+- [x] Orchestrator (Hermes, default profile) — signed 2026-08-23 after B5 and the deferred sweeps (#6/#9/#11) were executed, analysed, and written into `dissertation.tex`
