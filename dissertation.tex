@@ -2181,6 +2181,33 @@ collapse on TDA features. ``Vectorization dominates'' is therefore a
 within-dataset-range statement, not a population-level one.
 
 
+\paragraph{Second homology via the true Alpha complex (expansion 9).}
+The sweeps cap homology at $H_1$ for cost, and the manuscript's
+limitations note that the torus's second homology is then unmeasured.
+To test whether the $H_1$ cap discards class information, the
+sphere/torus clouds were re-run with a true Alpha complex
+(\texttt{gudhi.AlphaComplex}, radius parameterization, reduced
+homology, \texttt{homology\_dimensions=[0,1,2]}) on the same folds
+(seed 42, rep 1; three vectorizers $\times$ two classifiers;
+\texttt{data/tda/h2\_alpha\_sweep.db}, 12 finished runs). All twelve
+configurations score $100.00\%$ at both $\sigma{=}0$ and
+$\sigma{=}0.30$, matching the $H_1$-only result. This is not evidence
+that $H_2$ carries the signal: both classes are closed surfaces
+($\beta_2{=}1$ for the sphere and the torus alike --- each encloses a
+single void), so the pair does not differ in second homology. Measured
+max-$H_2$ lifetimes are in fact \emph{longer} for the sphere than the
+torus ($0.63$--$0.79$ vs.\ $0.11$--$0.30$, clean; overlapping under
+$\sigma{=}0.30$), the opposite of a separating feature, whereas the
+$H_1$ signature separates cleanly (torus $\beta_1{=}2$: max lifetime
+$0.75$--$0.89$ vs.\ sphere $0.13$--$0.20$). The $H_1$ cap therefore did
+not discard a discriminative feature on this pair; $H_2$ computation
+via the true Alpha complex is feasible and cheap ($\sim$5--17~s per
+configuration) and adds neither signal nor harm. A dataset whose
+classes differ in $\beta_2$ (e.g.\ solid vs.\ hollow, or higher-genus
+shapes) would be the appropriate test of whether second homology ever
+matters for classification.
+
+
 \section{Operational Guidelines for Pipeline Selection}
 % ────────────────────────────────────────────────────────────
 

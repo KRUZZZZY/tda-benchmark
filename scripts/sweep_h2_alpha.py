@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Expansion #9 — H2 homology via the TRUE GUDHI Alpha complex in 3D.
 
-The paper's sweeps cap homology at H1 for cost. The sphere/torus pair
-differs in beta2 structure (sphere beta2 = 0, torus beta2 = 1) — the
-torus's second homology is exactly what is thrown away at H1. This
+The paper's sweeps cap homology at H1 for cost. NOTE (corrected
+2026-08-23 after the run): the sphere/torus pair does NOT differ in
+beta2 — both classes are closed surfaces with beta2 = 1 (each encloses
+one void). The H2-augmented sweep still classifies 100% at both noise
+levels, confirming H2 adds neither signal nor harm; the discriminator
+is H1 (torus beta1=2 vs sphere beta1=0). See the paper paragraph. This
 driver computes homology_dimensions=[0, 1, 2] on the EXISTING
 sphere/torus clouds (noise0, noise30) with a real Alpha complex:
 
