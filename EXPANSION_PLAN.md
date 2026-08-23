@@ -130,12 +130,12 @@ Statuses reflect the repo state at the time of recording (HEAD `c3ae98b`). "Part
 | 3 | 1 | Two-way interaction ANOVA | ✅ Done | Data already in hand; committed dd51349 + 736a634 |
 | 4 | 2 | Scale panel + make it stage-capable | ✅ Done | B2 (30dba49): 9-dataset panel with 2 working filtrations per modality; vec range > fil range on 7/9 (median 3.32 vs 1.37pp); fil wins on HandOutlines + 10-class MNIST |
 | 5 | 2 | Repeated CV everywhere claims are | 🟡 Partial | ECG200 r=25 ✅; MNIST r=5; ECG5000/genus/panel single-split |
-| 6 | 2 | Topology-wins regime (Outex, dynamical systems, ModelNet, proteins) | 🔲 Open | Matched-genus = halfway |
+| 6 | 2 | Topology-wins regime (Outex, dynamical systems, ModelNet, proteins) | ✅ Done | #6 (1fff5a1): topology_wins_sweep.db 80/80 — VEC 3.75-13.75pp vs FIL 1.04-5.10pp on Lorenz/Roessler, double-well, circle-torus (86-99% acc); ModelNet10/Outex 10-class reproduce ordering at ~23-24%; vectorization-dominance survives where topology carries the signal |
 | 7 | 2 | Full 10-class MNIST + n≥10³ clouds | 🟡 Partial | 10-class MNIST ✅ (A3, 6f32a23); n≥10³ = B5 (ac1162d): n=1000 8/8 configs 100.00% both filtrations, sparse 1.83h vs VR 3.6min (~30×); n=3000 INFEASIBLE on this hardware — 0 completions in ~42h across 2 reboot-killed attempts, no giotto mid-config checkpoint; guideline row revised to VR + benchmark-implementation-first |
-| 8 | 3 | Learned vectorizers (PersLay / Hofer) | 🔲 Open | Potential novelty driver |
-| 9 | 3 | H₂ homology (Alpha-3D / Flood Complex) | 🔲 Open | Torus β₂ currently thrown away |
+| 8 | 3 | Learned vectorizers (PersLay / Hofer) | 🟡 Prepared-not-run | Driver sweep_learned_vectorizers.py validated + resume bug fixed (b5522e8); needs torch+perslay in separate .venv-perslay (1-2 GB, driver self-guards); deferred on env decision |
+| 9 | 3 | H₂ homology (Alpha-3D / Flood Complex) | ✅ Done | #9 (870046f): h2_alpha_sweep.db 12/12 — 100% both noise levels BUT honest negative: both classes β₂=1 (closed surfaces), sphere H2 lifetimes LONGER (0.63-0.79 vs 0.11-0.30); H1 cap did not discard discriminative info; H2 feasible/cheap (~5-17s/config) |
 | 10 | 3 | Hyperparameter-sensitivity arm | ✅ Done | B3 (30dba49): one-param-at-a-time grids; vec range 5.75→4.75pp (ECG200), 1.75→1.62pp (MNIST); dominance not a default-settings artefact |
-| 11 | 3 | Cross-library replication (GUDHI/Ripser-native) | 🔲 Open | Weak-alpha fragility already found |
+| 11 | 3 | Cross-library replication (GUDHI/Ripser-native) | ✅ Done | #11 (f95f441): cross_library_sweep.db 90/90 — sphere/torus exact parity across giotto/gudhi-alpha/gudhi-rips/ripser (100.00%); ECG200 VR arms agree to the decimal; svm_rbf collapse identical in all 4; results library-invariant |
 | 12 | 3 | FPS ablation | ✅ Done | B4 (30dba49): FPS vs uniform at k=50/15 on sphere/torus n0/n30; no benefit (−0.25pp overall; uniform wins at k=15/σ=0.30); limitation #1 closed |
 | 13 | 4 | Predictive theory (stability constant vs range) | 🟡 Partial | Analysis run 2026-08-22: NULL result — rho=−0.129, 95% CI [−0.672,+0.469] includes 0; paper must not claim a stability→range link; paper text pending |
 | 14 | 4 | Calibration / AUROC / per-class | ✅ Done | ECG5000 beyond-accuracy (92da848) |
