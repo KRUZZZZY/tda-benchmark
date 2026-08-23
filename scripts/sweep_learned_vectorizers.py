@@ -134,9 +134,9 @@ def main() -> None:
     print(f"DB: {DB_PATH}")
 
     done = finished_combos()
-    todo = [j for j in jobs if (j[0].name, j[1].name, j[2].name, j[3].name) in done]
+    todo = [j for j in jobs if (j[0].name, j[1].name, j[2].name, j[3].name) not in done]
     print(f"Resume: {len(done)} combos already finished, "
-          f"{len(jobs) - len(todo)} to run")
+          f"{len(todo)} to run")
 
     ok = fail = 0
     import time
