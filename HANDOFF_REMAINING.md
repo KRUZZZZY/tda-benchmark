@@ -22,24 +22,33 @@ Read this first, then the authoritative detail in the KB plan:
   `from tda_benchmark.runner import _run_one_worker`.
 
 ## STATE
-- HEAD d289e6d (Phase-1 + B1 + B2 + B3 + B4 committed; NOT yet pushed).
-  Paper 58pp, 0 undefined refs, 0 errors (B2/B3/B4 paragraphs inserted via
-  line-surgery at d289e6d, compiled clean in /tmp). DONE: #3 interaction-ANOVA,
-  A1 (#2 equal-footing), A3 (#7a 10-class MNIST), A4 (#14 beyond-accuracy),
-  B1 (#1 DTM-weighted-Rips crux), B2 (#4 stage-capable panel), B3 (#10
-  hyperparameter arm), B4 (#12 FPS ablation).
-- B5 (#7b n>=10^3) sweep_large_n.py RUNNING (serial, n_jobs=1, single-CPU;
-  est. many hours — sparse_rips@n=1000 alone ~50+ min/config, VR@1000 and
-  sparse@3000 slower). large_n_sweep.db created; resumable (skips finished).
-- Untracked scripts remaining: sweep_large_n.py, analysis_large_n.py
-  (committed with the B5 result). Drivers for B2/B3/B4 committed (30dba49).
+- HEAD 4f0b521 (PUSHED to origin/main). Paper 61pp, 0 undefined refs, 0 errors.
+  B2/B3/B4 expansion paragraphs + B5 pending. Audit waves 1-2 COMPLETE:
+  wave-1 (17 fixes, 976bbd3) + wave-1 deferred (5 fixes + 4 bibitems, 527f963)
+  + wave-2 L3/L4/L7 (12 fixes, 4f0b521). All committed + pushed.
+- B5 (#7b n>=10^3) sweep_large_n.py RUNNING serially (pid varies; resumable).
+  Config 9 of 12 (sparse_rips@n=3000) has consumed ~21h wall time across two
+  attempts and is STILL unfinished — giotto sparse@n=3000 is brutal. DB
+  large_n_sweep.db: 8 finished configs (4 sparse@1000 ~1.8h each, 4 VR@1000
+  ~3.6min each) + config 9 in-flight. Resume = rerun sweep_large_n.py (skips
+  finished). The Sparse Rips guideline row in Table 5.x depends on B5's
+  outcome.
+- Deferred audit items (wave-3 targets): guidelines-table rows (Weak-Alpha
+  crash portability, high-noise matched-genus scoping 95.83/91, Betti
+  menu-conditionality 5th-of-7, SVM-RBF collapse note), GUDHI-Alpha parity
+  artefact (experiment_alpha.py writes /tmp only), empty config_snapshot in
+  mnist10/hyperparam DBs, producer-list expansion (~10 of ~18 DBs named),
+  '7 of 9 not HandOutlines' sentence misattributed to VR-only panel (it's
+  8/9 there; belongs to the stage-capable panel).
+- KB: articles created for dissertation entity, expansion-prep, #13/#15,
+  audit waves 1-2; vault pushed (505814e).
 
 ## IMMEDIATE FIRST STEP
-Read the KB plan (slug above) fully, then START by REVIEWING the untracked
-driver scripts (check importlib shim, __main__ guard, no side effects on
-import, additive-only) — prefer porting the verified pattern from
-scripts/sweep_multidataset.py / scripts/sweep_mnist10.py. Fix/validate, then
-run the sweeps.
+Read the KB plan (slug above) fully, then check B5: if large_n_sweep.db has
+<12 finished configs, restart sweep_large_n.py (resumable, skips finished).
+Then write the B5 paper paragraph + settle the Sparse Rips guideline row,
+pdflatex x2, commit. Then run audit wave 3 (3 agents x L10/L11/L9 + the
+deferred wave-2 items listed above), merge 2-of-3, re-verify vs DBs, fix.
 
 ## HARD PROCESS RULES
 - SINGLE-CPU: n_jobs=1, serial loop, one sim at a time, NO delegation of
