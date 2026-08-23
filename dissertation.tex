@@ -409,7 +409,8 @@ homotopy guarantee, which applies to the full Alpha/\v{C}ech complex.
 For the executed approximation we verify empirically in \S4.3 that the
 full GUDHI Alpha complex (persistence-equivalent to the \v{C}ech
 complex) reproduces weak-alpha classification accuracy (mean
-difference 0.0--0.8pp) at 2--5$\times$ the runtime cost, so the
+difference 0.0--0.8pp, measured in a dedicated GUDHI-vs-giotto run,
+scripts/experiment\_alpha.py) at 2--5$\times$ the runtime cost, so the
 approximation is faithful on these tasks.
 \end{remark}
 
@@ -921,7 +922,10 @@ The \texttt{PipelineRunner} iterates the Cartesian product of all
 choices, runs stratified 5-fold cross-validation, and stores
 per-fold metrics (accuracy, F1, precision, recall) in a normalised
 SQLite database (Appendix~B) with a config snapshot for
-reproducibility. Reported 95\% CIs are computed from repeated
+reproducibility (retained for the main sweep; the expansion
+DBs --- panel, hyperparameter, large-n, MNIST-10 --- do not
+retain one; their provenance is the driver scripts in
+scripts/). Reported 95\% CIs are computed from repeated
 cross-validation (repeated stratified 5-fold CV with independent
 splits: 25 repetitions, seeds 43--67, for the headline ECG200
 analysis; 5 repetitions, seeds 43--47, for MNIST): per-stage
@@ -946,7 +950,7 @@ new component type (e.g., learned vectorizers) requires new factory
 code.
 
 \noindent Chapter~4 presents the empirical results of this sweep
-across six dataset instances and three analytical cuts.
+across six dataset instances and four analytical cuts.
 
 \newpage
 
@@ -1103,7 +1107,7 @@ per-config variance (fold-level 10.6\%), the classifier 9.8\%
 vectorizer, Persistence Landscapes, achieves 75.32\% marginal
 accuracy versus 68.95\% for Persistence Entropy (the weakest).
 Cubical filtration leads at 73.15\%, with Vietoris-Rips (72.89\%)
-and Weak Alpha (72.74%) within 0.41pp.
+and Weak Alpha (72.74\%) within 0.41pp.
 
 \textbf{Equal-footing re-analysis.} The ranges above compare stage
 menus of different sizes (7 vectorizers versus 3 filtrations on
@@ -1369,8 +1373,8 @@ Persistence Entropy (a degenerate scalar) is worst on AUROC too.
 Second, the classifier range is driven by SVM-RBF's near-chance AUROC
 (0.47) on the entropy feature, i.e. the RBF classifier collapsed to the
 majority class there. Third, per-class recall exposes a severe
-imbalance failure that accuracy hides: the mean of per-(configuration, fold) per-class recalls over the
-, the minor classes are largely
+imbalance failure that accuracy hides: the mean of
+per-(configuration, fold) per-class recalls shows that the minor classes are largely
 unlearned (class 2, 96 samples, 16.3\% recall; class 3, 194 samples,
 31.8\%; class 4, 24 samples, 1.7\%, with Betti Curve and Silhouette at
 0\%), while the majority classes 0 and 1 are recovered at 73.9\% and
@@ -1614,7 +1618,7 @@ difference 0.0--0.8pp) at 2--5$\times$ lower cost. Sparse Rips takes
 12--77~s (mean 41~s; main 140-run sweep) with no accuracy gain at
 the 100-point scale; at its design target ($n \ge 10^3$) it is
 substantially slower than Vietoris--Rips at $n{=}1000$ and
-infeasible at $n{=}3000$ (\S5.4). Both speed multipliers are specific to the 100-point
+infeasible at $n{=}3000$ (\S5.3). Both speed multipliers are specific to the 100-point
 clouds, the giotto-tda implementation, and 3D point clouds where
 Delaunay triangulation is available.
 
@@ -1691,7 +1695,7 @@ weak Alpha; Sparse Rips at $r{=}5$), all approximating the same Rips
 geometry, so \emph{``filtration barely matters'' is partly an artefact
 of that menu}. Adding a genuinely different filtration --- the DTM-
 weighted Rips (giotto-tda \texttt{WeightedRipsPersistence}, vertex and
-edge weights from a distance-to-measure estimate; Anai et al.), robust
+edge weights from a distance-to-measure estimate; Anai et al.~\cite{anai2019}), robust
 to outliers --- raises the ECG200 filtration marginal range to 2.81pp
 and makes DTM the best filtration (76.2\% versus 73.4\% for
 Vietoris-Rips), winning 7 of 8 vectorizer--classifier pairs (best
@@ -1792,7 +1796,7 @@ $O(n^4)$ simplices for VR). (3)~The headline stage analyses are binary (ECG200, 
 multiclass is covered by the \S5.3 panel (ECG5000 5-class, MIT-BIH
 4-class, 10-class MNIST and Fashion-MNIST). (4)~The \S4.1 stage
 analysis rests on two time series and one binary image dataset; the
-\S5.3 panel adds seven further time series and two 10-class image
+\S5.3 panel adds five further time series and two 10-class image
 datasets.
 (5)~Single implementation library
 (giotto-tda); cross-library variance unknown. (6)~No learned
@@ -1866,7 +1870,7 @@ ElectricDevices, HandOutlines) and two 10-class image datasets (full
 MNIST and Fashion-MNIST, subsampled to 1000 stratified samples each
 for runtime), all through the repository's own runner with the
 paper's Takens embedding ($d{=}3,\tau{=}1$). Long series were
-pre-subsampled to 100 points with a fixed-seed uniform draw; this
+pre-subsampled to 100 points with a fixed-seed uniform draw (seed 42); this
 was necessary because the runner's \texttt{subsample\_points} knob
 fires only on 3-D point-cloud input and never caps 2-D series, so
 series length was capped at data-preparation time.
@@ -1887,7 +1891,7 @@ critical difference.
     Dataset & Modality & $n$ (used) & Length & Classes \\
     \midrule
     ECG200 & time series & 200 & 96 & 2 \\
-    ECG5000 & time series & 714 (subsample) & 140 & 5 \\
+    ECG5000 & time series & 714 (subsample, rng seed 42) & 140 & 5 \\
     FordA & time series & 1000 & 500$\to$100 & 2 \\
     FordB & time series & 1000 & 500$\to$100 & 2 \\
     Wafer & time series & 1000 & 152$\to$100 & 2 \\
@@ -2025,7 +2029,7 @@ mild selection optimism (each is selected on the same folds that score the
 range), which would tend to \emph{inflate} the tuned range, so the observed
 contraction is conservative.
 \textbf{TDA and raw features are complementary.} The classical
-baselines of \S4.3 beat TDA alone on both real datasets. To test
+baselines of \S4.1.1 beat TDA alone on both real datasets. To test
 whether TDA still adds value on top of raw features, the
 concatenated feature vector $[\text{raw} \| \text{TDA}]$ was
 evaluated on ECG200 and MNIST binary under identical folds
@@ -2107,7 +2111,7 @@ both scales, with a Vietoris--Rips control at $n{=}1000$
 ($n{=}3000$ Vietoris--Rips is infeasible: $C(3000,3)$ simplices);
 four configurations per arm (Betti Curve / Persistence Landscape
 $\times$ Random Forest / RBF-SVM), 5-fold stratified CV, seed 42,
-rep 1 (\texttt{data/tda/large\_n\_sweep\-db}, 8 finished runs). At
+rep 1 (\texttt{data/tda/large\_n\_sweep.db}\allowbreak, 8 finished runs). At
 $n{=}1000$ the two filtrations are accuracy-identical --- all eight
 configurations score $100.00\%$ ($+0.00$~pp mean difference) --- but
 Sparse Rips is roughly $30\times$ slower: $1.83$~h per configuration
@@ -2137,7 +2141,7 @@ actionable guidance. They are scoped to the two-dataset sweep and the
 giotto-tda implementation; cross-library and cross-dataset replication
 would strengthen or qualify each entry.
 
-\begin{table}[H]
+\begin{table}[htbp]
   \centering
   \caption{Recommended pipeline configurations by data characteristics.}
   \label{tab:guidelines}
@@ -2147,9 +2151,9 @@ would strengthen or qualify each entry.
     Data Modality & Filtration & Vectorizer & Classifier & Rationale \\
     \midrule
     Low-dim.~point clouds ($\le 3$D, clean) & Weak Alpha & Pers.~Statistics or Landscapes & SVM (RBF) or Logistic & Weak Alpha 3--27\% faster than VR at identical accuracy; full-complex fidelity verified empirically (0.0--0.8pp at 2--5$\times$ cost) \\
-    Delay-embedded time series ($d \ge 3$) & VR or Weak Alpha & Betti Curves & RF or SVM (RBF) & Vectorization dominates variance (6.39pp on ECG200; 24.89pp on ECG5000) \\
-    High-noise clouds ($\sigma \ge 0.15$) & Weak Alpha or VR & Betti Curves & SVM (RBF) & All vectorizers maintain $\ge 98.5\%$ at $\sigma=0.30$ (minimum over configurations); measured $d_B$ far below the stability bound \\
-    Large-scale clouds ($n \ge 10^3$) & Vietoris--Rips & Pers.\ Images or Betti Curves & Random Forest & Sparse Rips designed for $n \ge 10^3$; at $n{=}1000$ it is $30\times$ slower than VR at identical accuracy, and at $n{=}3000$ it did not finish in $42$~h (giotto-tda 0.6.2, \S5.4) --- benchmark the implementation before choosing it \\
+    Delay-embedded time series ($d \ge 3$) & VR or Weak Alpha & Betti Curves (or Landscapes) & RF or SVM (RBF) & Vectorization dominates variance (6.39pp on ECG200; 24.89pp on ECG5000); Betti is 5th of 7 vectorizers on the r25 ECG200 marginal (72.38\%), so Landscapes/Statistics are competitive; SVM-RBF collapses to the majority class on TDA features (66.5\%) \\
+    High-noise clouds ($\sigma \ge 0.15$) & Weak Alpha or VR & Betti Curves & SVM (RBF) & All vectorizers maintain $\ge 98.5\%$ at $\sigma=0.30$ on the combined geometric signal (minimum over configurations); the confound-controlled matched-genus floor is 91\%; measured $d_B$ far below the stability bound \\
+    Large-scale clouds ($n \ge 10^3$) & Vietoris--Rips & Pers.\ Images or Betti Curves & Random Forest & Sparse Rips designed for $n \ge 10^3$; at $n{=}1000$ it is $30\times$ slower than VR at identical accuracy, and at $n{=}3000$ it did not finish in $42$~h (giotto-tda 0.6.2, \S5.3) --- benchmark the implementation before choosing it \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -2552,6 +2556,13 @@ D.~Barnes, L.~Polanco, and J.~A.~Perea.
 A comparative study of machine learning methods for persistence
 diagrams.
 \textit{Frontiers in Artificial Intelligence}, 4:1--16, 2021.
+
+\bibitem{anai2019}
+H.~Anai, F.~Chazal, M.~Glisse, Y.~Ike, H.~Inakoshi, R.~Tachimori, and
+Y.~Umeda.
+DTM-based filtrations.
+In \textit{Topological Data Analysis and Applications}, Abel Symposia~18,
+pages 33--66. Springer, 2019.
 
 \bibitem{bubenik2015}
 P.~Bubenik.
