@@ -2265,6 +2265,38 @@ behaviour, and the previously documented filtration fragility
 matters, not the accuracy outcomes.
 
 
+\paragraph{Repeated-CV harmonisation (expansion 5).} The headline
+ECG200 analysis used 25 cross-validation repetitions, while ECG5000,
+the matched-genus control, and the panel were single-split. To bring
+every supporting claim to the same protocol, the three were re-run
+with 25 repetitions (5-fold, seeds 43--67; the fixed panel grid:
+Vietoris--Rips and DTM-weighted Rips $\times$ three vectorizers
+$\times$ two classifiers), adding $1{,}500$ runs
+(\texttt{data/tda/r25\_ecg5000.db}, \texttt{r25\_genus.db},
+\texttt{r25\_panel.db}; all finished). On ECG5000 the repeated-CV
+marginal ranges are vectorizer $4.30$~pp (95\% CI [4.02, 4.57]),
+classifier $2.96$~pp [2.81, 3.11], filtration $0.96$~pp [0.80, 1.13]
+--- the ordering holds in 24 of 25 repetitions, with all three CIs
+excluding zero. This resolves the earlier menu-dependence concern for
+this dataset: the single-split $24.89$pp range collapsed to $0.24$pp
+under level matching (\\S4.1), but under the fixed panel grid and
+repeated CV the vectorizer dominates with disjoint confidence
+intervals; the magnitude depends on the menu, the ordering does not.
+On the matched-genus control, vectorization again leads ($3.89$~pp,
+[3.49, 4.30]) with filtration ($0.71$~pp) and classifier ($0.41$~pp)
+small, and the 25-repetition mean accuracies are $98.35$\\% at
+$\\sigma{=}0$ and $90.98$\\% at $\\sigma{=}0.30$ for the
+VR/DTM-weighted grid (the single-split $\\S4.2$ experiment used a
+different menu --- VR/weak-alpha --- and reported $95.83$\\% at
+$\\sigma{=}0.30$; the two are protocol- and menu-distinct, and the
+r25 numbers are the fixed-grid estimate). On the two-dataset panel
+subset, the pooled ranges are dominated by the cross-dataset modality
+composition (filtration $43.30$~pp, dataset $41.22$~pp --- the
+time-series arm runs VR/DTM while the image arm runs cubical/VR), so
+the interpretable quantity there is the within-dataset ordering, which
+reproduces the vectorizer-leads pattern of \\S5.3.
+
+
 \section{Operational Guidelines for Pipeline Selection}
 % ────────────────────────────────────────────────────────────
 
