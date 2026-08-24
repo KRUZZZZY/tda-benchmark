@@ -41,7 +41,7 @@ LIGHT = "#dddddd"
 # ── 1. Pipeline diagram (schematic) ────────────────────────────────────
 def fig_pipeline_diagram():
     fig, ax = plt.subplots(figsize=(9, 2.2))
-    ax.set_xlim(0, 10)
+    ax.set_xlim(0, 10.8)  # room for the final box (starts at x=9.0, width 1.5)
     ax.set_ylim(0, 2.2)
     ax.axis("off")
     boxes = [
@@ -54,12 +54,12 @@ def fig_pipeline_diagram():
     for i, (title, x, sub) in enumerate(boxes):
         color = ORANGE if i in (1, 3) else BLACK
         box = FancyBboxPatch((x, 0.55), 1.5, 1.1, boxstyle="round,pad=0.05",
-                             fc=color, ec="none", alpha=0.92)
+                             fc=color, ec="none", alpha=0.92, clip_on=False)
         ax.add_patch(box)
         ax.text(x + 0.75, 1.4, title, ha="center", va="center", fontsize=8,
-                color="white", weight="bold")
+                color="white", weight="bold", clip_on=False)
         ax.text(x + 0.75, 0.95, sub, ha="center", va="center", fontsize=6,
-                color="white")
+                color="white", clip_on=False)
         if i < len(boxes) - 1:
             ax.annotate("", xy=(x + 1.62, 1.1), xytext=(x + 1.5, 1.1),
                         arrowprops=dict(arrowstyle="->", color=BLACK, lw=1.5))
