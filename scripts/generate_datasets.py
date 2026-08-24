@@ -145,6 +145,16 @@ def main() -> None:
     make_sphere_torus(args.data_dir, args.seed)
     make_ecg200(args.data_dir)
     make_mnist_01(args.data_dir)
+    # ── SHA256 checksum verification (reproducibility; additive-only) ──────
+    import _checksum_verify
+    for rel in ("synthetic/sphere_torus_noise0_X.npy", "synthetic/sphere_torus_noise0_y.npy",
+                "synthetic/sphere_torus_noise5_X.npy", "synthetic/sphere_torus_noise5_y.npy",
+                "synthetic/sphere_torus_noise15_X.npy", "synthetic/sphere_torus_noise15_y.npy",
+                "synthetic/sphere_torus_noise30_X.npy", "synthetic/sphere_torus_noise30_y.npy"):
+        _checksum_verify.verify(rel, args.data_dir)
+    for rel in ("ucr/ecg200_X.npy", "ucr/ecg200_y.npy",
+                "images/mnist_01_X.npy", "images/mnist_01_y.npy"):
+        _checksum_verify.verify_if_covered(rel, args.data_dir)
     print("done.")
 
 

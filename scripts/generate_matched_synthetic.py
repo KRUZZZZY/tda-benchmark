@@ -130,6 +130,13 @@ def main() -> None:
         np.save(os.path.join(DATA_DIR, f"matched_torus_genus_{tag}_X.npy"), X)
         np.save(os.path.join(DATA_DIR, f"matched_torus_genus_{tag}_y.npy"), y)
         print(f"  matched_torus_genus_{tag}: {X.shape} sigma={sigma}")
+    # ── SHA256 checksum verification (reproducibility; additive-only) ──────
+    import _checksum_verify
+    for tag in ("noise0", "noise30"):
+        _checksum_verify.verify(f"synthetic_matched/matched_torus_genus_{tag}_X.npy",
+                                os.path.dirname(DATA_DIR))
+        _checksum_verify.verify(f"synthetic_matched/matched_torus_genus_{tag}_y.npy",
+                                os.path.dirname(DATA_DIR))
     print("done.")
 
 

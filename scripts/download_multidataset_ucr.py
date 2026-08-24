@@ -100,6 +100,11 @@ def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     for name in DATASETS:
         process(name)
+    # ── SHA256 checksum verification (reproducibility; additive-only) ──────
+    import _checksum_verify
+    for name in DATASETS:
+        _checksum_verify.verify(f"ucr3/{name}_X.npy", OUT_DIR.parent)
+        _checksum_verify.verify(f"ucr3/{name}_y.npy", OUT_DIR.parent)
 
 
 if __name__ == "__main__":

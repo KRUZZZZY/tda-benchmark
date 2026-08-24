@@ -148,6 +148,10 @@ def main() -> None:
     if args.keep_zip:
         with open("/tmp/ECG5000.zip", "wb") as fh:
             fh.write(zip_bytes)
+    # ── SHA256 checksum verification (reproducibility; additive-only) ──────
+    import _checksum_verify
+    _checksum_verify.verify("ucr2/ecg5000_X.npy", args.data_dir)
+    _checksum_verify.verify("ucr2/ecg5000_y.npy", args.data_dir)
 
 
 if __name__ == "__main__":

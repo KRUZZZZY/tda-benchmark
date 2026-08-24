@@ -268,6 +268,13 @@ def main() -> None:
     }
     OUT_PROV.write_text(json.dumps(prov, indent=2))
     print(f"[write] {OUT_PROV.name}")
+    # ── SHA256 checksum verification (reproducibility; additive-only) ──────
+    # modelnet10_* is covered by checksums.sha256; the shapes_proxy_*
+    # fallback is NOT (absent when the manifest was built) — warned, not raised.
+    import _checksum_verify
+    for rel in ("shapes/modelnet10_X.npy", "shapes/modelnet10_y.npy",
+                "shapes/shapes_proxy_X.npy", "shapes/shapes_proxy_y.npy"):
+        _checksum_verify.verify_if_covered(rel, OUT_DIR.parent)
     print("Next: run scripts/sweep_topology_wins.py (after sweep_large_n.py "
           "has finished — single CPU).")
 

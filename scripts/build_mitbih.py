@@ -164,6 +164,11 @@ def main() -> None:
     print(f"\nSaved {X.shape} beats, {len(patients)} patients, "
           f"classes={dict(Counter(y.tolist()))}")
     print(f"fold sizes: {dict(Counter(folds.tolist()))}")
+    # ── SHA256 checksum verification (reproducibility; additive-only) ──────
+    import _checksum_verify
+    for rel in ("mitbih/mitbih_X.npy", "mitbih/mitbih_y.npy",
+                "mitbih/mitbih_patient.npy", "mitbih/mitbih_folds.npy"):
+        _checksum_verify.verify(rel, OUT_DIR.parent)
 
 
 if __name__ == "__main__":

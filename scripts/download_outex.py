@@ -261,6 +261,10 @@ def main() -> None:
     print(f"[write] {OUT_X.name} {X.shape} + {OUT_Y.name} {y.shape} "
           f"(source: {source})")
     print(f"[write] {OUT_PROV.name}")
+    # ── SHA256 checksum verification (reproducibility; additive-only) ──────
+    import _checksum_verify
+    _checksum_verify.verify("images/outex_64x64_X.npy", OUT_DIR.parent)
+    _checksum_verify.verify("images/outex_64x64_y.npy", OUT_DIR.parent)
     print("Next: run scripts/sweep_topology_wins.py (after sweep_large_n.py "
           "has finished — single CPU).")
 

@@ -240,6 +240,12 @@ def main() -> None:
     _save("dyn_circle_torus", Xc, yc, args.force)
 
     print(f"\nAll dynamical-system arrays under {OUT_DIR}")
+    # ── SHA256 checksum verification (reproducibility; additive-only) ──────
+    import _checksum_verify
+    for rel in ("synthetic/dyn_lorenz_rossler_X.npy", "synthetic/dyn_lorenz_rossler_y.npy",
+                "synthetic/dyn_doublewell_X.npy", "synthetic/dyn_doublewell_y.npy",
+                "synthetic/dyn_circle_torus_X.npy", "synthetic/dyn_circle_torus_y.npy"):
+        _checksum_verify.verify(rel, OUT_DIR.parent)
     print("Next: run scripts/sweep_topology_wins.py (after sweep_large_n.py "
           "has finished — single CPU).")
 
