@@ -61,7 +61,17 @@ def fig_pipeline_diagram():
         ax.text(x + 0.75, 0.95, sub, ha="center", va="center", fontsize=6,
                 color="white", clip_on=False)
         if i < len(boxes) - 1:
-            ax.annotate("", xy=(x + 1.62, 1.1), xytext=(x + 1.5, 1.1),
+            # Arrow fully inside the gap with margins from BOTH boxes
+            # (tail no longer starts exactly on the box edge).
+            next_x = boxes[i + 1][1]
+            gap_lo = x + 1.5
+            gap_hi = next_x
+            tail = gap_lo + 0.10 * (gap_hi - gap_lo)
+            head = gap_hi - 0.10 * (gap_hi - gap_lo)
+            if head - tail < 0.06:  # degenerate tiny gap — centre a short arrow
+                mid = 0.5 * (gap_lo + gap_hi)
+                tail, head = mid - 0.03, mid + 0.03
+            ax.annotate("", xy=(head, 1.1), xytext=(tail, 1.1),
                         arrowprops=dict(arrowstyle="->", color=BLACK, lw=1.5))
     ax.set_title("The three-stage persistent homology classification pipeline",
                  fontsize=10)
