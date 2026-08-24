@@ -45,11 +45,14 @@ def fig_pipeline_diagram():
     ax.set_ylim(0, 2.2)
     ax.axis("off")
     boxes = [
+        # x positions give EVEN 0.6-unit gaps between boxes (width 1.5 each):
+        # 0.3->1.8, gap .6, 2.4->3.9, gap .6, 4.5->6.0, gap .6, 6.6->8.1,
+        # gap .6, 8.7->10.2 — uniform spacing, last box ends 0.6 short of xlim.
         ("Raw data", 0.3, "point cloud /\ntime series /\nimage"),
-        ("Filtration", 2.6, "Vietoris--Rips\nAlpha, Cubical\nSparse Rips"),
-        ("Persistence\ndiagram", 5.0, "multiset of\n(birth, death)"),
-        ("Vectorization", 6.9, "Persistence Image\nLandscape, Betti\nStatistics, ..."),
-        ("Classifier", 9.0, "SVM, Random\nForest, Logistic"),
+        ("Filtration", 2.4, "Vietoris--Rips\nAlpha, Cubical\nSparse Rips"),
+        ("Persistence\ndiagram", 4.5, "multiset of\n(birth, death)"),
+        ("Vectorization", 6.6, "Persistence Image\nLandscape, Betti\nStatistics, ..."),
+        ("Classifier", 8.7, "SVM, Random\nForest, Logistic"),
     ]
     for i, (title, x, sub) in enumerate(boxes):
         color = ORANGE if i in (1, 3) else BLACK
