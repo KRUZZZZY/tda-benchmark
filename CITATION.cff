@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this software or the dissertation results, please cite it as below."
+title: "A Systematic Benchmark of Persistent Homology Pipelines for Classification"
+abstract: >-
+  A controlled factorial sweep (616 configurations across 6 dataset instances,
+  4 filtrations, 7 vectorizers, 4 classifiers) measuring which pipeline stage
+  dominates classification-accuracy variance, with repeated cross-validation,
+  level-matched analyses, cross-library replication, and a reproducible
+  factory/YAML/SQLite framework.
+authors:
+  - family-names: Markusson
+    given-names: Zachariah Attila
+    orcid: ""
+date-released: "2026-08-24"
+version: "1.0-dissertation"
+doi: "10.5281/zenodo.XXXXXXX"   # INSERT Zenodo DOI after archiving
+license: MIT
+keywords:
+  - topological data analysis
+  - persistent homology
+  - benchmarking
+  - vectorization
+  - classification
+  - reproducibility
+repository-code: "https://github.com/KRUZZZZY/tda-benchmark"
