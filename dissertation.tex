@@ -828,7 +828,7 @@ where:
     Embedding-parameter selection criteria are discussed by Kennel et
     al.\ \cite{kennel1992} and Fraser--Swinney \cite{fraserswinney1986}.
     Sensitivity to $(d, \tau)$ is examined in Appendix~D.
- Constructs a filtration $\{K_\varepsilon\}$
+ \item \textbf{Filt} (\S2.2). Constructs a filtration $\{K_\varepsilon\}$
     from $Y$ and computes the persistence diagram
     $\mathcal{D} = \Dgm_0 \cup \Dgm_1$ (homology dimensions 0 and 1).
     Implemented via giotto-tda's VietorisRipsPersistence,
@@ -2239,16 +2239,16 @@ marginal ranges put the vectorizer first at $4.30$~pp (95\% CI
 the filtration stage ($0.96$~pp [0.80, 1.13]); the ordering holds in
 24 of 25 repetitions, with all three CIs excluding zero. This resolves the earlier menu-dependence concern for
 this dataset: the single-split $24.89$pp range collapsed to $0.24$pp
-under level matching (\\S4.1), but under the fixed panel grid and
+under level matching (\S4.1), but under the fixed panel grid and
 repeated CV the vectorizer dominates with disjoint confidence
 intervals; the magnitude depends on the menu, the ordering does not.
 On the matched-genus control the vectorizer again leads, at
 $3.89$~pp ([3.49, 4.30]), while the filtration ($0.71$~pp) and
-classifier ($0.41$~pp) ranges stay small, and the 25-repetition mean accuracies are $98.35$\\% at
-$\\sigma{=}0$ and $90.98$\\% at $\\sigma{=}0.30$ for the
-VR/DTM-weighted grid (the single-split $\\S4.2$ experiment used a
-different menu --- VR/weak-alpha --- and reported $95.83$\\% at
-$\\sigma{=}0.30$; the two are protocol- and menu-distinct, and the
+classifier ($0.41$~pp) ranges stay small, and the 25-repetition mean accuracies are $98.35$\% at
+$\sigma{=}0$ and $90.98$\% at $\sigma{=}0.30$ for the
+VR/DTM-weighted grid (the single-split $\S4.2$ experiment used a
+different menu --- VR/weak-alpha --- and reported $95.83$\% at
+$\sigma{=}0.30$; the two are protocol- and menu-distinct, and the
 r25 numbers are the fixed-grid estimate).
 
 On the two-dataset panel
@@ -2256,7 +2256,7 @@ subset, the pooled ranges are dominated by the cross-dataset modality
 composition (filtration $43.30$~pp, dataset $41.22$~pp --- the
 time-series arm runs VR/DTM while the image arm runs cubical/VR), so
 the interpretable quantity there is the within-dataset ordering, which
-reproduces the vectorizer-leads pattern of \\S5.3.
+reproduces the vectorizer-leads pattern of \S5.3.
 
 \subsection{Mechanism}
 
@@ -2446,19 +2446,19 @@ study.
     weak-Alpha fragility (\texttt{IndexError} on quantized UCR series;
     one unfinished run in \texttt{panel\_stagecapable.db},
     ElectricDevices/weighted\_rips/landscape/RF) proves implementation
-    dependence is real. \emph{Mitigation (planned):} cross-library
-    replication in GUDHI-native and Ripser-native paths, with the fragility reported as a first-class result.
+    dependence is real. \emph{Mitigation (done):} cross-library
+    replication in GUDHI-native and Ripser-native paths (\S5.3.2, 90 runs, library-invariant), with the fragility reported as a first-class result.
   \item \textbf{Homology capped at $H_1$.} $H_2$ requires $O(n^4)$
     simplices for Vietoris--Rips; the torus's $\beta_2$ is never
-    measured. \emph{Severity: moderate.} \emph{Mitigation (planned):}
-    Alpha complex in 3D for $H_2$.
+    measured. \emph{Severity: moderate.} \emph{Mitigation (done):}
+    Alpha complex in 3D for $H_2$ (\S5.3.3, 12 runs, honest null).
   \item \textbf{Binary-only classification.} All datasets except ECG5000
     (5 classes) are binary. \emph{Severity: moderate} --- the 10-class
     MNIST probe shows the stage ordering flips at multi-class scale
     (filtration 4.53pp vs.\ vectorizer 3.44pp, $r{=}5$,
     \texttt{mnist10\_sweep.db}), so the binary result is a boundary
     condition, not a law (\S4.2). \emph{Mitigation (done):} the flip is
-    reported; \emph{planned:} multi-class breadth.
+    reported; multi-class breadth is now covered (10-class MNIST, Fashion-MNIST, ECG5000, ElectricDevices).
   \item \textbf{Fixed hyperparameters.} No grid search on any stage, by
     design. \emph{Severity: low} --- the hyperparameter arm
     (\texttt{hyperparam\_sweep.db}) shows vectorizer dominance contracts
@@ -2510,12 +2510,12 @@ configuration space.
     filtration ordering on 7/9 datasets (median 3.3pp vs.\ 1.4pp;
     re-derived median 3.33 vs.\ 1.37), and the within-filtration
     vectorizer span remains large even where filtration leads (10-class
-    MNIST: 9--10pp). \emph{Planned:} topology-wins datasets,
-    further UCR coverage, multi-patient ECG (MIT-BIH).
+    MNIST: 9--10pp). \emph{Done:} topology-wins datasets (\S5.3.1, ordering
+    reproduced on all five) and multi-patient ECG (\S5.3.1); further UCR coverage remains future work.
   \item \textbf{Single-patient ECG5000.} ECG5000 is BIDMC chf07 --- one
     patient. The time-series result could be patient-specific.
-    \emph{Severity: moderate.} \emph{Mitigation (planned):} multi-patient
-    MIT-BIH arrhythmia sweep; the panel adds ECG200/ECG5000 diversity but
+    \emph{Severity: moderate.} \emph{Mitigation (done):} multi-patient
+    MIT-BIH arrhythmia sweep (\S5.3.1); the panel adds ECG200/ECG5000 diversity but
     not patient diversity.
   \item \textbf{Hardware dependence of runtime results.} Wall-clock
     numbers come from one workstation (8-core, 16GB). \emph{Severity: low
@@ -2525,8 +2525,7 @@ configuration space.
     peak memory are stored in the results DBs; peak memory was not
     measured per stage.
   \item \textbf{Missing method families.} No learned vectorizers
-    (PersLay, Hofer), no $H_2$ features, no cross-library
-    replication, no protein/graph modalities. \emph{Severity:
+    (PersLay, Hofer), no protein/graph modalities. \emph{Severity:
     moderate} --- each is a named boundary of the current claim, and each
     names a clear follow-up. The paper's contribution is scoped
     accordingly: the internal stage-importance decomposition and the
@@ -2674,7 +2673,7 @@ branch says so rather than pretending otherwise.
     stability bound ($2\sigma\sqrt{2\ln n} \approx 1.82$) --- the bound is
     conservative, not tight (\S4.2). For applications in this
     regime, do not trade accuracy for noise-robust filtrations
-    (DTM-weighting gained menu range but not headroom on ECG200; B1).
+    (DTM-weighting gained menu range but not headroom on ECG200).
     \emph{Grade A}.
 
   \item \textbf{Which vectorizer?} Prefer \emph{distributional} vectorizers
@@ -2711,9 +2710,9 @@ branch says so rather than pretending otherwise.
     to be benchmarked against raw baselines; it is the object of study.
     The matched-genus experiment is the proof of concept: TDA retains
     95.83\% where norm/scale features fail (48--58\%). The topology-wins
-    regime is designed to map this branch with the full
-    stage decomposition; until it runs, treat this branch as \emph{Grade
-    C}.
+    regime (\S5.3.1) maps this branch with the full
+    stage decomposition; the ordering reproduced on all five datasets
+    (single-split), earning \emph{Grade B} by the rubric below.
 \end{enumerate}
 
 \begin{table}[H]
@@ -2735,7 +2734,7 @@ branch says so rather than pretending otherwise.
     Noise $\le 0.30$ & no robustness trade-off needed & 99.85\% mean; bottleneck 0.434 $\ll$ 1.82 (\S4.2) & A \\
     Vectorizer & distributional $>$ scalar; entropy last & entropy 68.95\%/36.87\%; landscape 75.32\% (Tables \ref{tab:stage_impact}, \S4.1--\S4.2) & A \\
     Raw available & concat $[\text{raw}\|\text{TDA}]$ with RF/logistic & +0.35--1.72pp over 25-rep raw baselines (\S5.2) & B \\
-    Topology is the target & TDA as object of study & matched-genus 95.83 vs.\ 48--58\% (\S4.2); analysis pending & C \\
+    Topology is the target & TDA as object of study & matched-genus 95.83 vs.\ 48--58\% (\S4.2); topology-wins reproduced on five datasets (\S5.3.1) & B \\
     \bottomrule
   \end{tabularx}
 \end{table}
