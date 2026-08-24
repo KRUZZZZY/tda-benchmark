@@ -2596,7 +2596,7 @@ branch says so rather than pretending otherwise.
         $3.22$pp vs.\ filtration $1.65$pp, single split; pooled over the
         five repetitions $3.03$pp vs.\ $1.55$pp), but filtration is no
         longer negligible --- prefer the \textbf{cubical} filtration over
-        Vietoris--Rips (best-of-family $98.0$\% vs.\ $96.25$\%; \S4.2).
+        Vietoris--Rips (best-of-family $98.0$\% vs.\ $96.25$\%; \S4.1).
         \emph{Grade B} ($r{=}5$; the vectorizer $>$ filtration ordering
         holds in all five repetitions).
       \item \emph{Images, multi-class ($\ge 10$ classes):} the ordering
@@ -2703,8 +2703,8 @@ branch says so rather than pretending otherwise.
     Branch & Decision & Evidence (paper) & Grade \\
     \midrule
     Time series & tune vectorizer & ECG200 6.39pp [6.13, 6.65] $r{=}25$; ECG5000 24.89pp (\S4.1, Table \ref{tab:stage_impact}) & A \\
-    Image, binary & vectorizer first; cubical $>$ VR & MNIST 3.22 vs.\ 1.65pp; 98.0 vs.\ 96.25\% (\S4.2) & B \\
-    Image, multi-class & filtration first & 10-class MNIST 4.53 vs.\ 3.44pp (\S4.2) & B \\
+    Image, binary & vectorizer first; cubical $>$ VR & MNIST 3.22 vs.\ 1.65pp; 98.0 vs.\ 96.25\% (\S4.1) & B \\
+    Image, multi-class & filtration first & 10-class MNIST 4.53 vs.\ 3.44pp (\S4.1) & B \\
     Point cloud & no stage dominates & all stage ranges $<$ 1pp at $\sigma \le 0.30$; 99.85\% mean at $\sigma{=}0.30$ (\S4.2) & A \\
     Speed, large $n$ & Sparse Rips only with impl.\ benchmark & B5: parity at $n{=}1000$ at $\sim$30$\times$ cost; $n{=}3000$ infeasible (\S5.3) & B \\
     Speed, small $n$ & VR/weak Alpha/Cubical; no weak Alpha on quantized UCR & wall-clock in DBs (\S4.3); fragility finding (B2, \S5.3) & A \\
