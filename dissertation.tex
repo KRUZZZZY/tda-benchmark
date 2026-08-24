@@ -144,9 +144,10 @@ level-matched comparison it narrows further (\S4.1). On binary MNIST it
 again leads (3.22pp; $\eta^2 = 0.302$) while the filtration effect is
 modest (cubical 98.0\% vs.\ Vietoris--Rips 96.25\% best of family,
 1.75pp). A second time series, ECG5000, shows the raw-menu replication
-(24.89pp vs.\ 3.60pp, single split, 3-vectorizer menu; \S4.1), but the
-level-matched comparison reverses there (filtration 3.60pp vs.\
-vectorizer 0.24pp), so the ECG5000 ordering is menu-dependent. These results
+(24.89pp vs.\ 3.60pp, single split, 3-vectorizer menu; \S4.1); under
+25-repetition repeated CV the vectorizer dominates again with disjoint
+CIs (4.30pp vs.\ 0.96pp; \S5.3) --- the magnitude is menu-dependent, the
+ordering is not. These results
 complement, rather than refute, the image-data case study of Conti et
 al.\ \cite{conti2022}: their 18\%--94\% range spans a joint
 filtration-and-vectorization redesign --- from the H0-only naive
@@ -281,8 +282,9 @@ stage. Specifically:
     3.22pp versus 1.65pp for filtration), and cubical beats
     Vietoris-Rips by $\sim$1.75pp best-of-family (98.0\% vs.\
     96.25\%); a second time-series dataset (ECG5000) shows the raw-menu
-    replication (24.89pp versus 3.60pp; the level-matched comparison
-    reverses, \S4.1). Filtration choice is a second-order factor on
+    replication (24.89pp versus 3.60pp, \S4.1); the repeated-CV
+    harmonisation of \S5.3 confirms the ordering there (vectorizer 4.30pp
+    versus filtration 0.96pp, disjoint CIs). Filtration choice is a second-order factor on
     the datasets tested (exceptions in \S4.1 and \S5.3). Conti et
     al.'s MNIST case study (18\% with their cubical
     pipeline to 94\% with improved filtrations, 10-class, grid
@@ -929,7 +931,7 @@ The \texttt{PipelineRunner} iterates the Cartesian product of all
 choices, runs stratified 5-fold cross-validation, and stores
 per-fold metrics (accuracy, F1, precision, recall) in a normalised
 SQLite database (Appendix~B) with a config snapshot for
-reproducibility (retained for the main sweep; the expansion
+reproducibility (retained for the main sweep; the additional-sweep
 DBs --- panel, hyperparameter, large-n, MNIST-10 --- do not
 retain one; their provenance is the driver scripts in
 scripts/). Reported 95\% CIs are computed from repeated
@@ -1890,7 +1892,7 @@ critical difference.
 
 \begin{table}[H]
   \centering
-  \caption{Multi-dataset panel (B1 sweep). All series are
+  \caption{Multi-dataset panel (additional sweep). All series are
   Takens-embedded; the 9 datasets span time series and images,
   binary and 10-class problems.}
   \label{tab:multidataset_panel}
@@ -1997,7 +1999,7 @@ mean to $3.87$ pp, still above the filtration mean ($2.17$ pp) but by a
 narrower margin ($1.8\times$), so the headline that vectorization
 dominates is robust to the outlier while the magnitude of the lead is
 sensitive to it.
-\paragraph{Hyperparameter sensitivity (expansion B3).}
+\paragraph{Hyperparameter sensitivity.}
 To test whether the vectorizer effect is an artefact of the manuscript's
 default hyperparameters, we re-ran the two headline datasets (ECG200, Takens
 $d{=}3,\tau{=}1 \to$ Vietoris--Rips; binary MNIST at cubical),
@@ -2116,7 +2118,7 @@ vectorizers should be read as window-specific.
 % ────────────────────────────────────────────────────────────
 % ────────────────────────────────────────────────────────────
 
-\textbf{Sparse Rips at its design point (expansion B5).} The
+\textbf{Sparse Rips at its design point.} The
 guideline row for large-scale clouds rested on the untested premise
 that Sparse Rips becomes advantageous at $n \ge 10^3$. To test this
 directly, sphere/torus clouds at $n{=}1000$ and $n{=}3000$ points
@@ -2147,7 +2149,7 @@ monotone-friendly in giotto-tda 0.6.2 --- a portability finding in
 its own right).
 
 
-\paragraph{Predictive theory (expansion 13).} The stability review of
+\paragraph{Predictive theory.} The stability review of
 \S2.4 and the vectorization review of \S2.5 assign each vectorizer a
 Lipschitz constant with respect to the bottleneck distance: landscape,
 Betti curve, amplitude and (by assumption) silhouette are $1$-Lipschitz;
@@ -2168,7 +2170,7 @@ the theory did not predict the sweep. With only seven vectorizers per
 panel the CIs are wide and the test is exploratory.
 
 
-\paragraph{Hierarchical stage model (expansion 15).} We fit a linear
+\paragraph{Hierarchical stage model.} We fit a linear
 mixed model to the stage-capable panel of \S5.3 --- per-config mean
 accuracy (pp) as outcome, random intercept per dataset, sum-coded
 vectorizer/filtration/classifier fixed effects plus modality covariate
@@ -2186,11 +2188,18 @@ the within-dataset marginal ranges of \S4.1 and \S5.3 (vec $>$ fil $>$
 clf): the two measure different quantities --- population level-effect
 SD with dataset variance removed versus within-dataset stage means ---
 and the classifier's size is inflated by the SVM-RBF majority-class
-collapse on TDA features. ``Vectorization dominates'' is a
+collapse on TDA features. A sensitivity refit excluding SVM-RBF
+(whose majority-class collapse is diagnosed in \S5.2) reverses the
+population ordering: vectorizer ($1.55$\,pp; 95\% CI $[0.86, 2.49]$)
+leads filtration ($1.29$\,pp; $[0.24, 2.93]$) with the classifier
+effect vanishing by construction (ICC $0.948$). The population-level
+reversal is therefore driven by the SVM-RBF collapse, confirming the
+diagnosis rather than contradicting the within-dataset headline.
+``Vectorization dominates'' is a
 within-dataset-range statement, not a population-level one.
 
 
-\paragraph{Second homology via the true Alpha complex (expansion 9).}
+\paragraph{Second homology via the true Alpha complex.}
 The sweeps cap homology at $H_1$ for cost, and the manuscript's
 limitations note that the torus's second homology is then unmeasured.
 To test whether the $H_1$ cap discards class information, the
@@ -2217,7 +2226,7 @@ shapes) would be the appropriate test of whether second homology ever
 matters for classification.
 
 
-\paragraph{The topology-wins regime (expansion 6).} The stage
+\paragraph{The topology-wins regime.} The stage
 decomposition above was measured where TDA loses to raw baselines, so
 stage importance could in principle be an artefact of measuring a
 regime where topological features are decorative. To test this, the
@@ -2250,7 +2259,7 @@ carries the classification signal, and the filtration stage's
 contribution grows modestly rather than reversing the ordering.
 
 
-\paragraph{Cross-library replication (expansion 11).} The sweeps run
+\paragraph{Cross-library replication.} The sweeps run
 entirely through giotto-tda, so the accuracy results could in
 principle be library-specific. A representative subset --- the
 sphere/torus pair at $\sigma{=}0$ and $\sigma{=}0.30$ and the
@@ -2277,7 +2286,7 @@ behaviour, and the previously documented filtration fragility
 matters, not the accuracy outcomes.
 
 
-\paragraph{Repeated-CV harmonisation (expansion 5).} The headline
+\paragraph{Repeated-CV harmonisation.} The headline
 ECG200 analysis used 25 cross-validation repetitions, while ECG5000,
 the matched-genus control, and the panel were single-split. To bring
 every supporting claim to the same protocol, the three were re-run
@@ -2344,7 +2353,7 @@ would strengthen or qualify each entry.
 
 We structure the limitations of \S5.2 into the three standard validity
 categories. The purpose is not to multiply caveats but to make explicit,
-for each threat, what was done to mitigate it and which expansion item
+for each threat, what was done to mitigate it and which follow-up analysis
 closes the residual gap. Threat severity follows the usual qualitative
 scale; every empirical mitigation cites the database and configuration
 count it rests on.
@@ -2398,15 +2407,15 @@ importance'' as claimed.
     Friedman/sign-test inference on the repetition-level ordering
     (vectorizer $>$ classifier $>$ filtration in 25/25 repetitions);
     single-split numbers are labelled as such throughout. \emph{Residual:}
-    MNIST binary is $r{=}5$; ECG5000 and the panel were single-split at
-    the time of writing (expansion \#5r closes this).
+    MNIST binary is $r{=}5$; ECG5000 and the panel are now harmonised to
+    the $r{=}25$ protocol of \S5.3, closing this residual.
   \item \textbf{Accuracy is the only outcome for most of the sweep.} F1,
     precision, and recall are stored per fold but the analysis is
     accuracy-centric. \emph{Severity: low-to-moderate.} \emph{Mitigation
     (done):} beyond-accuracy analysis on ECG5000 (balanced accuracy,
     per-class precision/recall/F1, AUROC, Brier;
-    \texttt{beyond\_accuracy\_}\allowbreak\texttt{ecg5000.db};
-    expansion \#14). \emph{Residual:} calibration and AUROC are not
+    \texttt{beyond\_accuracy\_}\allowbreak\texttt{ecg5000.db}).
+    \emph{Residual:} calibration and AUROC are not
     uniform across datasets.
 \end{enumerate}
 
@@ -2423,23 +2432,21 @@ study.
     one unfinished run in \texttt{panel\_stagecapable.db},
     ElectricDevices/weighted\_rips/landscape/RF) proves implementation
     dependence is real. \emph{Mitigation (planned):} cross-library
-    replication in GUDHI-native and Ripser-native paths (expansion
-    \#11), with the fragility reported as a first-class result.
+    replication in GUDHI-native and Ripser-native paths, with the fragility reported as a first-class result.
   \item \textbf{Homology capped at $H_1$.} $H_2$ requires $O(n^4)$
     simplices for Vietoris--Rips; the torus's $\beta_2$ is never
     measured. \emph{Severity: moderate.} \emph{Mitigation (planned):}
-    Alpha complex in 3D for $H_2$ (expansion \#9).
+    Alpha complex in 3D for $H_2$.
   \item \textbf{Binary-only classification.} All datasets except ECG5000
     (5 classes) are binary. \emph{Severity: moderate} --- the 10-class
     MNIST probe shows the stage ordering flips at multi-class scale
     (filtration 4.53pp vs.\ vectorizer 3.44pp, $r{=}5$,
     \texttt{mnist10\_sweep.db}), so the binary result is a boundary
     condition, not a law (\S4.2). \emph{Mitigation (done):} the flip is
-    reported; \emph{planned:} multi-class breadth (expansion \#6
-    datasets).
+    reported; \emph{planned:} multi-class breadth.
   \item \textbf{Fixed hyperparameters.} No grid search on any stage, by
-    design. \emph{Severity: low} --- the hyperparameter arm (B3,
-    \texttt{hyperparam\_sweep.db}) shows vectorizer dominance contracts
+    design. \emph{Severity: low} --- the hyperparameter arm
+    (\texttt{hyperparam\_sweep.db}) shows vectorizer dominance contracts
     but persists under one-parameter-at-a-time tuning (ECG200
     5.75$\rightarrow$4.75pp; MNIST 1.75$\rightarrow$1.62pp), so dominance
     does not arise from the default settings. \emph{Residual:} best-tuned
@@ -2448,8 +2455,8 @@ study.
     observed contraction is conservative.
   \item \textbf{Subsampling choices.} Uniform random subsampling caps
     point clouds; farthest-point sampling was deferred. \emph{Severity:
-    low.} \emph{Mitigation (done):} the FPS ablation (B4,
-    \texttt{fps\_}\allowbreak\texttt{ablation.db}) finds no benefit ($-0.25$pp overall;
+    low.} \emph{Mitigation (done):} the FPS ablation
+    (\texttt{fps\_}\allowbreak\texttt{ablation.db}) finds no benefit ($-0.25$pp overall;
     uniform wins at $k{=}15$, $\sigma{=}0.30$: 99.81\% vs.\ 98.94\%).
   \item \textbf{The sphere/torus norm confound.} The classes differ in
     scale as well as topology. \emph{Severity: moderate.} \emph{Mitigation
@@ -2483,12 +2490,12 @@ configuration space.
 \begin{enumerate}
   \item \textbf{Dataset breadth.} Two time series (ECG200, ECG5000), one
     image pair (binary MNIST), and synthetic point clouds. \emph{Severity:
-    high.} \emph{Mitigation (done):} the 9-dataset panel (B2,
-    \texttt{panel\_stagecapable.db}) replicates the vectorizer $>$
+    high.} \emph{Mitigation (done):} the 9-dataset panel
+    (\texttt{panel\_stagecapable.db}) replicates the vectorizer $>$
     filtration ordering on 7/9 datasets (median 3.3pp vs.\ 1.4pp;
     re-derived median 3.33 vs.\ 1.37), and the within-filtration
     vectorizer span remains large even where filtration leads (10-class
-    MNIST: 9--10pp). \emph{Planned:} topology-wins datasets (\#6),
+    MNIST: 9--10pp). \emph{Planned:} topology-wins datasets,
     further UCR coverage, multi-patient ECG (MIT-BIH).
   \item \textbf{Single-patient ECG5000.} ECG5000 is BIDMC chf07 --- one
     patient. The time-series result could be patient-specific.
@@ -2503,10 +2510,10 @@ configuration space.
     peak memory are stored in the results DBs; peak memory was not
     measured per stage.
   \item \textbf{Missing method families.} No learned vectorizers
-    (PersLay, Hofer; \#8), no $H_2$ features (\#9), no cross-library
-    replication (\#11), no protein/graph modalities. \emph{Severity:
+    (PersLay, Hofer), no $H_2$ features, no cross-library
+    replication, no protein/graph modalities. \emph{Severity:
     moderate} --- each is a named boundary of the current claim, and each
-    maps to a registered expansion. The paper's contribution is scoped
+    names a clear follow-up. The paper's contribution is scoped
     accordingly: the internal stage-importance decomposition and the
     framework, not an absolute-accuracy win over classical methods (raw
     baselines beat TDA on the studied sets; \S4.3, \S5.2).
@@ -2531,9 +2538,9 @@ while filtration contributed 0.69pp across 3 filtrations (95\% CI
 holds --- vectorizer range 3.22pp versus filtration 1.65pp, with
 cubical beating Vietoris-Rips by $\sim$1.75pp best-of-family --- and
 a second time-series dataset (ECG5000) shows the raw-menu ordering again
-(24.89pp versus 3.60pp, single split, 3-vectorizer menu); the
-level-matched comparison reverses there (filtration 3.60pp vs.\
-vectorizer 0.24pp, \S4.1). Conti et al.'s image results are a complementary case study
+(24.89pp versus 3.60pp, single split, 3-vectorizer menu; \S4.1); under
+25-repetition repeated CV the vectorizer dominates again with disjoint
+CIs (4.30pp versus 0.96pp; \S5.3). Conti et al.'s image results are a complementary case study
 on 10-class MNIST under grid search, not a general law. On synthetic
 sphere/torus data, the combined geometric signal survives
 $\sigma = 0.30$ additive spatial Gaussian noise at
@@ -2579,8 +2586,9 @@ branch says so rather than pretending otherwise.
         the design budget should go to the \textbf{vectorizer}, not the
         filtration. Vectorization is the dominant stage (ECG200 marginal
         range $6.39$pp, 95\% CI [6.13, 6.65] over 25 repetitions; ECG5000
-        $24.89$pp, single split, 3-vectorizer menu; \S4.1, Table
-        \ref{tab:stage_impact}), while filtration contributes $0.69$pp
+        $24.89$pp single split (\S4.1, Table \ref{tab:stage_impact});
+        $4.30$pp, 95\% CI [4.02, 4.57], vs.\ filtration $0.96$pp under
+        $r{=}25$ repeated CV (\S5.3)), while filtration contributes $0.69$pp
         (CI [0.57, 0.81]) and classifiers $3.50$pp (CI [3.28, 3.71]).
         \emph{Grade A} for the \emph{ordering}: the vectorizer is the only
         stage whose CI excludes zero, the ordering holds in 25/25
@@ -2628,13 +2636,13 @@ branch says so rather than pretending otherwise.
         at $\approx 30\times$ the cost ($\sim$1.8h vs.\ $\sim$3.6min), and
         at $n{=}3000$ it did not finish in $\sim$42h on this hardware
         (\S5.3). Vietoris--Rips at $n{=}3000$ is likewise infeasible
-        ($O(n^3)$ 2-simplices). \emph{Grade B} (B5 large-$n$ sweep,
+        ($O(n^3)$ 2-simplices). \emph{Grade B} (large-$n$ sweep,
         $n{=}1000$: 8/8 finished runs; $n{=}3000$: 0/2 finished).
       \item \emph{Small $n$:} any of Vietoris--Rips, weak Alpha, or
         Cubical; the 3--27\% wall-clock gap between them (\S4.3)
         rarely justifies accuracy risk. Avoid weak Alpha on quantized UCR series
         (giotto-tda raises \texttt{IndexError}; the fragility is a
-        primary finding of the B2 panel, \S5.3). \emph{Grade A}
+        primary finding of the panel, \S5.3). \emph{Grade A}
         (wall-clock recorded per configuration in the results DBs).
       \item \emph{Classifier:} prefer Random Forest or logistic regression
         on TDA features. SVM-RBF collapses to the majority class on ECG200
@@ -2688,7 +2696,7 @@ branch says so rather than pretending otherwise.
     to be benchmarked against raw baselines; it is the object of study.
     The matched-genus experiment is the proof of concept: TDA retains
     95.83\% where norm/scale features fail (48--58\%). The topology-wins
-    regime (expansion \#6) is designed to map this branch with the full
+    regime is designed to map this branch with the full
     stage decomposition; until it runs, treat this branch as \emph{Grade
     C}.
 \end{enumerate}
@@ -2702,17 +2710,17 @@ branch says so rather than pretending otherwise.
     \toprule
     Branch & Decision & Evidence (paper) & Grade \\
     \midrule
-    Time series & tune vectorizer & ECG200 6.39pp [6.13, 6.65] $r{=}25$; ECG5000 24.89pp (\S4.1, Table \ref{tab:stage_impact}) & A \\
+    Time series & tune vectorizer & ECG200 6.39pp [6.13, 6.65] $r{=}25$; ECG5000 24.89pp single split (\S4.1) and 4.30pp [4.02, 4.57] $r{=}25$ (\S5.3) & A \\
     Image, binary & vectorizer first; cubical $>$ VR & MNIST 3.22 vs.\ 1.65pp; 98.0 vs.\ 96.25\% (\S4.1) & B \\
     Image, multi-class & filtration first & 10-class MNIST 4.53 vs.\ 3.44pp (\S4.1) & B \\
     Point cloud & no stage dominates & all stage ranges $<$ 1pp at $\sigma \le 0.30$; 99.85\% mean at $\sigma{=}0.30$ (\S4.2) & A \\
-    Speed, large $n$ & Sparse Rips only with impl.\ benchmark & B5: parity at $n{=}1000$ at $\sim$30$\times$ cost; $n{=}3000$ infeasible (\S5.3) & B \\
-    Speed, small $n$ & VR/weak Alpha/Cubical; no weak Alpha on quantized UCR & wall-clock in DBs (\S4.3); fragility finding (B2, \S5.3) & A \\
+    Speed, large $n$ & Sparse Rips only with impl.\ benchmark & parity at $n{=}1000$ at $\sim$30$\times$ cost; $n{=}3000$ infeasible (\S5.3) & B \\
+    Speed, small $n$ & VR/weak Alpha/Cubical; no weak Alpha on quantized UCR & wall-clock in DBs (\S4.3); fragility finding (\S5.3) & A \\
     Classifier & RF / logistic; not SVM-RBF on TDA features & 66.5\% majority-class collapse, both arms (\S5.2) & B \\
     Noise $\le 0.30$ & no robustness trade-off needed & 99.85\% mean; bottleneck 0.434 $\ll$ 1.82 (\S4.2) & A \\
     Vectorizer & distributional $>$ scalar; entropy last & entropy 68.95\%/36.87\%; landscape 75.32\% (Tables \ref{tab:stage_impact}, \S4.1--\S4.2) & A \\
     Raw available & concat $[\text{raw}\|\text{TDA}]$ with RF/logistic & +0.35--1.72pp over 25-rep raw baselines (\S5.2) & B \\
-    Topology is the target & TDA as object of study & matched-genus 95.83 vs.\ 48--58\% (\S4.2); \#6 pending & C \\
+    Topology is the target & TDA as object of study & matched-genus 95.83 vs.\ 48--58\% (\S4.2); analysis pending & C \\
     \bottomrule
   \end{tabularx}
 \end{table}
