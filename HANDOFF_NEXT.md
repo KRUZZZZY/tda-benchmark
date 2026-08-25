@@ -30,3 +30,50 @@ State at handoff: **restructured dissertation, 69pp, forward-only, all audits ap
 - Gates after any edit: 2× pdflatex 0 undefined/multiply-defined; number presence; backtracking greps (`again`/`resolves the earlier`/`ranks fourth` = 0; `single-split` = protocol labels only).
 - Backslash-corruption check: grep `\\\\%|\\\\sigma|\\\\S[0-9]` (double-backslash before command chars) — this class of bug slipped through twice before.
 - LaTeX edits: Python line-surgery only (never the patch tool — backslash doubling).
+
+---
+
+## APPENDED 2026-08-25 — final-audit sweep (partial) + verified MIT-BIH finding
+
+**A final 3-mode audit sweep was dispatched 2026-08-24 (user-requested: 3 modes
+× 4 lens groups × 3 agents; modes = KB+web+deep-research / KB-only /
+internet-only). PARTIAL COMPLETION:**
+- Ledgers preserved in `docs/final-audit-2026-08-24/` (M1-L123, M1-L1011,
+  M2-L123, M2-L789, M2-L1011).
+- Several agents FAILED with **HTTP 402 (DeepSeek API billing exhausted)**
+  mid-fan-out; M1-L456, M1-L789, M2-L456 exist only as inline text in
+  `~/.hermes/cache/delegation/subagent-summary-*.txt`. Mode 3 (internet-only)
+  was never dispatched.
+- **CRITICAL: the audit read the paper at HEAD 1e6f0f6 (PRE-restructure).**
+  The restructure (554bf34/844b851 → 6e00106) moved Ch4/Ch5 sections, so ALL
+  ledger section references must be re-anchored against 6e00106 before any
+  fix is applied. Some findings may already be moot (restructure fixed 5
+  cross-ref bugs).
+
+**VERIFIED MAJOR (orchestrator re-derived 2026-08-25): MIT-BIH
+patient-disjoint CV is VIOLATED.** Record 201 (182 beats) is entirely in
+fold 1, record 202 (92 beats) entirely in fold 3 — but 201/202 are the SAME
+patient (MIT-BIH; `build_mitbih.py` SAME_PATIENT={"201":"202"}). The script's
+patient_idx uses per-record index (`len(meta)-1`), not the grouped patient
+id, so the fold splitter treats them as separate patients (n_patients=48,
+should be 47). The paper's "patient-disjoint 5-fold CV" claim is false for
+this pair; beats leak across train/test. FIX: group by SAME_PATIENT before
+fold assignment, regenerate mitbih data + results (~1h), restate claim.
+DB evidence: data/tda/mitbih/mitbih_folds.npy + mitbih_meta.json.
+
+**Unverified headline findings (re-anchor + verify before acting):**
+- L2-1: Nemenyi CD uses 12N not Demšar's 6N → CD 3.50 vs paper's 2.48; the
+  "Betti-to-Landscape gap exceeds CD" claim may fail. NOTE: the skill's own
+  reference documented 2.475 as verified — verify the Demšar formula against
+  the primary source before changing (convention dispute).
+- L9-1: LaTeX-escape leak garbling the harmonisation paragraph in compiled PDF.
+- L3-1: ECG5000 macro-F1 "0.50–0.51" is a best-cell value, not the marginal.
+- L7-1: "48 configurations" mislabels the diversity sweep; L8-1: Perea et al.
+  2022 mischaracterised; L2-5: Appendix D 9.63 vs 9.62pp; L9-4: φ/w notation
+  collision; L9-6: Table 5.3 recommends Betti without the 5th-of-7 evidence.
+- KB: `tda-benchmark-final-audit-2026-08-24` (full ledger summary + open items).
+
+**Next steps when billing is restored:** recover the 3 inline ledgers from
+delegation cache; optionally dispatch Mode 3; re-anchor + 2-of-3 merge the
+complete finding set against 6e00106; fix the MIT-BIH grouping first (it is
+the only verified scientific defect).
