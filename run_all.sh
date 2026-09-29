@@ -8,7 +8,7 @@
 #
 # ECG200 and MNIST 0/1 are sourced from the UCR archive / standard MNIST;
 # place ECG200.arff in data/tda/ucr/ and mnist_X.npy + mnist_y.npy in
-# data/tda/images/ (see scripts/generate_datasets.py) — or provide the
+# data/tda/images/ (see scripts/data/generate_datasets.py) — or provide the
 # pre-parsed .npy files from the author.
 #
 # Usage: bash run_all.sh            (from the repo root)
@@ -24,17 +24,17 @@ DATA_DIR="$(cd ../.. && pwd)/data/tda"
 mkdir -p "$DATA_DIR/synthetic" "$DATA_DIR/ucr" "$DATA_DIR/images"
 
 echo "[1/4] Creating environment (if missing)..."
-if [ ! -d ../.venv-tda ]; then
-  python3 -m venv ../.venv-tda
+if [ ! -d ../../.venv-tda ]; then
+  python3 -m venv ../../.venv-tda
 fi
 # shellcheck disable=SC1091
-source ../.venv-tda/bin/activate
+source ../../.venv-tda/bin/activate
 pip install -q -r requirements.txt
 
 echo "[2/4] Generating / checking datasets..."
-python scripts/generate_datasets.py --data-dir "$DATA_DIR"
+python scripts/data/generate_datasets.py --data-dir "$DATA_DIR"
 if [ ! -f "$DATA_DIR/ucr/ecg200_X.npy" ] || [ ! -f "$DATA_DIR/images/mnist_01_X.npy" ]; then
-  echo "[!] ECG200 / MNIST 0/1 sources missing — see scripts/generate_datasets.py."
+  echo "[!] ECG200 / MNIST 0/1 sources missing — see scripts/data/generate_datasets.py."
   echo "    Synthetic sphere/torus data are ready; the sweep will run those only."
 fi
 
@@ -79,6 +79,6 @@ finally:
 PY
 
 echo "[4/4] Generating analysis report..."
-python analysis.py "$DATA_DIR/expanded_results.db"
+python scripts/analysis/analyse_main_legacy.py "$DATA_DIR/expanded_results.db"
 
 echo "Done. Results: $DATA_DIR/expanded_results.db (path set by the config's output.db_path)"

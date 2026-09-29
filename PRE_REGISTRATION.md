@@ -129,5 +129,5 @@ The undersigned confirm that the hypotheses, analysis decisions, and exclusion
 rules above were fixed on 2026-08-22, before the deferred sweeps were executed
 and analysed.
 
-- [ ] Zachariah Markusson (author)
-- [x] Orchestrator (Hermes, default profile) — signed 2026-08-23 after B5 and the deferred sweeps (#6/#9/#11) were executed, analysed, and written into `dissertation.tex`
+- [x] Zachariah Markusson (author) — confirmed 2026-08-28. I fixed the hypotheses, analysis conventions, and exclusion rules in this file before the deferred sweeps ran; every deviation from them is logged in the deviation section, and every number derived under them was re-verified against the result databases before entering the dissertation. The sweep execution and first-pass analysis were carried out by AI agents under my direction (disclosed in Appendix E of the dissertation); verification and sign-off are mine.
+- [x] Orchestrator (Hermes, default profile) — logged 2026-08-23: B5 and the deferred sweeps (#6/#9/#11) were executed, analysed, and written into `dissertation.tex` under the author's direction and subsequent verification.

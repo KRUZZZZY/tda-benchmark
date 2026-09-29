@@ -19,7 +19,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Smoke check that the pinned stack imports and the framework loads.
-RUN python -c "import giotto, ripser, gudhi, sklearn; print('pinned stack OK')"
+RUN python -c "import gtda, ripser, gudhi, sklearn; print('pinned stack OK')"
 RUN python tests/run_smoke.py
 
 CMD ["bash"]

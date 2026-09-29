@@ -5,7 +5,12 @@
 
 \documentclass[12pt, a4paper]{report}
 
+\usepackage[numbers,sort&compress]{natbib}
 \usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{cmap}
+\input{glyphtounicode}
+\pdfgentounicode=1
 \usepackage[utf8]{inputenc}
 
 \usepackage[a4paper, top=2.5cm, bottom=2.5cm,
@@ -131,26 +136,36 @@ Persistent homology classification pipelines have three stages---
 filtration, vectorization, and classifier---each with several methods;
 we benchmarked all three jointly in a controlled factorial sweep of
 616 configurations (6 dataset instances, 4 filtrations, 7 vectorizers,
-4 classifiers; 56 runs failed and were excluded). The headline is that
+4 classifiers; the 56 configurations pairing the two point-cloud
+filtrations with image data are excluded as inapplicable --- weak
+Alpha because Delaunay construction in $\mathbb{R}^{28}$ is
+infeasible, Sparse Rips because its giotto-tda implementation does
+not complete on the same input). The headline is that
 the stage ordering is robust while its magnitude is
 menu-dependent---vectorization stays the dominant stage under a
 diverse filtration set, per-vectorizer tuning, three persistence
 libraries, repeated cross-validation, and a regime where topology
-carries the signal, but at 10-class scale the ordering inverts, with
-filtration leading. On ECG200 the vectorizer marginal range is 6.39pp
+carries the signal, but one 10-class image dataset (10-class MNIST) inverts the
+ordering, with filtration leading, while other 10-class datasets
+remain vectorizer-led (Fashion-MNIST, ModelNet10, Outex), and at matched level counts the gap narrows
+(ECG200) or reverses (MNIST, ECG5000). On ECG200 the vectorizer marginal range is 6.39pp
 (95\% CI [6.13, 6.65]; $\eta^2 = 0.217$) versus 0.69pp [0.57, 0.81]
-for filtration; on binary MNIST it is 3.22pp ($\eta^2 = 0.302$)
-versus 1.65pp, with cubical beating Vietoris--Rips (98.0\% vs.
-96.25\%). ECG5000 shows the menu dependence directly: 24.89pp versus
+for filtration; on binary MNIST it is 3.22pp (single split; 3.03pp vs.\ 1.55pp
+pooled at $r{=}5$) versus 1.65pp, with cubical beating Vietoris--Rips
+(98.0\% vs.\ 96.25\%). ECG5000 shows the menu dependence directly: 24.89pp versus
 3.60pp on the raw single-split menu, but 4.30pp versus 0.96pp with
 disjoint CIs under 25-repetition repeated CV---the ordering persists,
 the magnitude does not. These results complement, rather than refute,
 Conti et al. \cite{conti2022}: their 18\%--94\% range spans a joint
 filtration-and-vectorization redesign. Noise robustness is not a
 scale artefact: mean accuracy 99.85\% at $\sigma = 0.30$;
-matched-genus TDA 95.83\% versus 48--58\% for norm features; measured
-bottleneck distances (max 0.434) fall well below the corrected bound
-($2\sigma\sqrt{2\ln n}\approx 1.82$). The framework is
+matched-genus TDA 95.83\% (single-split menu; 90.98\% under the
+25-repetition VR/DTM harmonisation of \S4.1) versus 48--58\% for norm
+features; measured
+bottleneck distances (max 0.434) fall well below the typical-scale
+bound ($2\sigma\sqrt{2\ln n}\approx 1.82$ at $n{=}100$, the
+Gaussian-max estimate exceeded w.p.\ $\approx$93\% at $d{=}3$; the
+$d{=}3$-corrected value is $\approx$2.1). The framework is
 YAML-configurable and extensible to 7 filtrations, 11 vectorizers,
 and 4 classifiers; all code, configuration, and result schemas are
 provided.
@@ -182,29 +197,33 @@ and death of topological features as a scale parameter varies.
 
 Practitioners face a combinatorial problem: the TDA classification
 pipeline has three stages --- filtration, vectorization, and
-classification --- each with 5--15 available methods (surveys: Ali et al.\ \cite{ali2023} and Hensel et al.\ \cite{hensel2021}). The literature's most cited answer to ``which stage matters most?''
+classification --- each with 5--15 available methods (surveys: Ali et al.\ \cite{ali2023} and Hensel et al.\ \cite{hensel2021}). The most direct antecedent to ``which stage matters most?''
 comes from Conti et al.\ \cite{conti2022}, who showed that filtration
-choice on MNIST images can be catastrophic: accuracy ranged from 18\% (their H0-only naive cubical-binary
-pipeline) to 94\% (improved filtrations), under 10-split
-cross-validation with grid search. That study has sometimes been read
+choice on MNIST images can be catastrophic: accuracy ranged from 18\% (their H0-only naive arm, a cubical
+filtration of the negative-greyscale image) to 94\% (a redesigned
+pipeline whose representation is re-selected by grid search), under
+10-split cross-validation. That study has sometimes been read
 as a general principle --- ``filtration dominates'' --- although the
 authors themselves did not claim one.
 
 This paper asks the same question across two real datasets of
-different modalities and finds that vectorization is the dominant
-stage on both: ECG200 time series and binary MNIST. The
+different modalities --- vectorization is the largest single main
+effect on both ECG200 and binary MNIST (magnitude and, at 10-class
+scale, ordering treated as menu-dependent in \S4.1) --- and then
+generalises the test to a nine-dataset panel, a multi-patient ECG
+benchmark and a 10-class image probe. The
 vectorizer--filtration gap is 6.39pp (95\% CI [6.13, 6.65]) versus
 0.69pp (95\% CI [0.57, 0.81]) on ECG200; on binary MNIST the
 vectorizer range (3.22pp) is twice the filtration range (1.65pp), and
 cubical beats Vietoris-Rips by $\sim$1.75pp best-of-family. Filtration
 effects are dataset-specific and modest on binary MNIST, not the
-governing stage. We demonstrate this using a modular benchmarking
+governing stage. We show this using a modular benchmarking
 framework that varies all three pipeline stages simultaneously in a
 controlled factorial sweep: 6 dataset instances $\times$ 4 filtrations
 (Vietoris-Rips, weak Alpha, Sparse Rips, Cubical) $\times$ 7
 vectorizers $\times$ 4 classifiers --- 672 possible, 616 completed,
-with the 56 exclusions (\texttt{weak\_alpha}/\texttt{sparse\_rips} on MNIST)
-as disclosed in the abstract. The framework is extensible via YAML-only configuration changes to
+with the 56 exclusions (\texttt{weak\_alpha}/\texttt{sparse\_rips} on
+MNIST; these point-cloud filtrations are inapplicable to image input). The framework is extensible via YAML-only configuration changes to
 the wider method families of Appendix~D (7 filtrations, 11
 vectorizers, and 4 classifiers);
 standardised harnesses of this kind are the direction the community
@@ -215,7 +234,8 @@ has moved towards \cite{telyatnikov2024}.
 % ────────────────────────────────────────────────────────────
 
 Whether persistent homology features help classification at all has
-itself been questioned \cite{turkes2022}; this benchmark assumes the
+itself been questioned \cite{turkes2022}; Figure~\ref{fig:pipeline_diagram} summarises the three stages this
+section introduces; this benchmark assumes the
 features are informative and asks which pipeline stage extracts them
 most effectively.
 
@@ -247,9 +267,11 @@ through three stages:
 \section{Contributions}
 % ────────────────────────────────────────────────────────────
 
-This paper contributes a reproducible factorial benchmark framework
-and two case studies that use it to locate the dominant pipeline
-stage. Specifically:
+This dissertation contributes a reproducible factorial benchmark framework
+and a set of case studies --- two headline datasets, then a
+nine-dataset panel, a multi-patient ECG benchmark and further
+probes --- that use it to locate the dominant pipeline stage.
+Specifically:
 
 \begin{enumerate}
   \item \textbf{Framework.} A benchmarking framework that varies all
@@ -262,21 +284,28 @@ stage. Specifically:
     and 4 classifiers). Full
     configuration and schema in Appendices~A--B; code
     implementations in Appendix~C.
-  \item \textbf{Verified finding: vectorization dominates.} On ECG200
+  \item \textbf{Verified finding: vectorization is the largest main effect.} On ECG200
     time series with Takens embedding, vectorization is the largest
-    contributor to classification accuracy: a 6.39pp marginal range across 7
-    vectorizers (95\% CI [6.13, 6.65]), versus 0.69pp across 3
-    filtrations (95\% CI [0.57, 0.81]; small but with a repeated-CV CI excluding zero) and 3.50pp across 4 classifiers (95\% CI [3.28,
-    3.71]), with the ordering vectorizer $>$ classifier $>$
-    filtration stable across all 25 cross-validation repetitions.
+    contributor to classification accuracy. Its 6.39pp marginal range
+    across 7 vectorizers (95\% CI [6.13, 6.65]) is roughly nine times
+    the filtration range (0.69pp across 3; 95\% CI [0.57, 0.81]) and
+    nearly twice the classifier range (3.50pp across 4; 95\% CI
+    [3.28, 3.71]). All three CIs exclude zero, and the ordering
+    vectorizer $>$ classifier $>$ filtration was stable in all 25
+    cross-validation repetitions.
     On binary MNIST the vectorizer accounts for most of the accuracy variance (marginal range
     3.22pp versus 1.65pp for filtration), and cubical beats
     Vietoris-Rips by $\sim$1.75pp best-of-family (98.0\% vs.\
     96.25\%); a second time-series dataset (ECG5000) shows the raw-menu
     replication (24.89pp versus 3.60pp, \S4.1); the repeated-CV
     harmonisation of \S4.1 confirms the ordering there (vectorizer 4.30pp
-    versus filtration 0.96pp, disjoint CIs). Filtration choice is a second-order factor on
-    the datasets tested (exceptions in \S4.1 and \S4.3). Conti et
+    versus filtration 0.96pp, disjoint CIs). Filtration choice is second-order on the binary tasks under the
+    Rips-family menus, but not in general: with a non-Rips filtration
+    (DTM) the ECG200 filtration range grows to 2.81pp and DTM is the
+    best filtration, winning 7 of 8 vectorizer--classifier pairs
+    (\S4.2); the 10-class inversion of \S4.1 and the population-level
+    mixed model of \S4.4 both rank filtration above vectorization in
+    their settings. Conti et
     al.'s MNIST case study (18\% with their cubical
     pipeline to 94\% with improved filtrations, 10-class, grid
     search) is a complementary demonstration that a badly-matched
@@ -405,11 +434,11 @@ the sparse matrix of distances between Delaunay-neighbouring vertices
 --- a subcomplex of the full Rips complex (cheaper to build), not a
 subcomplex of the Alpha complex, and not covered by the Nerve-Theorem
 homotopy guarantee, which applies to the full Alpha/\v{C}ech complex.
-For the executed approximation we verify empirically in \S4.3 that the
+For the executed approximation we verify empirically in \S4.5 that the
 full GUDHI Alpha complex (persistence-equivalent to the \v{C}ech
 complex) reproduces weak-alpha classification accuracy (mean
-difference 0.0--0.8pp, measured in a dedicated GUDHI-vs-giotto run,
-scripts/experiment\_alpha.py) at 2--5$\times$ the runtime cost, so the
+difference 0.0--0.8pp, measured in a dedicated GUDHI-versus-giotto run,
+scripts/sweeps/experiment\_alpha.py) at 2--5$\times$ the runtime cost, so the
 approximation is faithful on these tasks.
 \end{remark}
 
@@ -628,7 +657,8 @@ Sulowska \cite{sulowska2026}.
 Persistence diagrams are multisets of variable cardinality. To use
 them with standard classifiers, we must map each diagram to a
 fixed-length vector in a normed space. We present the seven methods
-executed in the sweep: the four classical representations below,
+executed in the sweep (Figure~\ref{fig:vectorization_comparison}
+shows the four classical representations applied to one diagram): the four classical representations below,
 followed by three widely used alternatives (Silhouette, Amplitude,
 and Persistence Entropy).
 
@@ -672,25 +702,27 @@ n_{\text{bins}}$ features.
 
 \paragraph{Persistence Images} \cite{adams2017}.
 Transform each point $(\birth, \death) \in \Dgm_k$ to birth-persistence
-coordinates $(\birth, \pers)$ where $\pers = \death - \birth$. Define
-a weighting function $w: \R \times \R_{\ge 0} \to \R_{\ge 0}$,
-typically:
-\begin{equation}
-  w(\birth, \pers) = \begin{cases}
-    \pers / \pers_{\max}, & \pers \le \pers_{\max}, \\
-    1, & \text{otherwise},
-  \end{cases}
-  \label{eq:weight}
-\end{equation}
-where $\pers_{\max}$ is a fixed constant (set to the 95th percentile
-of persistences in our implementation). The persistence surface is:
+coordinates $(\birth, \pers)$ where $\pers = \death - \birth$. The weighting may be any
+non-negative function $w: \R \times \R_{\ge 0} \to \R_{\ge 0}$;
+a common choice is a linear ramp
+$w(\birth, \pers) = \pers / \pers_{\max}$ capped at 1. In this
+study the executed configuration passes \emph{no} weight function to
+giotto-tda's \texttt{PersistenceImage} (Appendix~A lists
+\texttt{sigma: 0.1, n\_bins: 20} only), and the library's default is
+constant weights ($w \equiv 1$; verified in giotto-tda 0.6.2,
+where \texttt{weight\_function=None} maps to
+\texttt{numpy.ones\_like}), so the executed persistence images are
+\emph{unweighted}. The persistence surface is:
 \begin{equation}
   \rho(x, y) = \sum_{(\birth, \pers) \in T(\Dgm_k)} w(\birth, \pers)
   \, \phi_{(\birth,\pers)}(x, y),
   \label{eq:pi_surface}
 \end{equation}
-where $\phi_{(\birth,\pers)}(x, y) = \frac{1}{2\pi\sigma^2}
-\exp\!\bigl(-\frac{(x-\birth)^2 + (y-\pers)^2}{2\sigma^2}\bigr)$
+where $\phi_{(\birth,\pers)}(x, y) = \frac{1}{2\pi\sigma_{\mathrm{PI}}^2}
+\exp\!\bigl(-\frac{(x-\birth)^2 + (y-\pers)^2}{2\sigma_{\mathrm{PI}}^2}\bigr)$
+(the kernel bandwidth $\sigma_{\mathrm{PI}}$ is a smoothing
+hyperparameter, distinct from the noise level $\sigma$ of
+\S3.2)
 is a 2D Gaussian kernel. Evaluating $\rho$ on an $n_{\text{bins}}
 \times n_{\text{bins}}$ grid yields $n_{\text{bins}}^2$ features per
 homology dimension.
@@ -699,7 +731,7 @@ homology dimension.
 The silhouette of a diagram weights the landscape tent functions of
 \eqref{eq:tent} by persistence and normalises:
 \begin{equation}
-  \phi_{\Dgm_k}(t) = \frac{\sum_{p \in \Dgm_k}
+  \kappa_{\Dgm_k}(t) = \frac{\sum_{p \in \Dgm_k}
   w(p)\,\Lambda_p(t)}{\sum_{p \in \Dgm_k} w(p)},
   \qquad w(p) = \pers(p)^q,
   \label{eq:silhouette}
@@ -752,7 +784,7 @@ executed in Chapter~4:
 \begin{itemize}
   \item \textbf{Simplicial complex size} (\S2.1--\S2.2): VR's
     $O(n^3)$ 2-simplex count versus weak Alpha's $O(n^2)$ drives the
-    3--27\% wall-clock speed gap measured in \S4.3. The Nerve
+    3--27\% wall-clock speed gap measured in \S4.5. The Nerve
     Theorem guarantees that the full Alpha complex's speed advantage
     does not cost geometric fidelity; the executed
     \texttt{WeakAlphaPersistence} is an approximation of that
@@ -884,7 +916,9 @@ separable under even aggressive subsampling, it does not expose a
 regime where sampling density matters; a dataset with fragile or
 heterogeneously sampled topology would be needed to observe a gap. The
 subsampling-method choice is immaterial for the synthetic
-class, 
+class, where both sampling schemes saturate the task (the FPS
+ablation of \S4.2 confirms no accuracy gap at the benchmark's
+sampling density).
 
 \textbf{Noise model.} For the synthetic sphere/torus benchmark,
 additive isotropic Gaussian noise is applied directly to spatial
@@ -954,40 +988,40 @@ code.
 \textbf{Data and code availability.} All code, configuration files,
 and result schemas are provided in the public repository
 \texttt{github.com/KRUZZZZY/tda\allowbreak-benchmark} (MIT licence). The
-exact build described here is tagged \texttt{v1.0-dissertation} and archived,
+exact build described here is tagged \texttt{v1.0.1-dissertation} and archived,
 together with its result databases and flat CSV exports, under DOI
 \texttt{10.5281/zenodo.XXXXXXX} (to be inserted after archiving);
 \path{REPRODUCING.md} maps every result to its producing script, database,
 and runtime, and the data-fetch scripts verify SHA256 checksums. The
 synthetic sphere/torus data are regenerated by the bundled
-\path{scripts/generate_datasets.py} (seeded; 200 samples,
+\path{scripts/data/generate_datasets.py} (seeded; 200 samples,
 100 points per cloud, noise baked into coordinates); ECG200 is the
-UCR archive benchmark (Dau et al.\ 2019); MNIST is the standard
+UCR archive benchmark \cite{dau2019}; MNIST is the standard
 binary 0/1 subset \cite{lecun1998}. The main sweep's SQLite result
-database is regenerated by the bundled \texttt{run\_all.sh} script,
-and every follow-up analysis has a bundled producer.
-\path{scripts/sweep_repeated_cv_r25.py} writes
-\path{data/tda/repeated_cv_r25.db} (2100 finished runs: 84 configurations
-$\times$ 25 repetitions), analysed by
-\path{scripts/analysis_repeated_cv_r25.py};
-\path{scripts/analysis_eta_omega2.py} produces the $\eta^2$/$\omega^2$
-decomposition of Table~\ref{tab:eta2};
-\path{scripts/analysis_mnist_repeated_cv.py} produces the MNIST
-marginal analysis;
-\path{scripts/run_baselines.py} writes
+database is regenerated by the bundled \texttt{run\_all.sh} script, and
+every follow-up analysis has a bundled producer:
+\path{scripts/sweeps/sweep_repeated_cv_r25.py} writes
+\path{data/tda/repeated_cv_r25.db} (2100 finished runs: 84
+configurations $\times$ 25 repetitions);
+\path{scripts/sweeps/run_baselines.py} writes
 \path{data/tda/baseline_experiments.db} (raw-signal baselines,
 matched-genus synthetic clouds, measured bottleneck distances);
-\path{scripts/generate_matched_synthetic.py} writes the
-\path{data/tda/synthetic_matched/} data.
-\path{scripts/experiment_alpha.py},
-\path{scripts/experiment_cubical_artifact.py}, and
-\path{scripts/ecg5000_lean_sweep.py} are the producers of the
-remaining sensitivity results. Random seeds are fixed: the main
+\path{scripts/data/generate_matched_synthetic.py} writes the
+\path{data/tda/synthetic_matched/} data; and
+\path{scripts/analysis/analysis_repeated_cv_r25.py},
+\path{scripts/analysis/analysis_eta_omega2.py},
+\path{scripts/analysis/analysis_mnist_repeated_cv.py},
+\path{scripts/sweeps/experiment_alpha.py},
+\path{scripts/sweeps/experiment_cubical_artifact.py}, and
+\path{scripts/sweeps/ecg5000_lean_sweep.py} produce the remaining analyses
+and sensitivity results. REPRODUCING.md maps each database to its
+producer. Random seeds are fixed: the main
 sweep uses base seed 42, the repeated-CV splits use seeds 43--67
 (random seed 42 + repetition index; 25 repetitions for ECG200, 5
 for MNIST), and per-dataset subsampling is seeded deterministically
 via CRC32, so all experiments are
-reproducible end-to-end.
+reproducible end-to-end. Chapter~4 reports the empirical results this
+architecture produces.
 
 \newpage
 
@@ -997,15 +1031,20 @@ reproducible end-to-end.
 \chapter{Empirical Benchmark and Sensitivity Analysis}
 \label{chap:results}
 
-One benchmark sweep, four analytical cuts. The sweep comprises
+One benchmark sweep, four analytical cuts. Table~\ref{tab:datasets}
+lists the instances. The sweep comprises
 616 completed configurations from a full factorial of 6 dataset
 instances $\times$ 4 filtrations (Vietoris-Rips, weak Alpha, Sparse Rips,
 Cubical) $\times$ 7 vectorizers (Persistence Image, Persistence
 Landscape, Betti Curve, Persistence Statistics, Silhouette, Amplitude,
 Persistence Entropy) $\times$ 4 classifiers (SVM-RBF, SVM-linear,
-Random Forest, Logistic Regression) --- 672 possible, 56 runs failed
-(\texttt{weak\_alpha}/\texttt{sparse\_rips} on MNIST) and were
-excluded. All
+Random Forest, Logistic Regression) --- 672 possible; we exclude the
+56 configurations pairing \texttt{weak\_alpha} or
+\texttt{sparse\_rips} with MNIST --- weak Alpha because Delaunay
+triangulation of a 28-point cloud in $\mathbb{R}^{28}$ is infeasible,
+and Sparse Rips because its giotto-tda implementation fails on the
+same input Vietoris--Rips accepts --- and the remaining 616
+completed. All
 filtrations computed $H_0$ and $H_1$ homology. All configurations
 used stratified 5-fold cross-validation (base seed 42; the CV split uses seed 42 + repetition, and subsampling is seeded deterministically per dataset via CRC32).
 Point clouds were generated at 100 points per cloud (200 samples
@@ -1035,17 +1074,10 @@ energy-normalised: the sum of squares of every record is constant
 that would attach to an un-normalised signal does not apply to the
 executed data.
 
-The repeated-CV-stable best configuration is cubical + Persistence Image + Random Forest
-(83.2\% mean, $r{=}5$; 82.82\% at $r{=}25$; \S4.1); the single-split point
-estimate for cubical + Silhouette + Random Forest is 83.0\% (Table~4.2).
-
-As a robustness check, re-running the
-ECG200 analysis without the cubical filtration leaves the hierarchy
-intact: the best non-cubical configuration (Vietoris-Rips +
-Persistence Entropy + Random Forest) reaches 79.5\% (single-split), with vectorizer
-range 6.58pp versus filtration 0.34pp (\S4.1). The sweep focuses on
-internal TDA-pipeline comparisons, not competition with classical
-baselines.
+The repeated-CV-stable best configuration and the effect of excluding
+the cubical filtration are quantified in \S4.1; the sweep is an
+internal TDA-pipeline comparison, not a competition with classical
+baselines (\S4.1.1).
 
 \noindent\textbf{MNIST binary.} To test image-specific filtrations,
 a binary subset of MNIST (digits 0 vs.\ 1; $n=400$; 200 per class;
@@ -1074,7 +1106,7 @@ where even the worst filtration remains informative.
   \footnotesize
   \begin{tabularx}{\textwidth}{lXXXXl@{\hspace{4pt}}l}
     \toprule
-    Dataset & Modality & $n$ & Dims & Classes & Maj.\% & Source \\
+    Dataset & Modality & $n$ (samples) & Dims & Classes & Maj.\% & Source \\
     \midrule
     Sphere/Torus ($\sigma{=}0.00$) & point cloud & 200 & 100 pts & 2 & 50.5\% & synthetic \\
     Sphere/Torus ($\sigma{=}0.05$) & point cloud & 200 & 100 pts & 2 & 50.5\% & synthetic \\
@@ -1092,8 +1124,9 @@ where even the worst filtration remains informative.
 
 Which pipeline stage contributes the largest variance? For each
 stage, we marginalise over the other two and compute the range of
-marginal accuracies from the repeated-CV means (five independent
-splits, seeds 43--47), with 95\% CIs over the five per-split ranges,
+marginal accuracies from the repeated-CV means (25 repetitions,
+seeds 43--67, for ECG200; 5 repetitions, seeds 43--47, for MNIST),
+with 95\% CIs over the per-split ranges,
 and decompose the variance with an $\eta^2$ analysis (fold-level
 $F$-tests) to test whether the range exceeds sampling noise.
 
@@ -1120,7 +1153,8 @@ $F$-tests) to test whether the range exceeds sampling noise.
     per-split marginal range, with a 95\% $t$-interval across the 25
     per-split ranges (repeated-measures CI; Nadeau--Bengio corrected
     resampled CIs are wider: vectorizer [5.69, 7.10], classifier
-    [2.92, 4.07], filtration [0.37, 1.01], all excluding zero).
+    [2.92, 4.07], filtration [0.37, 1.01], all excluding zero; the
+    correction is that of Nadeau and Bengio \cite{nadeau2003}).
     $p$-values are $F$-test $p$-values from the per-configuration
     three-way ANOVA (Table~\ref{tab:eta2}); the fold-level panel of
     that table is descriptive only, as folds within a configuration share
@@ -1137,12 +1171,15 @@ $>$ filtration was stable across all 25 CV repetitions. These
 intervals quantify split-resampling noise on this sample; they are not
 estimates of sampling variance across the underlying population. This
 ordering is significant under non-parametric inference on the
-25 repetition-level stage rankings: the Friedman statistic
+25 repetition-level stage rankings. The Friedman statistic is
 $Q = \frac{12n}{k(k+1)}\sum_j (\bar{R}_j - \frac{k+1}{2})^2 = 50$
 for $k{=}3$ stages and $n{=}25$ repetitions (asymptotic $\chi^2$-tail
-$p \approx 1.4\times10^{-11}$; exact permutation $p \approx 2\times10^{-19}$); pairwise, the vectorizer-margin
-exceeds the filtration-margin in all 25 repetitions (one-sided sign
-test $p = (1/2)^{25} = 3\times10^{-8}$). The variance
+$p \approx 1.4\times10^{-11}$). The exact permutation value
+($p \approx 2\times10^{-19}$) and the pairwise sign test (25/25
+repetitions; $p = (1/2)^{25}$) are \emph{descriptive}: the 25
+repetitions are resamples of one 200-sample dataset, not independent
+replicates, so these $p$-values quantify ranking consistency across
+resamples, not significance against a dataset population. The variance
 decomposition of Table~\ref{tab:eta2} is the primary evidence for
 this ordering: on ECG200 the vectorizer explains 21.7\% of the
 per-config variance (fold-level 10.6\%), the classifier 9.8\%
@@ -1169,7 +1206,13 @@ datasets (ECG200 $0.165$ versus classifier $0.077$ and filtration
 $-0.017$; MNIST $0.214$ versus $0.143$ and $0.032$); the level counts
 do not manufacture the ordering. The marginal-range \emph{size},
 however, is: excluding Amplitude and Persistence Entropy cuts the
-ECG200 vectorizer range from 6.39pp to 3.10pp, and on the ECG5000
+ECG200 vectorizer range from 6.39pp to 3.10pp --- and the same
+exclusion applied symmetrically to all three stages puts the
+\emph{classifier} first (vectorizer 3.10pp, classifier 3.87pp,
+filtration 1.94pp; the classifier is the largest stage in 20 of the
+25 repetitions; \texttt{repeated\_cv\_r25.db}, per-repetition mean
+method). The full-menu ordering rests on floor effects in two menus
+at once (scalar vectorizers and the SVM-RBF collapse). On the ECG5000
 probe the 24.89pp range collapses to 0.24pp (Persistence Entropy at
 36.9\% versus Betti Curve 61.5\% and Silhouette 61.8\%, which are
 within 0.24pp of each other). Matching the number of levels ---
@@ -1181,17 +1224,20 @@ below the filtration range (3.60pp).
 
 The isolated contribution ---
 swapping one stage while holding the other two at their marginal-best
---- is still largest for the vectorizer on ECG200 (10.22pp) and MNIST
-(2.1pp). This isolated-contribution metric holds the other two stages
+--- is still largest for the vectorizer on ECG200 (10.22pp, r{=}25
+non-degenerate slice; \texttt{repeated\_cv\_r25.db}) and MNIST
+(2.1pp, r{=}5 non-degenerate slice). This isolated-contribution metric holds the other two stages
 at their best levels, which maximally advantages the varied stage; it
 is an upper bound on the stage's achievable range rather than a
 typical operating difference. The defensible conclusion is that vectorization is the largest
-single stage effect, but its measured \emph{margin} is sensitive to
-the vectorizer menu and to the number of levels compared: the
-6.39pp and 24.89pp ranges are substantially inflated by
-degenerate scalar vectorizers, and once those are excluded and the
-stage counts are matched the vectorizer-vs-filtration gap narrows
-substantially (ECG200) or reverses (MNIST, ECG5000).
+single stage effect under the full menus (and by $\omega^2$ after
+adjusting for interactions), but its measured \emph{margin} is
+sensitive to the menu and to the number of levels compared: the
+6.39pp and 24.89pp ranges are inflated by degenerate scalar
+vectorizers; under symmetric scalar exclusion the classifier leads
+(3.87pp vs.\ 3.10pp vectorizer), and at matched level counts the
+vectorizer-vs-filtration gap narrows (ECG200) or reverses (MNIST,
+ECG5000).
 
 \textbf{Simple versus complex.} Persistence Statistics matches
 kernel-based methods on ECG200: its $r{=}5$ marginal accuracy (74.8\%) is
@@ -1228,7 +1274,7 @@ separates it nearly perfectly.
 decomposition applied to binary MNIST gives a vectorizer range of
 3.22pp versus a filtration range of 1.65pp: vectorization is the
 larger stage even on image data. The ordering persists under repeated 5-fold CV (5 repetitions, seeds 43--47;
-\texttt{data/tda/mnist\_repeated\_cv.db}) reproduces the ordering in all five
+\texttt{data/tda/mnist\_repeated\_cv.db}): it holds in all five
 repetitions (vectorizer 2.91--3.22pp vs.\ filtration 1.49--1.65pp,
 pooled 3.03pp vs.\ 1.55pp), and the best configuration
 (cubical + Betti Curve + Logistic, 98.0\%) is stable across
@@ -1366,18 +1412,20 @@ claim.
 
 \textbf{Repeated cross-validation.} Because single-split point
 estimates are noisy (per-configuration SD across repetitions
-averages 1.27pp, max 3.33pp at 25 repetitions), the ECG200 analysis
-was re-run with repeated CV (25 repetitions of the same stratified
+averages 1.27pp, max 3.33pp at 25 repetitions), we re-ran the ECG200
+analysis with repeated CV (25 repetitions of the same stratified
 5-fold protocol, seeds 43--67). Table~\ref{tab:stage_impact}
-reports the repeated-CV ranges and CIs; the ordering vectorizer $>$
+and Figure~\ref{fig:stage_impact} report the repeated-CV ranges and
+CIs; the ordering vectorizer $>$
 classifier $>$ filtration was stable in all 25 repetitions.
 Increasing from $r{=}5$ to $r{=}25$ narrows the repeated-measures
 CI widths by $\sim$3$\times$ (filtration 0.69pp $\to$ 0.24pp,
 classifier 1.20pp $\to$ 0.43pp) at no change to the ordering.
 By 25-repetition mean, cubical
 + Persistence Image + Random Forest is the best ECG200 configuration
-(82.82\%, $r{=}25$); the single-split point estimate for cubical +
-Silhouette + Random Forest is 83.0\% (Table~4.2). Differences below $\sim$1pp between individual
+(82.82\%, $r{=}25$; the same configuration averages 83.2\% at
+$r{=}5$); the single-split point estimate for cubical +
+Silhouette + Random Forest is 83.0\% (Table~\ref{tab:pareto}). Differences below $\sim$1pp between individual
 configurations should not be over-interpreted.
 
 \textbf{Generality probe: ECG5000.} The ECG200 result could be instance-specific, so the stage analysis
@@ -1388,8 +1436,10 @@ the full 5000-sample recording (class counts 2919, 1767, 96, 194,
 24; majority class 58.38\% in the full recording; the executed
 714-sample subsample is balanced to $\le 200$/class, so its majority
 share is 28.0\%). The pipeline subset comprised 2 filtrations,
-3 vectorizers, and 2 classifiers, spanning the strongest and
-weakest vectorizers from ECG200 to bound the range. Two of the
+3 vectorizers, and 2 classifiers: Persistence Entropy (the weakest
+ECG200 vectorizer) plus Silhouette and Betti Curve (3rd and 5th of 7
+at $r{=}25$); the ECG200 winner, Persistence Landscapes, is absent,
+so the probe bounds the floor of the menu, not its ceiling. Two of the
 twelve configurations fail on a technicality
 (silhouette-on-weak-alpha produces NaN features) and are excluded.
 Both failures are weak-alpha cells, so the weak-alpha marginal is
@@ -1402,8 +1452,9 @@ replicates the hierarchy: vectorizer marginal range 24.89pp versus
 filtration 3.60pp (plain accuracy, point estimate, single split);
 balanced accuracy per vectorizer is 0.46--0.47 (Betti Curve,
 Silhouette) versus 0.28 (Persistence Entropy) and macro-$F_1$
-0.50--0.51 versus 0.12--0.38, so vectorization dominates under
-class-balanced metrics too. The vectorizer-led ordering on time series
+0.43--0.45 (per-vectorizer marginals; the best cells reach 0.50)
+versus 0.12--0.38 for Persistence Entropy, so vectorization leads
+under class-balanced metrics too. The vectorizer-led ordering on time series
 does not depend on the specific ECG200 instance; a full
 multiclass generalisation claim would require multiple datasets
 (the probe is single-patient).
@@ -1508,7 +1559,7 @@ floor (50.0\% on MNIST binary, 66.5\% on ECG200). The claim that
 ``TDA features can be competitive with classical methods'' is
 scoped to the internal TDA comparison: we make no claim of
 beating raw features on these datasets. The noise experiments
-(\S4.2) additionally show that a single per-cloud mean-norm feature
+(\S4.2) also show that a single per-cloud mean-norm feature
 (logistic) separates the synthetic sphere/torus classes at 100\% at
 every noise level (a fixed-threshold hand rule on the norm fails at
 $\sigma{=}0.30$: 50.5\%), which
@@ -1543,7 +1594,7 @@ subset, the pooled ranges are dominated by the cross-dataset modality
 composition (filtration $43.30$~pp, dataset $41.22$~pp --- the
 time-series arm runs VR/DTM while the image arm runs cubical/VR), so
 the interpretable quantity there is the within-dataset ordering, which
-reproduces the vectorizer-leads pattern of \S5.3.
+reproduces the vectorizer-leads pattern of \S4.1.
 
 On \textbf{image data}, the raw input is a 2D grid of pixel
 intensities. A cubical filtration directly captures adjacency
@@ -1566,7 +1617,7 @@ not identical --- VR (Vietoris--Rips) and the full Alpha complex are multiplicat
 interleaved, which bounds their bottleneck distance rather than
 equating their diagrams --- and the empirical filtration range on
 ECG200 is just 0.69pp (25-repetition repeated-CV mean). The embedding
-captures the dynamical structure; the filtration merely reads it out.
+captures the dynamical structure; the filtration reads it out.
 
 % ────────────────────────────────────────────────────────────
 \section{Robustness of the Ordering}
@@ -1646,7 +1697,8 @@ single-split, seed 43, 12 configurations.)
 \begin{figure}[H]
   \centering
 \includegraphics[width=0.8\textwidth]{figures/fig_noise_curves.pdf}
-  \caption{Accuracy vs.~noise. All pipelines maintain $\ge 98.5\%$
+  \caption{Accuracy vs.~noise (per-configuration mean across the 112
+sphere/torus configurations at each level; band = min--max spread). All pipelines maintain $\ge 98.5\%$
     accuracy through $\sigma=0.30$; measured bottleneck distances
     (max 0.434 at $\sigma=0.30$ versus the corrected bound
     $2\sigma\sqrt{2\ln n} \approx 1.82$) confirm the stability
@@ -1663,14 +1715,16 @@ edge weights from a distance-to-measure estimate; Anai et al.~\cite{anai2019}), 
 to outliers --- raises the ECG200 filtration marginal range to 2.81pp
 and makes DTM the best filtration (76.2\% versus 73.4\% for
 Vietoris-Rips), winning 7 of 8 vectorizer--classifier pairs (best
-configuration DTM + Landscapes + Random Forest, 81.0\%; \texttt{data/tda/filtration\_diversity\_sweep.db}, 48 configurations,
-single split). Vectorization remains the largest stage (5.62pp), so
+configuration DTM + Landscapes + Random Forest, 81.0\%; \texttt{data/tda/filtration\_diversity\_sweep.db}, 48 runs (16 ECG200
+configurations), single split). Vectorization remains the largest stage (5.62pp), so
 the headline ordering survives; but the empirical filtration range is
 not a universal constant --- it is sensitive to the filtration menu,
 and a genuinely non-Rips filtration both matters (2.81pp) and performs
 better than the Rips-type baseline. On the clean synthetic
 sphere/torus pair all 16 diverse-pool configurations reach 100\%,
-regardless of filtration, so no stage matters there.
+regardless of filtration, so no stage matters there (at $\sigma{=}0$
+the vectorizer effect is statistically non-zero but $<0.1$pp on a
+near-ceiling task; Table~\ref{tab:eta2}).
 
 \paragraph{Panel with a diverse filtration set.} We re-ran the
 nine-dataset panel with more than one \emph{working} filtration per
@@ -1687,17 +1741,20 @@ For the two image datasets the filtrations were cubical and
 Vietoris--Rips. The four vectorizers (persistence image, persistence
 landscape, Betti curve, silhouette) and two classifiers (RBF-SVM,
 random forest) were unchanged, and evaluation used the same 5-fold
-stratified CV with seed 42 (rep 1). Across the nine datasets, with each range computed as the spread of stage-level means of per-config fold-mean accuracies, the vectorization range exceeds
-the filtration range on $7$ of the $9$ datasets; only HandOutlines
-($1.90$ vs.\ $4.22$ pp) and mnist10 ($2.80$ vs.\ $4.41$ pp) favour
-filtration.
+stratified CV with seed 42 (rep 1). Across the nine datasets of the stage-capable panel
+(\texttt{panel\_stagecapable.db}; two working filtrations per
+modality), with each range computed as the spread of stage-level
+means of per-config fold-mean accuracies, the vectorization range
+exceeds the filtration range on $7$ of the $9$ datasets; only
+HandOutlines ($1.90$ vs.\ $4.22$ pp) and mnist10 ($2.80$ vs.\
+$4.41$ pp) favour filtration.
 
 Across datasets the filtration range spans a minimum of
 $0.31$ pp, a median of $1.37$ pp, and a maximum of $4.41$ pp (mean
 $2.17$ pp), while the vectorization range spans a minimum of $0.62$ pp,
 a median of $3.32$ pp, and a maximum of $15.00$ pp (mean $5.11$ pp).
 Vectorization still leads on average, roughly $2.4\times$
-the filtration range; however the comparison is now built on a genuinely
+the filtration range; however, the comparison is now built on a genuinely
 diverse non-Rips filtration rather than Vietoris--Rips alone, and the
 filtration range is no longer negligible (the previous single-filtration
 panel fixed that stage, making its contribution invisible).
@@ -1708,7 +1765,7 @@ comparison, the mean vectorizer range falls to $2.02$pp (median
 $1.90$pp; min $0.50$pp, max $5.78$pp) --- of the same magnitude as
 the $2.17$pp filtration range (ratio $0.93\times$) --- and the
 vectorizer exceeds the filtration range on 5 of the 9 datasets. The
-$2.4\times$ gap is therefore substantially a level-count artefact: at
+$2.4\times$ gap is a level-count artefact: at
 matched numbers of alternatives per stage the panel shows no dominant
 stage on average, consistent with the population-level mixed model
 below and with the conditionality thesis of Chapter~6.
@@ -1734,8 +1791,9 @@ ECG200 weak-alpha + Betti Curve + logistic achieves 87.0\% (concat)
 versus 85.28\% (raw logistic, 25-rep) and 72.5\% (TDA-only, same
 configuration). The improvement is small (0.35--1.72pp against the 25-repetition raw baselines)
 and, relative to the TDA-only arm, never harmful (every concatenated
-configuration reaches or exceeds its TDA-only counterpart); against
-the raw baselines, however, the gain is configuration-dependent and
+configuration reaches or exceeds its TDA-only counterpart); relative
+to the raw baselines the gain is single-split, best-of-many, within
+the 1--3pp split noise of \S4.1, configuration-dependent and
 sometimes negative (e.g.\ ECG200 Vietoris--Rips + Persistence Image + logistic concat 77.0\% vs.\ raw
 85.5\%). SVM-RBF collapses to the majority class on TDA features
 (66.5\% on ECG200) in both TDA-only and concatenated arms, so the
@@ -1747,12 +1805,12 @@ the stage-importance decomposition and framework, not an
 absolute-accuracy win over classical methods.
 
 \paragraph{Hyperparameter sensitivity.}
-To test whether the vectorizer effect is an artefact of the manuscript's
+To test whether the vectorizer effect is an artefact of the dissertation's
 default hyperparameters, we re-ran the two headline datasets (ECG200, Takens
 $d{=}3,\tau{=}1 \to$ Vietoris--Rips; binary MNIST at cubical),
 sweeping each of the four vectorizers' key hyperparameter one-parameter-at-a-time
-over a small grid with all other vectorizer parameters fixed at the manuscript
-defaults. The grids were: persistence\_image $\sigma \in \{0.05,0.1,0.2,0.5\}$ and
+over a small grid with all other vectorizer parameters fixed at the dissertation
+defaults. The grids were: persistence\_image $\sigma_{\mathrm{PI}} \in \{0.05,0.1,0.2,0.5\}$ and
 $n_{\textrm{bins}} \in \{10,20,50\}$; persistence\_landscape
 $n_{\textrm{layers}} \in \{1,3,5\}$ and $n_{\textrm{bins}} \in \{20,50,100\}$;
 silhouette and betti\_curve $n_{\textrm{bins}} \in \{10,20,50,100\}$, under
@@ -1789,18 +1847,20 @@ range), which would tend to \emph{inflate} the tuned range, so the observed
 contraction is conservative.
 
 \paragraph{Window-length sensitivity.} To check that the vectorizer
-ordering does not depend on the 128-sample window, the same
-protocol was re-run with the full 256-sample windows (2000 beats,
-500/class; identical folds; data/tda/mitbih\_sweep\_w256.db).
-Betti Curve remains the top vectorizer (mean 38.48\% versus 38.75\%
-at 128 samples) and Persistence Landscape the weakest (30.1\%
-versus 27.65\%), and the best configuration is Persistence Image +
-Random Forest at both window lengths (41.35\% versus 41.70\%). The
-middle ordering is window-sensitive, however: Persistence Image
-drops from second (36.08\%) to third (31.2\%) and Silhouette rises
-from third (30.55\%) to second (36.1\%) when the window is doubled,
-driven largely by the Persistence Image + SVM-RBF cell (30.45\%
-to 21.05\%, the most window-sensitive configuration). The robust
+ordering does not depend on the 128-sample window, the same protocol
+was re-run with full 256-sample windows (2000 beats, 500/class;
+identical folds; \texttt{data/tda/mitbih\_sweep\_w256.db}). This
+paragraph uses the MIT-BIH benchmark introduced in \S4.3
+(Multi-patient ECG) --- read that block first for the dataset and
+protocol description; the fold assignment used here is regenerated by
+\texttt{scripts/sweeps/build\_mitbih.py}.
+Betti Curve remains the top vectorizer (mean 42.78\% versus
+39.25\% at 128 samples) and Persistence Landscape the weakest
+(30.92\% versus 27.74\%), and the best configuration is
+Betti Curve + SVM-RBF at both window lengths. The middle ordering is
+window-sensitive, however: Persistence Image drops from second
+(38.75\%) to third (34.14\%) and Silhouette rises from third
+(28.33\%) to second (36.38\%) when the window is doubled. The robust
 conclusions --- Betti Curve as the portable best vectorizer,
 Landscape as the weakest, and the filtration fragility --- hold at
 both window lengths; pairwise claims about the middle two
@@ -1837,25 +1897,32 @@ matters, not the accuracy outcomes.
 
 The stage-impact analysis of \S4.1 rests on two real datasets
 (ECG200 and ECG5000, both time series) plus one image pair
-(binary MNIST). To test whether the ordering is a general property rather than a
-property of these instances, the same machinery was run on a wider
-panel: five additional UCR time-series datasets (FordA, FordB, Wafer,
-ElectricDevices, HandOutlines) and two 10-class image datasets (full
-MNIST and Fashion-MNIST, subsampled to 1000 stratified samples each
-for runtime), all through the repository's own runner with the
-paper's Takens embedding ($d{=}3,\tau{=}1$). Long series were
-pre-subsampled to 100 points with a fixed-seed uniform draw (seed 42); this
-was necessary because the runner's \texttt{subsample\_points} knob
-fires only on 3-D point-cloud input and never caps 2-D series, so
-series length was capped at data-preparation time.
-This is the canonical Dem\v{s}ar multi-dataset protocol: one
+(binary MNIST). To test whether the ordering is a general property
+rather than a property of these instances, we ran the same machinery
+on a wider panel: five more UCR time-series datasets (FordA, FordB,
+Wafer, ElectricDevices, HandOutlines) and two 10-class image datasets
+(full MNIST \cite{lecun1998} and Fashion-MNIST \cite{xiao2017}).
+All panel runs use the repository's
+own runner with the dissertation's Takens embedding ($d{=}3,\tau{=}1$);
+both image datasets are subsampled to 1000 stratified samples each
+for runtime. Long series were
+pre-subsampled to 100 points with a fixed-seed uniform draw over time
+indices (seed 42), so $\tau{=}1$ operates on an irregularly resampled
+signal for these four series (retained fractions: FordA/FordB 20\%,
+Wafer 66\%, HandOutlines 3.7\%) --- a disclosed limitation of the
+panel protocol (\S5.2); decimation-based capping is a cleaner
+alternative for future runs. The capping was necessary because the
+runner's \texttt{subsample\_points} knob fires only on 3-D
+point-cloud input and never caps 2-D series.
+This is the canonical multi-dataset protocol of Dem\v{s}ar
+\cite{demsar2006}: one
 accuracy estimate per (dataset, configuration), ranked within each
 dataset, Friedman test across configurations, Nemenyi post-hoc
 critical difference.
 
 \begin{table}[H]
   \centering
-  \caption{Multi-dataset panel (additional sweep). All series are
+  \caption{Multi-dataset panel (extra sweep). All series are
   Takens-embedded; the 9 datasets span time series and images,
   binary and 10-class problems.}
   \label{tab:multidataset_panel}
@@ -1898,50 +1965,66 @@ filtration that is not portable across datasets).
   \centering
 \includegraphics[width=0.9\textwidth]{figures/fig_nemenyi_cd.pdf}
   \caption{Nemenyi critical-difference diagram: configuration mean
-  ranks across the 9-dataset panel (1 = best). The bracket marks
-  the CD at $\alpha{=}0.05$; configurations outside it are
-  significantly worse than the best.}
+  ranks across the 9-dataset panel (1 = best, leftmost). The bracket
+  over the best configuration marks the CD at $\alpha{=}0.05$;
+  configurations beyond it are significantly worse than the best.}
   \label{fig:nemenyi_cd}
 \end{figure}
 
 The Friedman test rejects the null of equal configurations at
 $\chi^2(7) = 32.41$ ($p = 3.4\times10^{-5}$; Iman--Davenport
 $F(7,56) = 8.47$, $p = 4.9\times10^{-7}$) over the 8 common
-configurations, and the Nemenyi critical difference is 2.48 mean
+configurations, and the Nemenyi critical difference is 3.50 mean
 rank units. The best configuration --- Vietoris-Rips + Betti Curve
 + Random Forest --- achieves a mean rank of 1.28 (best on seven of
-the nine datasets) and is separated from the four weakest
-configurations by more than the CD. The vectorizer effect
+the nine datasets); the four weakest configurations lie 3.61--5.33 rank
+units below it, all four beyond the CD. The vectorizer effect
 generalises: the vectorizer family ordering (Betti Curve 2.83,
 Persistence Image 4.22, Silhouette 4.69, Persistence Landscape 6.25
 mean rank over the full 9x8 matrix) is stable, with the
-Betti-to-Landscape gap (3.42) exceeding the CD. The classifier effect is smaller (random forest 3.51 vs SVM-RBF 5.49, gap 1.98 within the CD), matching the stage-impact
+Betti-to-Landscape gap (3.42) within the CD. The classifier effect is smaller (random forest 3.51 vs.\ SVM-RBF 5.49, gap 1.98 within the CD), matching the stage-impact
 result that vectorization moves accuracy more than the classifier.
 The configuration-ranking analysis supports \emph{vectorizer
-choice as the portable driver of the ranking: the best vectorizer is
-data-set stable (Betti Curve), with a Betti-to-Landscape rank gap
-exceeding the critical difference}. The range analysis, however, is
-dataset-conditional: the vectorizer range exceeds the filtration range
-on 7 of the 9 panel datasets but not on HandOutlines or 10-class MNIST,
-where filtration leads (\S4.3); and the level-matched comparison
+choice as the portable driver of the ranking: Betti Curve has the
+best panel mean rank (2.83, rank-1 on 5 of the 9 datasets), and its
+gap to Persistence Landscape (3.42) falls within the critical
+difference; on the ECG200 $r{=}25$ marginal, however, Betti Curve is
+5th of 7 (72.38\%) while Persistence Landscapes is 1st (75.32\%) ---
+the panel rank and the ECG200 marginal disagree, and \S5.3's
+recommendation carries that trade-off explicitly}. The range
+analysis, however, is
+dataset-conditional: in the VR-only ranking panel
+(\texttt{multidataset\_sweep.db}; note the time-series filtration
+range is small there by construction --- one working filtration per
+series), the vectorizer range exceeds the filtration range on 8 of
+the 9 datasets (largest relative margin on HandOutlines: 3.65pp vs.\
+0.01pp), reversing only on 10-class MNIST (2.80 vs.\ 4.41pp) where
+filtration leads (\S4.2); the level-matched comparison
 reverses on ECG5000 and MNIST (\S4.1). Filtration and classifier
 effects are not universally secondary.
 
 \paragraph{Multi-patient ECG.} ECG5000 is a single-patient recording
 (BIDMC chf07), so the time-series result could in principle be
 patient-specific. This is addressed with the MIT-BIH Arrhythmia
-benchmark: 48 records from 47 patients, an AAMI-5-style protocol with the Q (unknown) class excluded (4 classes: N, S, V, F; chance 25\%),
-and patient-disjoint 5-fold CV. Beat windows of 128 samples at 360~Hz were
+benchmark: 48 records from 47 patients (records 201 and 202 form one
+continuous patient recording and are grouped as a single patient), an AAMI-5-style protocol
+with the Q (unknown) class excluded (4 classes: N, S, V, F; chance
+25\%), and patient-disjoint 5-fold CV. \emph{Provenance:} an earlier
+build assigned fold membership per record, silently splitting the
+201/202 patient across folds 1 and 3; the grouping bug was fixed in
+\texttt{scripts/sweeps/build\_mitbih.py} (2026-08-28) and both window
+lengths re-run --- the numbers in this section and the window
+sensitivity paragraph of \S4.2 are the corrected ones. Beat windows of 128 samples at 360~Hz were
 Takens-embedded to $126 \times 3$, with 2000 beats class-balanced
 500/500/500/500 across the N/S/V/F classes (data/tda/mitbih/).
 
 Classification accuracy on the patient-disjoint folds ranges
-27.4--41.7\% across the eight Vietoris-Rips configurations
+13.1--57.1\% across the eight Vietoris-Rips configurations
 (chance = 25\% on the class-balanced folds), with Betti Curve the
-best vectorizer (mean 38.75\%) followed by Persistence Image
-(36.08\%), Silhouette (30.55\%) and Persistence Landscape
-(27.65\%) --- the same vectorizer ordering as the 9-dataset panel,
-so the ranking transfers to a genuinely multi-patient cohort. The
+best vectorizer (mean 39.25\%) followed by Persistence Image
+(38.75\%), Silhouette (28.33\%) and Persistence Landscape
+(27.74\%) --- the same top-two ordering as the 9-dataset panel, so
+the ranking transfers to a genuinely multi-patient cohort. The
 absolute accuracy is low: the AAMI EC57 standard and de Chazal
 et al.~\cite{dechazal2004} use inter-patient (patient-disjoint)
 evaluation, and our protocol follows that standard. Our absolute
@@ -1978,10 +2061,11 @@ vectorizer marginal range spans $3.75$--$13.75$~pp across datasets
 while the filtration range reaches only $1.04$--$5.10$~pp (double-well
 $13.75$ vs.\ $5.10$; circle/torus $3.75$ vs.\ $1.56$; Lorenz/R\"ossler
 $9.58$ vs.\ $1.04$). The filtration stage is \emph{relatively} larger
-than in the original regime (where it was $0.66$~pp on ECG200) but
+than in the original regime (where the ECG200 filtration range was
+$0.69$~pp at $r{=}25$, Table~\ref{tab:stage_impact}) but
 never overtakes vectorization. The two ten-class arms reproduce the
-ordering at low absolute accuracy (ModelNet10 vectorizer $13.06$ vs.\
-filtration $1.62$~pp at $\sim$24\%; Outex $9.11$ vs.\ $2.94$~pp at
+ordering at low absolute accuracy (ModelNet10 \cite{wu2015} vectorizer $13.06$ vs.\
+filtration $1.62$~pp at $\sim$24\%; Outex \cite{ojala2002} $9.11$ vs.\ $2.94$~pp at
 $\sim$23\%), so the pattern is not confined to easy separations.
 
 The ordering persists in the topology-wins regime: where topology genuinely carries the classification signal, the vectorizer remains the dominant stage, and the filtration stage's
@@ -1989,7 +2073,8 @@ contribution grows modestly rather than reversing the ordering.
 
 \begin{table}[H]
   \centering
-  \caption{Stage importance by data modality.}
+  \caption{Stage importance by data modality (leading stage per row,
+  with its evidence grade).}
   \label{tab:stage_summary}
   \begin{tabular}{lccc}
     \toprule
@@ -2012,20 +2097,27 @@ contribution grows modestly rather than reversing the ordering.
 \end{table}
 
 This table summarises the evidence, not a settled taxonomy.
-Replication on additional datasets per modality would strengthen
+Replication on more datasets per modality would strengthen
 or qualify every cell.
 
 % ────────────────────────────────────────────────────────────
 \section{Mechanism}
 
-\paragraph{Predictive theory.} The stability review of
-\S2.4 and the vectorization review of \S2.5 assign each vectorizer a
-Lipschitz constant with respect to the bottleneck distance: landscape,
-Betti curve, amplitude and (by assumption) silhouette are $1$-Lipschitz;
-persistence image carries $2\sqrt{2}\,\sigma\|\mathbf{w}\|_\infty =
-0.283$ at $\sigma{=}0.1$ \cite{adams2017}; persistence entropy and
-statistics admit no finite bound. If stability governed dispersion,
-smaller constants should predict smaller empirical accuracy ranges.
+\paragraph{Predictive theory (nominal stability class).} The
+stability review of \S2.4 and the vectorization review of \S2.5
+assign each vectorizer a \emph{nominal} stability class: persistence
+landscape is 1-Lipschitz in the bottleneck distance; persistence
+images are stable with respect to the 1-Wasserstein distance, with a
+Gaussian-kernel constant that scales as $1/\sigma_{\mathrm{PI}}$ (a
+narrower kernel is \emph{less} stable) \cite{adams2017}; Betti curves
+are not uniformly stable in the sup-norm under bottleneck
+perturbations (a near-diagonal point can change $\beta(\varepsilon)$
+by an arbitrary count); persistence entropy and statistics admit no
+finite bound. The experiment treats these classes as an ordering
+hypothesis --- more-stable-by-nomination should vary less --- and
+tests it against the empirical ranges; the constants themselves are
+not metric-compatible, so the test is of the \emph{nominal class
+ordering}, not of a single quantitative bound.
 Correlating each constant with the vectorizer's empirical range
 (max$-$min of per-config fold-mean accuracies, the \S4.1 per-config
 convention) on ECG200 (25-repetition repeated CV) and binary MNIST,
@@ -2066,7 +2158,7 @@ reversal is therefore driven by the SVM-RBF collapse.
 within-dataset-range statement, not a population-level one.
 
 \paragraph{Second homology via the true Alpha complex.}
-The sweeps cap homology at $H_1$ for cost, and the manuscript's
+The sweeps cap homology at $H_1$ for cost, and the dissertation's
 limitations note that the torus's second homology is then unmeasured.
 To test whether the $H_1$ cap discards class information, the
 sphere/torus clouds were re-run with a true Alpha complex
@@ -2099,16 +2191,18 @@ matters for classification.
 Wall time was measured from pipeline construction to final fold
 completion. Peak memory was measured in dedicated subprocess runs
 (resource.getrusage high-water mark; 12 representative ECG200
-configurations; \texttt{data/tda/peak\_memory.db}). All filtrations peak at
-136--144~MB, with Sparse Rips the largest (143--144~MB) and slowest
-(22--31~s per configuration versus 0.7--9.0~s for the others; 12-config dedicated subprocess
+configurations; \texttt{data/tda/peak\_memory.db}; re-measured
+2026-08-28 with matching results). All filtrations peak at
+135--144~MB, with Sparse Rips the largest (141--144~MB) and slowest
+(12--31~s per configuration versus 0.6--9.0~s for the others; 12-config dedicated subprocess
 measurements). A fresh Python process with numpy, sklearn, giotto-tda, and GUDHI imported already uses
-103.1~MB, so the filtration pipelines add roughly 33--41~MB on top
+102--103~MB, so the filtration pipelines add roughly 33--42~MB on top
 of the library floor.
 
 \begin{table}[H]
   \centering
-  \caption{Pareto-optimal configurations.}
+  \caption{Pareto-optimal configurations: each listed run is dominated by
+  no other configuration in the accuracy--time plane.}
   \label{tab:pareto}
   \begin{tabular}{llllrr}
     \toprule
@@ -2124,7 +2218,10 @@ of the library floor.
   \vspace{0.2cm}
   \footnotesize{CubicalPersistence on ECG200 operates on the
     $94 \times 3$ Takens-embedded array as a pixel grid (intensities
-    treated as coordinates), not on a point-cloud filtration. Times
+    treated as coordinates), not on a point-cloud filtration; the same
+    grid-as-image caveat applies to cubical on the sphere/torus rows of
+    Table~\ref{tab:pareto} (a $100\times3$ coordinate array read as
+    pixels). Times
     are single-split measurements; the 83.0\% ECG200 figure is a
     single-split point estimate --- see \S4.1 for repeated-CV means.}
 \end{table}
@@ -2161,7 +2258,7 @@ Delaunay triangulation is available.
 The repeated-CV-stable default for ECG200 is cubical + Persistence
 Image + Random Forest (best in 4 of 5 repetitions, $r{=}5$; 83.2\% repeated-CV
 mean): this is the strongest Pareto row we can defend. The Pareto frontier may shift
-with additional datasets or libraries.
+with more datasets or libraries.
 
 \textbf{Compute.} The full 616-configuration sweep was executed on a
 single consumer workstation (8-core CPU, 16GB RAM), parallelised with
@@ -2177,8 +2274,8 @@ benchmark of Somasundaram et al.\ \cite{somasundaram2021}); memory
 was not measured per stage (see Limitations).
 
 \paragraph{Sparse Rips at its design point.} At its design scale Sparse Rips does not pay off in giotto-tda 0.6.2. To test this
-directly, sphere/torus clouds at $n{=}1000$ and $n{=}3000$ points
-(40 samples each, seed 42) were generated and Sparse Rips was run at
+directly, we generated sphere/torus clouds at $n{=}1000$ and
+$n{=}3000$ points (40 samples each, seed 42) and ran Sparse Rips at
 both scales, with a Vietoris--Rips control at $n{=}1000$
 ($n{=}3000$ Vietoris--Rips is infeasible: $C(3000,3)$ simplices);
 four configurations per arm (Betti Curve / Persistence Landscape
@@ -2193,18 +2290,17 @@ within $42$~h of wall time across two attempts (interrupted by
 hardware reboots; giotto-tda offers no mid-configuration
 checkpointing, so each restart re-runs the configuration from
 scratch). The design-point premise is not supported in
-this implementation: at the scale where Sparse Rips is intended to
-pay off, giotto-tda 0.6.2's \texttt{SparseRipsPersistence} is
-substantially \emph{slower} than Vietoris--Rips at $n{=}1000$ and
-practically infeasible at $n{=}3000$ on this hardware. Vietoris--Rips
+this implementation (\S4.5 quantifies the gap): Sparse Rips does not
+pay off here --- giotto-tda 0.6.2's \texttt{SparseRipsPersistence}
+loses to Vietoris--Rips at its own design scale on this hardware. Vietoris--Rips
 remains the pragmatic choice up to the largest $n$ at which it is
 feasible, and Sparse Rips is recommended only with an
 implementation-level benchmark at the target $n$ (its runtime is not
 monotone-friendly in giotto-tda 0.6.2 --- a portability finding in
 its own right).
 
-\noindent Chapter~5 interprets why vectorization dominates on both
-real datasets and derives operational guidelines from these
+\noindent Chapter~5 states the boundary conditions under which the
+ordering holds and derives operational guidelines from these
 patterns.
 
 \newpage
@@ -2216,6 +2312,7 @@ patterns.
 \label{chap:discussion}
 
 \section{Scope and Contribution}
+\label{sec:scope}
 
 Under the 25-repetition repeated-CV protocol, our TDA pipelines sit below
 raw-feature baselines on both real datasets: on ECG200, raw-signal
@@ -2244,7 +2341,7 @@ count it rests on.
 \label{sec:threats_construct}
 
 Construct validity asks whether the measured quantity --- the marginal
-accuracy range of a pipeline stage --- actually captures ``stage
+accuracy range of a pipeline stage --- captures ``stage
 importance'' as claimed.
 
 \begin{enumerate}
@@ -2256,7 +2353,7 @@ importance'' as claimed.
     $\omega^2{=}0.165$, bootstrap CI [0.063, 0.423], vs.\ filtration
     $-0.017$; MNIST vectorizer 0.214 vs.\ filtration 0.143 --- the
     vectorizer CI excludes zero on both real datasets, the ECG200
-    filtration CI straddles it; Table \ref{tab:eta2}). The equal-footing
+    filtration CI straddles it; \S4.1 prose). The equal-footing
     analysis matches best-3 vectorizers against 3 filtrations (ECG200
     1.21pp vs.\ 0.69pp, re-derived from
     \texttt{repeated\_cv\_r25.db}); and the two-way interaction ANOVA
@@ -2269,8 +2366,11 @@ importance'' as claimed.
     the vectorizer range from the bottom. \emph{Severity: moderate.}
     \emph{Boundary:} ranges are also reported excluding the
     degenerate scalar vectorizers (ECG200 vectorizer range contracts from
-    6.39pp to 3.10pp but remains the largest stage; \S4.1; re-derived
-    from \texttt{repeated\_cv\_}\allowbreak\texttt{r25.db}, per-repetition
+    6.39pp to 3.10pp; applied symmetrically to all three stages the
+    \emph{classifier} range is largest: 3.87pp vs.\ 3.10pp vectorizer
+    and 1.94pp filtration, largest stage in 20 of 25 repetitions;
+    \S4.1; re-derived from
+    \texttt{repeated\_cv\_}\allowbreak\texttt{r25.db}, per-repetition
     mean method).
     \emph{Residual:} the exclusion rule was applied post hoc, so the
     headline 6.39pp includes the floor effect by design; \S4.1 discloses
@@ -2280,7 +2380,8 @@ importance'' as claimed.
     five repetitions (sample SD; maximum 3.11pp; 50 of 112
     configurations exceed 1pp; \texttt{repeated\_cv.db}), and the
     headline 83.0\% configuration drops to 79.6\% at $r{=}5$ (rank 4 of
-    84; \texttt{repeated\_cv\_r25.db}). \emph{Severity: high for any
+    112; \texttt{repeated\_cv.db}; at $r{=}25$ the same configuration
+    scores 79.30\%, rank 3 of 84). \emph{Severity: high for any
     single-split number.} \emph{Boundary:} all headline claims
     rest on the $r{=}25$ repeated-CV protocol with corrected CIs
     (repeated-measures: vectorizer [6.13, 6.65], classifier [3.28,
@@ -2309,7 +2410,7 @@ study.
 \begin{enumerate}
   \item \textbf{Single implementation library.} Every filtration and
     vectorizer runs through giotto-tda. \emph{Severity: moderate} --- the
-    weak-Alpha fragility (\texttt{IndexError} on quantized UCR series;
+    weak-alpha fragility (\texttt{IndexError} on quantized UCR series;
     one unfinished run in \texttt{panel\_stagecapable.db},
     ElectricDevices/weighted\_rips/landscape/RF) proves implementation
     dependence is real. \emph{Boundary:} cross-library
@@ -2337,7 +2438,7 @@ study.
   \item \textbf{Subsampling choices.} Uniform random subsampling caps
     point clouds; farthest-point sampling was deferred. \emph{Severity:
     low.} \emph{Boundary:} the FPS ablation
-    (\texttt{fps\_}\allowbreak\texttt{ablation.db}) finds no benefit ($-0.25$pp overall;
+    (\texttt{fps\_}\allowbreak\texttt{ablation.db}) finds no benefit ($-0.25$pp overall mean across the ablation grid, vs.\ the per-noise $k{=}15$ deltas of \S3.2;
     uniform wins at $k{=}15$, $\sigma{=}0.30$: 99.81\% vs.\ 98.94\%).
   \item \textbf{The sphere/torus norm confound.} The classes differ in
     scale as well as topology. \emph{Severity: moderate.} \emph{Boundary:} the matched genus-1/genus-2 control (identical norm
@@ -2385,7 +2486,7 @@ configuration space.
   \item \textbf{Hardware dependence of runtime results.} Wall-clock
     numbers come from one workstation (8-core, 16GB). \emph{Severity: low
     for ordering claims} (the 3--27\% filtration speed gap is structural:
-    simplex counts differ by construction, \S4.3), \emph{moderate for
+    simplex counts differ by construction, \S4.5), \emph{moderate for
     absolute numbers}. \emph{Boundary:} per-configuration wall times and
     peak memory are stored in the results DBs; peak memory was not
     measured per stage.
@@ -2400,13 +2501,13 @@ configuration space.
 
 \subsection{Future Work}
 
-a concrete future-work item:
-$H_2$ via Flood Complex \cite{graf2025}; additional multi-class
-datasets (Outex) to test whether Conti et al.'s large
-filtration swing reproduces at scale; a second large-scale UCR
-family; cross-library replication in GUDHI and Ripser; PersLay
-integration via a new backend; and larger-$n$ datasets for narrower
-CIs.
+Three concrete follow-ups remain: $H_2$ via Flood Complex
+\cite{graf2025}; PersLay integration \cite{carriere2020} via a new
+backend (learned vectorizers in the style of Hofer et al.\
+\cite{hofer2017} are likewise out of scope here); and a second
+large-scale UCR family for narrower CIs. Cross-library replication in
+GUDHI and Ripser (\S4.2), multi-class breadth (\S4.3), and
+larger-$n$ design-scale probes (\S4.5) are already reported above.
 
 \section{Operational Guidance}
 
@@ -2434,11 +2535,13 @@ branch says so rather than pretending otherwise.
         $4.30$pp, 95\% CI [4.02, 4.57], vs.\ filtration $0.96$pp under
         $r{=}25$ repeated CV (\S4.1)), while filtration contributes $0.69$pp
         (CI [0.57, 0.81]) and classifiers $3.50$pp (CI [3.28, 3.71]).
-        \emph{Grade A} for the \emph{ordering}: the vectorizer is the only
-        stage whose CI excludes zero, the ordering holds in 25/25
+        \emph{Grade A} for the \emph{ordering}: all three stage-range CIs
+        exclude zero (Table~\ref{tab:stage_impact}), the vectorizer's
+        $\omega^2$ CI excludes zero while the filtration's straddles it,
+        the ordering holds in 25/25
         repetitions, and the $\omega^2$ population effect size (ECG200
-        vectorizer $0.165$, CI [0.063, 0.423], vs.~filtration $-0.017$,
-        Table \ref{tab:eta2}) confirms the ordering does not come from level counts.
+        vectorizer $0.165$, CI [0.063, 0.423], vs.~filtration $-0.017$;
+        \S4.1 prose) confirms the ordering does not come from level counts.
         \emph{Caveat:} the measured \emph{margin} is menu-sensitive ---
         excluding the scalar vectorizers cuts it to $3.10$pp, and matching
         level counts (best-3 vectorizers vs.\ 3 filtrations) narrows it to
@@ -2456,7 +2559,7 @@ branch says so rather than pretending otherwise.
         MNIST: $4.53$pp vs.\ vectorizer $3.44$pp; classifier $2.03$pp;
         cubical $29.1$\% vs.\ Vietoris--Rips $33.7$\% within filtration),
         with a $9$--$10$pp span within a single filtration --- still far
-        below Conti et al.'s 18--94\% grid-search swing (\S4.2).
+        below Conti et al.'s 18--94\% grid-search swing (\S4.1).
         \emph{Grade B} ($r{=}5$, 1000 samples).
       \item \emph{Point clouds:} on saturated topology tasks no stage
         matters: at $\sigma{=}0$ all 112 configurations score
@@ -2486,7 +2589,7 @@ branch says so rather than pretending otherwise.
         Cubical; the 3--27\% wall-clock gap between them (\S4.3)
         rarely justifies accuracy risk. Avoid weak Alpha on quantized UCR series
         (giotto-tda raises \texttt{IndexError}; the fragility is a
-        primary finding of the panel, \S4.2). \emph{Grade A}
+        primary finding of the panel, \S4.3). \emph{Grade A}
         (wall-clock recorded per configuration in the results DBs).
       \item \emph{Classifier:} prefer Random Forest or logistic regression
         on TDA features. SVM-RBF collapses to the majority class on ECG200
@@ -2503,7 +2606,9 @@ branch says so rather than pretending otherwise.
     stability bound ($2\sigma\sqrt{2\ln n} \approx 1.82$) --- the bound is
     conservative, not tight (\S4.2). For applications in this
     regime, do not trade accuracy for noise-robust filtrations
-    (DTM-weighting gained menu range but not headroom on ECG200).
+    (DTM-weighting gained menu range \emph{and} headroom on ECG200 ---
+        \S4.2 reports it as the best filtration there --- but no
+        noise-robustness gain on the synthetic clouds).
     \emph{Grade A}.
 
   \item \textbf{Which vectorizer?} Prefer \emph{distributional} vectorizers
@@ -2541,12 +2646,13 @@ branch says so rather than pretending otherwise.
     95.83\% where norm/scale features fail (48--58\%). The topology-wins
     regime (\S4.3) maps this branch with the full
     stage decomposition; the ordering reproduced on all five datasets
-    (single-split), earning \emph{Grade B} by the rubric below.
+    (single-split), earning \emph{Grade B} by the rubric of \S5.3.
 \end{enumerate}
 
 \begin{table}[H]
   \centering
-  \caption{Decision tree summary with evidence grades.}
+  \caption{Decision tree summary; each leaf names its supporting
+  experiment and evidence grade (A--C rubric of \S5.3).}
   \label{tab:decision_tree}
   \small
   \begin{tabularx}{\textwidth}{@{}l X X c@{}}
@@ -2572,20 +2678,22 @@ branch says so rather than pretending otherwise.
   \centering
   \caption{Recommended pipeline configurations by data characteristics.}
   \label{tab:guidelines}
-  \footnotesize
-  \setlength{\tabcolsep}{4pt}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
   \renewcommand{\arraystretch}{0.9}
     \begin{tabularx}{\textwidth}{XXXXX}
     \toprule
     Data Modality & Filtration & Vectorizer & Classifier & Rationale \\
     \midrule
     Low-dim.~point clouds ($\le 3$D, clean) & Weak Alpha & Pers.~Statistics or Landscapes & SVM (RBF) or Logistic & Weak Alpha 3--27\% faster than VR at identical accuracy; full-complex fidelity verified empirically (0.0--0.8pp at 2--5$\times$ cost) \\
-    Delay-embedded time series ($d \ge 3$) & VR or Weak Alpha & Betti Curves (or Landscapes) & RF or SVM (RBF) & Vectorization dominates variance (6.39pp on ECG200; 24.89pp on ECG5000); Betti is 5th of 7 vectorizers on the r25 ECG200 marginal (72.38\%), so Landscapes/Statistics are competitive; SVM-RBF collapses to the majority class on TDA features (66.5\%) \\
-    High-noise clouds ($\sigma \ge 0.15$) & Weak Alpha or VR & Betti Curves & SVM (RBF) & All vectorizers maintain $\ge 98.5\%$ at $\sigma=0.30$ on the combined geometric signal (minimum over configurations); the confound-controlled matched-genus floor is 91\%; measured $d_B$ far below the stability bound \\
+    Delay-embedded time series ($d \ge 3$) & Vietoris--Rips & Betti Curves or Landscapes & Random Forest & Vectorization dominates variance (6.39pp on ECG200 at $r{=}25$; 4.30pp on ECG5000 at $r{=}25$); Betti is 5th of 7 vectorizers on the r25 ECG200 marginal (72.38\%) but best on the panel (2.83 mean rank) --- Landscapes are the alternative if ECG200-like marginals dominate; avoid SVM-RBF on TDA features (majority-class collapse, 66.5\%) and avoid Weak Alpha on quantized UCR series (\S4.3) \\
+    High-noise clouds ($\sigma \ge 0.15$) & Vietoris--Rips & Betti Curves & Random Forest & All vectorizers maintain $\ge 98.5\%$ at $\sigma=0.30$ on the combined geometric signal (minimum over configurations); the confound-controlled matched-genus floor is 91\%; measured $d_B$ far below the stability bound \\
     Large-scale clouds ($n \ge 10^3$) & Vietoris--Rips & Pers.\ Images or Betti Curves & Random Forest & Sparse Rips designed for $n \ge 10^3$; at $n{=}1000$ it is $30\times$ slower than VR at identical accuracy, and at $n{=}3000$ it did not finish in $42$~h (giotto-tda 0.6.2, \S4.5) --- benchmark the implementation before choosing it \\
     \bottomrule
   \end{tabularx}
 \end{table}
+
+Chapter~6 draws the conclusions together.
 
 \newpage
 
@@ -2595,34 +2703,41 @@ branch says so rather than pretending otherwise.
 \chapter{Conclusion}
 \label{chap:conclusion}
 
-Vectorization is the dominant pipeline stage on both real datasets
-in this study. On ECG200 time series, vectorization produced a 6.39pp
+Vectorization carries the largest main effect among the three stages
+on the two binary/two-class real datasets in this study (with the
+10-class inversion of \S4.1 noted below). On ECG200 time series,
+vectorization produced a 6.39pp
 marginal accuracy range across 7 vectorizers (95\% CI [6.13, 6.65]),
 while filtration contributed 0.69pp across 3 filtrations (95\% CI
 [0.57, 0.81]; small but with CI excluding zero under repeated CV) and classifiers
 3.50pp (95\% CI [3.28, 3.71]); the ordering was stable across all
-25 cross-validation repetitions. On binary MNIST the same hierarchy
-holds --- vectorizer range 3.22pp versus filtration 1.65pp, with
+25 cross-validation repetitions. On binary MNIST (single split; r{=}5 pooled 3.03 vs.\ 1.55pp) the same
+hierarchy holds --- vectorizer range 3.22pp versus filtration 1.65pp, with
 cubical beating Vietoris-Rips by $\sim$1.75pp best-of-family --- and
 a second time-series dataset (ECG5000) reproduces the raw-menu ordering
 (24.89pp versus 3.60pp, single split, 3-vectorizer menu; \S4.1); under
 25-repetition repeated CV the vectorizer dominates with disjoint
 CIs (4.30pp versus 0.96pp; \S4.1). Conti et al.'s image results are a complementary case study
-on 10-class MNIST under grid search, not a general law. On synthetic
-sphere/torus data, the combined geometric signal survives
-$\sigma = 0.30$ additive spatial Gaussian noise at
-99.85\% mean accuracy across the 112 configurations at that level;
-measured bottleneck distances (max 0.434 versus the corrected bound
+on 10-class MNIST under grid search, not a general law. On synthetic sphere/torus data, the combined geometric signal
+survives $\sigma = 0.30$ additive spatial Gaussian noise: mean
+accuracy across the 112 configurations at that level is 99.85\%.
+Measured bottleneck distances (max 0.434, versus the corrected bound
 $2\sigma\sqrt{2\ln n} \approx 1.82$) confirm the stability bound is
-conservative, and a matched
-genus-1/genus-2 experiment with identical norm distributions shows
-the robustness is not an artefact of the norm confound (TDA 95.83\% versus 48--58\% for
-norm features at $\sigma=0.30$). TDA features do not beat raw
-features on the datasets studied (raw-signal logistic 85.28\% vs.~83.0\%
-TDA on ECG200 under the 25-repetition protocol; raw-pixel logistic
+conservative. A matched genus-1/genus-2 experiment with identical
+norm distributions shows the robustness is not an artefact of the
+norm confound (TDA 95.83\% versus 48--58\% for norm features at
+$\sigma=0.30$). TDA features do not beat raw
+features on the datasets studied (raw-signal logistic 85.28\% (r{=}25) vs.~82.82\%
+TDA on ECG200 (r{=}25 best configuration, cubical + Persistence Image
++ Random Forest; the 83.0\% figure is the single-split best, \S4.1); raw-pixel logistic
 99.65\% vs.~98.0\% TDA on MNIST),
 so the contribution is the internal TDA-pipeline comparison.
 
+The population-level mixed model across the panel ranks the
+classifier first (1.81pp vs.\ filtration 1.71pp, vectorizer 1.18pp),
+and the stage$\times$stage interactions carry more variance than any
+single main effect ($\omega^2$ 0.187 vs.\ 0.127 on ECG200), so the
+ordering above is a menu-conditional summary, not a population law.
 The core contribution is the conditionality itself: benchmark claims
 about pipeline-stage importance depend on the datasets, modalities,
 and fixed dimensions of the study, and those conditions should be
@@ -2738,7 +2853,7 @@ output:
 \chapter{SQLite Schema Reference}
 \label{app:schema}
 
-\begin{lstlisting}[language=SQL, morekeywords={REFERENCES}]
+\begin{lstlisting}[language=SQL, morekeywords={REFERENCES}, basicstyle=\ttfamily\footnotesize, columns=fullflexible, breaklines]
 CREATE TABLE IF NOT EXISTS runs (
     run_id     INTEGER PRIMARY KEY AUTOINCREMENT,
     dataset    TEXT    NOT NULL,
@@ -2789,8 +2904,10 @@ CREATE INDEX IF NOT EXISTS idx_fold_run ON fold_results(run_id);
 \chapter{Code Implementation}
 \label{app:code}
 
-The factory classes and runner are available at
-\texttt{scripts/tda\_benchmark/}. Key excerpts follow.
+The factory classes and runner live at the repository root
+(\texttt{factories.py}, \texttt{runner.py}); the package is importable
+as \texttt{tda\_benchmark} via the \texttt{pyproject.toml} mapping.
+Key excerpts follow.
 
 \subsection*{FiltrationFactory}
 
@@ -2841,7 +2958,12 @@ for ds, fil, vec, clf in product(datasets, filtrations,
 
 \subsection*{PersistenceStatistics}
 
-\begin{lstlisting}[style=python, caption={PersistenceStatistics transformer.}]
+\begin{lstlisting}[style=python, caption={PersistenceStatistics transformer
+(simplified excerpt: the executed \texttt{\_PersistenceStatistics} in
+\texttt{factories.py} also pads variable-length diagram lists and
+computes the four statistics per array \emph{row} via axis-wise
+\texttt{nan}-functions, yielding one feature row per diagram; the statistics
+and dimensions are identical).}]
 class PersistenceStatistics(BaseEstimator, TransformerMixin):
     def transform(self, X):
         features = []
@@ -2911,9 +3033,9 @@ vectorizers $\times$ 2 classifiers):
 \end{table}
 
 On this reduced subset the classifier is the largest stage
-(3.88--9.63pp; driven by SVM-RBF collapsing to the 66.5\% majority
+(3.88--9.62pp; driven by SVM-RBF collapsing to the 66.5\% majority
 class on Persistence Entropy features) and the vectorizer second
-(1.38--6.00pp), while the filtration range stays at or below 1.13pp
+(1.38--6.00pp), while the filtration range stays at or below 1.12pp
 for every $(d, \tau)$ pair. The filtration-invariance of the stage
 analysis therefore holds under alternative embeddings; the
 vectorization-dominance ordering of \S4.1 is measured on the full
@@ -2942,219 +3064,48 @@ factory entry in \texttt{factories.py}.
 \chapter{Use of AI Tools}
 \label{app:ai}
 
-AI tools were used in the following capacities:
+AI tools were used throughout the project. This appendix records
+the actual workflow rather than a summary of it.
 
 \begin{itemize}
-  \item \textbf{Code generation and debugging.} An AI coding
-    assistant assisted with implementing the benchmarking framework:
-    factory-pattern architecture, YAML loader, SQLite storage,
-    pipeline runner, and analysis module. All code was reviewed,
-    tested, and modified by me.
-  \item \textbf{Literature synthesis.} AI tools assisted in
-    extracting key findings from the prior-art survey.
-  \item \textbf{Document preparation.} The structural template was
-    adapted from previous work with AI assistance.
+  \item \textbf{Benchmarking framework.} AI coding agents
+    implemented the factory-pattern architecture, YAML loader,
+    SQLite storage, pipeline runner, and analysis modules under my
+    direction. I reviewed, tested, and modified the code; the smoke
+    suite in \texttt{tests/} exercises it on every change.
+  \item \textbf{Experiment execution.} Sweep drivers were written
+    and launched by AI agents; every result database they produced
+    was re-derived by independent analysis queries before any number
+    entered this document.
+  \item \textbf{Results paragraphs.} Agents drafted results
+    paragraphs from database queries; I verified each number against
+    the database it came from and edited the text before
+    incorporation.
+  \item \textbf{Adversarial auditing.} Multi-agent audit rounds
+    (three-lens consensus, expanded prose lenses) were run against
+    the draft; their findings -- including errors in my favour --
+    were verified against the databases and folded back. Audit
+    ledgers are retained in the project records.
+  \item \textbf{Literature synthesis and bibliography.} AI tools
+    assisted with prior-art extraction and citation checking; every
+    load-bearing citation was verified against its source.
 \end{itemize}
 
-All mathematical content, experimental design decisions, data
-interpretation, and conclusions are my own.
+All mathematical content, experimental design decisions, hypothesis
+choices, data interpretation, and conclusions are my own. The
+pre-registration file records the analysis conventions and
+exclusion rules fixed before the deferred sweeps ran; deviations
+from it are logged in its deviation section. The result databases
+underlying every quantitative claim ship with the archival deposit,
+so each number can be re-derived independently of any AI tool.
 
 % ════════════════════════════════════════════════════════════
 %  BIBLIOGRAPHY
 % ════════════════════════════════════════════════════════════
-\begin{thebibliography}{99}
-
-\bibitem{adams2017}
-H.~Adams, T.~Emerson, M.~Kirby, R.~Neville, C.~Peterson, P.~Shipman,
-S.~Chepushtanova, E.~Hanson, F.~Motta, and L.~Ziegelmeier.
-Persistence images: A stable vector representation of persistent
-homology.
-\textit{Journal of Machine Learning Research}, 18(8):1--35, 2017.
-
-\bibitem{ali2023}
-D.~Ali, A.~Asaad, M.-J.~Jimenez, V.~Nanda, E.~Paluzo-Hidalgo, and
-M.~Soriano-Trigueros.
-A survey of vectorization methods for persistent homology.
-\textit{IEEE Trans.\ Pattern Analysis and Machine Intelligence},
-45(12):14567--14588, 2023.
-
-\bibitem{barnes2021}
-D.~Barnes, L.~Polanco, and J.~A.~Perea.
-A comparative study of machine learning methods for persistence
-diagrams.
-\textit{Frontiers in Artificial Intelligence}, 4:1--16, 2021.
-
-\bibitem{anai2019}
-H.~Anai, F.~Chazal, M.~Glisse, Y.~Ike, H.~Inakoshi, R.~Tachimori, and
-Y.~Umeda.
-DTM-based filtrations.
-In \textit{Topological Data Analysis and Applications}, Abel Symposia~18,
-pages 33--66. Springer, 2019.
-
-\bibitem{bubenik2015}
-P.~Bubenik.
-Statistical topological data analysis using persistence landscapes.
-\textit{Journal of Machine Learning Research}, 16(3):77--102, 2015.
-
-\bibitem{carriere2020}
-M.~Carri\`ere, F.~Chazal, Y.~Ike, T.~Lacombe, M.~Royer, and Y.~Umeda.
-PersLay: A neural network layer for persistence diagrams and new
-graph topological signatures.
-\textit{Proceedings of AISTATS}, 2020.
-
-\bibitem{chazalSilh2014}
-F.~Chazal, B.~T.~Fasy, F.~Lecci, A.~Rinaldo, and L.~Wasserman.
-Stochastic convergence of persistence landscapes and silhouettes.
-\textit{Proceedings of the 30th Annual Symposium on Computational
-Geometry (SoCG)}, pp.~474--483, 2014.
-
-\bibitem{chung2022}
-Y.-M.~Chung and A.~Lawson.
-Persistence curves: A canonical framework for summarizing persistence
-diagrams.
-\textit{Journal of Machine Learning Research}, 23:1--62, 2022.
-
-\bibitem{cohen2007}
-D.~Cohen-Steiner, H.~Edelsbrunner, and J.~Harer.
-Stability of persistence diagrams.
-\textit{Discrete \& Computational Geometry}, 37(1):103--120, 2007.
-
-\bibitem{conti2022}
-F.~Conti, D.~Moroni, and M.~A.~Pascali.
-A topological machine learning pipeline for classification.
-\textit{Mathematics} (MDPI), 10(17):3086, 2022. arXiv:2309.15276.
-
-\bibitem{dechazal2004}
-A.~de Chazal, M.~O'Dwyer, and R.~B.~Reilly.
-Automatic classification of heartbeats using ECG morphology and
-heartbeat interval features.
-\textit{IEEE Transactions on Biomedical Engineering}, 51(7):1196--1206, 2004.
-
-\bibitem{graf2025}
-F.~Graf, P.~Pellizzoni, M.~Uray, S.~Huber, and R.~Kwitt.
-The flood complex: Large-scale persistent homology on millions of
-points.
-\textit{Advances in Neural Information Processing Systems}, 2025.
-arXiv:2509.22432.
-
-\bibitem{hofer2017}
-C.~Hofer, R.~Kwitt, M.~Niethammer, and A.~Uhl.
-Deep learning with topological signatures.
-\textit{Advances in Neural Information Processing Systems}, 2017.
-
-\bibitem{leray1945}
-J.~Leray.
-Sur la forme des espaces topologiques et sur les points fixes des
-repr\'esentations.
-\textit{Journal de Math\'ematiques Pures et Appliqu\'ees},
-24:95--167, 1945.
-
-\bibitem{perea2022}
-J.~A.~Perea, E.~Munch, and F.~Khasawneh.
-Approximating continuous functions on persistence diagrams using
-template functions.
-\textit{Foundations of Computational Mathematics} 23(4):1215--1272, 2023.
-
-\bibitem{rucco2016}
-M.~Rucco, F.~Castiglione, E.~Merelli, and M.~Pettini.
-Characterisation of the idiotypic immune network through persistent
-entropy.
-\textit{Proceedings of ECCS 2014}, Springer Proceedings in
-Complexity, pp.~117--128, 2016.
-
-\bibitem{somasundaram2021}
-E.~V.~Somasundaram, S.~E.~Brown, A.~Litzler, J.~G.~Scott, and
-R.~R.~Wadhwa.
-Benchmarking R packages for calculation of persistent homology.
-\textit{The R Journal} 13(1):184--193, 2021.
-
-\bibitem{sulowska2026}
-D.~Sulowska.
-Comparative evaluation of persistence diagram vectorisation methods
-in classification tasks.
-\textit{Advances in Science and Technology Research Journal},
-20(7):54--70, 2026. DOI 10.12913/22998624/218660.
-
-\bibitem{perea2015}
-J.~A.~Perea and J.~Harer.
-Sliding windows and persistence: An overview of topological
-techniques for time series analysis.
-In \textit{Applied and Computational Topology}, AMS, 2015.
-
-\bibitem{umed2017}
-Y.~Umeda.
-Time series classification via topological data analysis.
-\textit{Transactions of the Japanese Society for Artificial
-Intelligence} 32(3), 2017.
-
-\bibitem{kennel1992}
-M.~B.~Kennel, R.~Brown, and H.~D.~I.~Abarbanel.
-Determining embedding dimension for phase-space reconstruction using
-a geometrical construction.
-\textit{Physical Review A} 45(6):3403--3411, 1992.
-
-\bibitem{fraserswinney1986}
-A.~M.~Fraser and H.~L.~Swinney.
-Independent coordinates for strange attractors from mutual
-information.
-\textit{Physical Review A} 33(2):1134--1140, 1986.
-
-\bibitem{takens1981}
-F.~Takens.
-Detecting strange attractors in turbulence.
-In \textit{Dynamical Systems and Turbulence}, Lecture Notes in
-Mathematics 898, pp.\ 366--381. Springer, 1981.
-
-\bibitem{tauzin2021}
-G.~Tauzin, U.~Lupo, L.~Tunstall, J.~B.~P\'erez, M.~Caorsi,
-A.~Medina-Mardones, A.~Dassatti, and K.~Hess.
-giotto-tda: A topological data analysis toolkit for machine learning.
-\textit{Journal of Machine Learning Research}, 22(39):1--6, 2021.
-
-\bibitem{telyatnikov2024}
-L.~Telyatnikov, G.~Bernardez, M.~Montagna, M.~Hajij, S.~Carrasco,
-M.~Vasylenko, et al.
-TopoBench: A framework for benchmarking topological deep learning.
-\textit{Advances in Neural Information Processing Systems},
-Datasets and Benchmarks Track, 2024. arXiv:2406.06642.
-
-\bibitem{turkes2022}
-R.~Turkes, G.~Mont\'ufar, and N.~Otter.
-On the effectiveness of persistent homology.
-\textit{Advances in Neural Information Processing Systems}, 2022.
-
-
-\bibitem{dau2019}
-H.~A.~Dau, A.~Bagnall, K.~Kamgar, C.-C.~M.~Yeh, Y.~Zhu, S.~Gharghabi,
-C.~A.~Ratanamahatana, and E.~Keogh.
-The UCR time series archive.
-\textit{IEEE/CAA Journal of Automatica Sinica}, 6(6):1293--1305, 2019.
-
-\bibitem{lecun1998}
-Y.~LeCun, L.~Bottou, Y.~Bengio, and P.~Haffner.
-Gradient-based learning applied to document recognition.
-\textit{Proceedings of the IEEE}, 86(11):2278--2324, 1998.
-
-\bibitem{chazalDesilvaOudot2014}
-F.~Chazal, V.~de Silva, and S.~Oudot.
-Persistence stability for geometric complexes.
-\textit{Geometriae Dedicata}, 173(1):193--214, 2014. DOI 10.1007/s10711-013-9937-z. arXiv:1207.3885.
-
-\bibitem{hensel2021}
-M.~Hensel, M.~Moor, and B.~Rieck.
-A survey of topological machine learning methods.
-\textit{Frontiers in Artificial Intelligence}, 4:681108, 2021.
-
-\bibitem{bauer2021}
-U.~Bauer.
-Ripser: efficient computation of Vietoris--Rips persistence barcodes.
-\textit{Journal of Applied and Computational Topology}, 5(3):391--423, 2021.
-
-\bibitem{maria2014}
-C.~Maria, J.-D.~Boissonnat, G.~Glisse, and M.~Yvinec.
-The GUDHI library: simplicial complexes and persistent homology.
-In \textit{Mathematical Software (ICMS 2014)}, LNCS 8592, pages 167--174. Springer, 2014.
-
-\end{thebibliography}
+% Bibliography generated from references.bib (natbib, numeric style).
+% The two self-citation entries in references.bib are not \cite'd in-text;
+% they exist for CITATION.cff/Zenodo metadata.
+\bibliographystyle{plainnat}
+\bibliography{references}
 
 \end{document}

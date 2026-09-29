@@ -22,6 +22,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
 
+# Embed TrueType (Type 42) fonts, not Type 3: Type 3 renders fuzzy in some
+# viewers/printers and most venues require Type 1/TrueType embedded fonts.
+matplotlib.rcParams["pdf.fonttype"] = 42
+matplotlib.rcParams["ps.fonttype"] = 42
+
 # Deterministic PDF output (reproducible builds): matplotlib embeds the
 # current time in PDF metadata unless SOURCE_DATE_EPOCH is set.
 if "SOURCE_DATE_EPOCH" not in os.environ:
@@ -49,7 +54,7 @@ def fig_pipeline_diagram():
         # 0.3->1.8, gap .6, 2.4->3.9, gap .6, 4.5->6.0, gap .6, 6.6->8.1,
         # gap .6, 8.7->10.2 — uniform spacing, last box ends 0.6 short of xlim.
         ("Raw data", 0.3, "point cloud /\ntime series /\nimage"),
-        ("Filtration", 2.4, "Vietoris--Rips\nAlpha, Cubical\nSparse Rips"),
+        ("Filtration", 2.4, "Vietoris–Rips\nAlpha, Cubical\nSparse Rips"),
         ("Persistence\ndiagram", 4.5, "multiset of\n(birth, death)"),
         ("Vectorization", 6.6, "Persistence Image\nLandscape, Betti\nStatistics, ..."),
         ("Classifier", 8.7, "SVM, Random\nForest, Logistic"),
@@ -182,7 +187,8 @@ def fig_stage_impact(cur):
     from matplotlib.patches import Patch
     ax.legend(handles=[Patch(facecolor=palette[i], label=stage)
                        for i, stage in enumerate(stages)],
-              loc="upper right", fontsize=8, frameon=False)
+              loc="upper right", fontsize=8, frameon=True, framealpha=1.0,
+              edgecolor="0.8")
     ax.axhline(50, color=GREY, lw=0.8, ls="--")
     fig.tight_layout()
     fig.savefig(os.path.join(OUT, "fig_stage_impact.pdf"), bbox_inches="tight")
@@ -215,9 +221,9 @@ def fig_noise_pds():
                 dg1 = dgms[1]
                 ax.scatter(dg1[:, 0], dg1[:, 1], s=10, color=ORANGE if col else BLACK,
                            alpha=0.85)
-            ax.plot([0, 2], [0, 2], color=GREY, lw=0.8, ls="--")
+            ax.plot([0, 2.2], [0, 2.2], color=GREY, lw=0.8, ls="--")
             ax.set_title(f"{name.capitalize()}, $\\sigma$={sigma:.2f}", fontsize=9)
-            ax.set_xlim(0, 1.2); ax.set_ylim(0, 1.2)
+            ax.set_xlim(0, 2.2); ax.set_ylim(0, 2.2)
             ax.set_xlabel("birth"); ax.set_ylabel("death")
             ax.set_aspect("equal")
     fig.suptitle("Persistence diagrams under clean and noisy conditions", fontsize=11)
@@ -238,7 +244,7 @@ def fig_noise_curves(cur):
         mins.append(np.min(accs))
         maxs.append(np.max(accs))
     ax.plot(sigmas, means, "o-", color=ORANGE, lw=2, label="mean")
-    ax.fill_between(sigmas, mins, maxs, color=ORANGE, alpha=0.15, label="min--max")
+    ax.fill_between(sigmas, mins, maxs, color=ORANGE, alpha=0.15, label="min–max")
     ax.axhline(50, color=GREY, lw=0.8, ls="--", label="chance")
     ax.set_xlabel("$\\sigma$ (Gaussian noise)")
     ax.set_ylabel("Accuracy (%)")
@@ -315,10 +321,18 @@ def fig_nemenyi_cd():
     colors = [ORANGE if i == 0 else GREY for i in range(len(names))]
     ax.barh(y, ranks, height=0.55, color=colors, edgecolor=BLACK, linewidth=0.5)
     ax.set_yticks(y)
-    ax.set_yticklabels(names, fontsize=8)
-    ax.invert_xaxis()  # rank 1 at right
+    # Prose-style config labels (snake_case keys are hard to read in print).
+    def pretty(cfg):
+        comp, vec, clf = cfg.split("+")
+        vec = {"betti_curve": "Betti Curve", "persistence_image": "Persistence Image",
+               "persistence_landscape": "Persistence Landscape",
+               "silhouette": "Silhouette", "persistence_statistics": "Persistence Statistics"}.get(vec, vec)
+        clf = {"random_forest": "Random Forest", "svm_rbf": "SVM-RBF"}.get(clf, clf)
+        return f"{vec} + {clf} ({comp})"
+    ax.set_yticklabels([pretty(n) for n in names], fontsize=8)
+    # Demšar orientation: best (rank 1) at the LEFT, ranks increasing rightward.
     ax.set_xlabel("Mean rank across 9 datasets (1 = best)")
-    ax.set_xlim(len(names) + 0.8, 0.2)
+    ax.set_xlim(0.2, len(names) + 0.8)
     # CD bracket over the best config's rank
     best = ranks[0]
     ax.plot([best, best + cd], [y[0] + 0.45, y[0] + 0.45], color=BLACK,

@@ -14,7 +14,7 @@ pip install -r projects/tda-benchmark/requirements.txt
 
 # 2. Generate / check datasets
 cd projects/tda-benchmark
-python scripts/generate_datasets.py --data-dir ../../data/tda
+python scripts/data/generate_datasets.py --data-dir ../../data/tda
 
 # 3. Run benchmark (616-config sweep — takes ~2h serial)
 bash run_all.sh            # full pipeline incl. analysis
@@ -36,7 +36,7 @@ run_benchmark(os.path.join(pkg_dir, "expanded_config.yaml"), n_jobs=1)
 PY
 
 # 4. Analyze results
-python projects/tda-benchmark/analysis.py data/tda/expanded_results.db
+python projects/tda-benchmark/scripts/analysis/analyse_main_legacy.py data/tda/expanded_results.db
 ```
 
 > The repo directory is hyphenated (`tda-benchmark`), so it cannot be
@@ -46,16 +46,25 @@ python projects/tda-benchmark/analysis.py data/tda/expanded_results.db
 ## Architecture
 
 ```
-projects/tda-benchmark/
-├── factories.py      # FiltrationFactory, VectorizationFactory, ClassifierFactory
-├── config.py         # YAML config loader (dataclass-based)
-├── config.yaml       # Default benchmark sweep definition
-├── storage.py        # Normalized SQLite result store
-├── runner.py         # PipelineRunner — Cartesian product executor
-├── analysis.py       # Report generator and statistical analysis
-├── essay_framework.py # Dissertation essay structure + 10 key insights
-└── requirements.txt  # Pinned dependencies
+tda-benchmark/
+├── __init__.py          # tda_benchmark package (lives at repo root)
+├── config.py            # YAML config loader + dataclasses
+├── factories.py         # Filtration / Vectorization / Classifier factories
+├── runner.py            # run_benchmark(cfg): sweep driver with fold-level storage
+├── storage.py           # normalised SQLite results store (WAL, append-only)
+├── cli.py               # tda-benchmark console entry point
+├── generate_figures.py  # paper figures from the results DBs
+├── scripts/
+│   ├── sweeps/          # sweep/experiment drivers (produce the result DBs)
+│   ├── analysis/        # analysis scripts (read DBs, produce numbers/tables)
+│   └── data/            # dataset generators, downloaders, checksum tooling
+├── tests/               # smoke suite (6 tests, <30 s)
+├── figures/             # paper figures (PDF)
+├── .github/workflows/   # CI: smoke tests + pdflatex compile check
+├── REPRODUCING.md       # producer map: every result -> script -> database
+└── expanded_config.yaml # the 616-configuration sweep definition
 ```
+
 
 ## Pipeline Components
 
@@ -78,7 +87,7 @@ projects/tda-benchmark/
 1. **Stage importance is modality-dependent** — vectorization dominates on time series (ECG200: 6.39pp marginal range across 7 vectorizers, 95% CI [6.13, 6.65]); the vectorizer ordering transfers across a 9-dataset panel. Filtration effects are small on time series (0.69pp) and modest on images (cubical 98.0% vs Vietoris-Rips 96.25% best-of-family).
 2. **Simple beats complex** — Persistence Statistics match kernel-based vectorizers on real data with zero hyperparameters (ECG200: Landscapes 75.32% marginal)
 3. **Cubical wins on images** — the grid-aligned filtration captures image topology that point-cloud filtrations destroy
-4. **Weak Alpha > VR on 3D point clouds** — 3-21% faster at identical accuracy (measured on sphere/torus, Landscape+SVM)
+4. **Weak Alpha > VR on 3D point clouds** — 3-27% faster at identical accuracy (measured on sphere/torus, Landscape+SVM)
 5. **Noise robustness** — the topological signal survives Gaussian noise to σ=0.30 (99.85% mean accuracy on the 112 sphere/torus configs at that level, min 98.5%)
 6. **Non-linear classifiers help on real data** — little benefit on clean synthetic
 7. **Stages interact** — best vectorizer depends on filtration and classifier choice
@@ -112,7 +121,7 @@ If you use this benchmark in your research, please cite:
 
 ```
 @misc{tda-pipeline-benchmark,
-  author = {AI-KOS TDA Benchmark},
+  author = {Zachariah Attila Markusson},
   title = {A Systematic Benchmark of Persistent Homology Pipelines for Classification},
   year = {2026},
   note = {616-configuration benchmark: 6 datasets × 112 configurations each (672 grid, 56 image-incompatible excluded)},

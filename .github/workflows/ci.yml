@@ -80,6 +80,8 @@ jobs:
       - name: Compile dissertation.tex (two passes for refs/TOC)
         run: |
           pdflatex -interaction=nonstopmode -halt-on-error dissertation.tex
+          bibtex dissertation
+          pdflatex -interaction=nonstopmode -halt-on-error dissertation.tex
           pdflatex -interaction=nonstopmode -halt-on-error dissertation.tex
 
       - name: Assert PDF produced

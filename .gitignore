@@ -25,3 +25,22 @@ datasets/
 
 # Internal process artifacts
 deai_test/
+
+# internal process records stay local-only (M17 decision 2026-08-28)
+HANDOFF_*.md
+AUDIT_ROUND3.md
+EXPANSION_*.md
+FIXES_16.md
+ESSAY.md
+docs/final-audit-*/
+
+# restructure helper (one-shot, not part of the artifact)
+*.bak-leaky
+missfont.log
+restructure.py
+
+# LaTeX bibtex byproducts (bbl is committed for arXiv-style builds; blg is a log)
+*.blg
+
+# caches
+.pytest_cache/

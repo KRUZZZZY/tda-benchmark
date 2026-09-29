@@ -11,8 +11,8 @@ authors:
   - family-names: Markusson
     given-names: Zachariah Attila
     orcid: ""
-date-released: "2026-08-24"
-version: "1.0-dissertation"
+date-released: "2026-08-28"
+version: "1.0.1-dissertation"
 doi: "10.5281/zenodo.XXXXXXX"   # INSERT Zenodo DOI after archiving
 license: MIT
 keywords:

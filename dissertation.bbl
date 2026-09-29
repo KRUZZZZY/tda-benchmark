@@ -1,0 +1,263 @@
+\begin{thebibliography}{37}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Adams et~al.(2017)Adams, Emerson, Kirby, Neville, Peterson, Shipman,
+  Chepushtanova, Hanson, Motta, and Ziegelmeier]{adams2017}
+Henry Adams, Theodore Emerson, Michael Kirby, Rachel Neville, Chris Peterson,
+  Patrick Shipman, Sofya Chepushtanova, Eric Hanson, Francis Motta, and Lori
+  Ziegelmeier.
+\newblock Persistence images: A stable vector representation of persistent
+  homology.
+\newblock \emph{Journal of Machine Learning Research}, 18\penalty0
+  (8):\penalty0 1--35, 2017.
+
+\bibitem[Ali et~al.(2023)Ali, Asaad, Jimenez, Nanda, Paluzo-Hidalgo, and
+  Soriano-Trigueros]{ali2023}
+Dashti Ali, Aras Asaad, Maria-Jose Jimenez, Vidit Nanda, Eduardo
+  Paluzo-Hidalgo, and Manuel Soriano-Trigueros.
+\newblock A survey of vectorization methods in topological data analysis.
+\newblock \emph{IEEE Transactions on Pattern Analysis and Machine
+  Intelligence}, 45\penalty0 (12):\penalty0 14567--14588, 2023.
+
+\bibitem[Anai et~al.(2022)Anai, Chazal, Glisse, Ike, Inakoshi, Tinarrage, and
+  Umeda]{anai2019}
+Hirokazu Anai, Fr{\'e}d{\'e}ric Chazal, Marc Glisse, Yuki Ike, Hiroya Inakoshi,
+  Rapha{\"e}l Tinarrage, and Yuichi Umeda.
+\newblock {DTM}-based filtrations.
+\newblock In \emph{Topological Data Analysis and Applications}, volume~18 of
+  \emph{Abel Symposia}, pages 33--66. Springer, 2022.
+
+\bibitem[Barnes et~al.(2021)Barnes, Polanco, and Perea]{barnes2021}
+David Barnes, Luis Polanco, and Jose~A. Perea.
+\newblock A comparative study of machine learning methods for persistence
+  diagrams.
+\newblock \emph{Frontiers in Artificial Intelligence}, 4:\penalty0 681174,
+  2021.
+
+\bibitem[Bauer(2021)]{bauer2021}
+Ulrich Bauer.
+\newblock Ripser: Efficient computation of {Vietoris--Rips} persistence
+  barcodes.
+\newblock \emph{Journal of Applied and Computational Topology}, 5\penalty0
+  (3):\penalty0 391--423, 2021.
+
+\bibitem[Bubenik(2015)]{bubenik2015}
+Peter Bubenik.
+\newblock Statistical topological data analysis using persistence landscapes.
+\newblock \emph{Journal of Machine Learning Research}, 16\penalty0
+  (3):\penalty0 77--102, 2015.
+
+\bibitem[Carri{\`e}re et~al.(2020)Carri{\`e}re, Chazal, Ike, Lacombe, Royer,
+  and Umeda]{carriere2020}
+Mathieu Carri{\`e}re, Fr{\'e}d{\'e}ric Chazal, Yuichi Ike, Th{\'e}o Lacombe,
+  Martin Royer, and Yuichi Umeda.
+\newblock Perslay: A neural network layer for persistence diagrams and new
+  graph topological signatures.
+\newblock In \emph{Proceedings of the 23rd International Conference on
+  Artificial Intelligence and Statistics (AISTATS)}, 2020.
+
+\bibitem[Chazal et~al.(2014{\natexlab{a}})Chazal, de~Silva, and
+  Oudot]{chazalDesilvaOudot2014}
+Fr{\'e}d{\'e}ric Chazal, Vin de~Silva, and Steve Oudot.
+\newblock Persistence stability for geometric complexes.
+\newblock \emph{Geometriae Dedicata}, 173\penalty0 (1):\penalty0 193--214,
+  2014{\natexlab{a}}.
+\newblock \doi{10.1007/s10711-013-9937-z}.
+
+\bibitem[Chazal et~al.(2014{\natexlab{b}})Chazal, Fasy, Lecci, Rinaldo, and
+  Wasserman]{chazalSilh2014}
+Fr{\'e}d{\'e}ric Chazal, Brittany~Terese Fasy, Fabrizio Lecci, Alessandro
+  Rinaldo, and Larry Wasserman.
+\newblock Stochastic convergence of persistence landscapes and silhouettes.
+\newblock In \emph{Proceedings of the 30th Annual Symposium on Computational
+  Geometry (SoCG)}, pages 474--483, 2014{\natexlab{b}}.
+
+\bibitem[Chung and Lawson(2022)]{chung2022}
+Yu-Min Chung and Andrew Lawson.
+\newblock Persistence curves: A canonical framework for summarizing persistence
+  diagrams.
+\newblock \emph{Advances in Computational Mathematics}, 48\penalty0 (6), 2022.
+
+\bibitem[Cohen-Steiner et~al.(2007)Cohen-Steiner, Edelsbrunner, and
+  Harer]{cohen2007}
+David Cohen-Steiner, Herbert Edelsbrunner, and John Harer.
+\newblock Stability of persistence diagrams.
+\newblock \emph{Discrete \& Computational Geometry}, 37\penalty0 (1):\penalty0
+  103--120, 2007.
+
+\bibitem[Conti et~al.(2022)Conti, Moroni, and Pascali]{conti2022}
+Francesco Conti, Davide Moroni, and Maria~Antonietta Pascali.
+\newblock A topological machine learning pipeline for classification.
+\newblock \emph{Mathematics}, 10\penalty0 (17):\penalty0 3086, 2022.
+\newblock arXiv:2309.15276.
+
+\bibitem[Dau et~al.(2019)Dau, Bagnall, Kamgar, Yeh, Zhu, Gharghabi,
+  Ratanamahatana, and Keogh]{dau2019}
+Hoang~A. Dau, Anthony Bagnall, Kaveh Kamgar, Chin-Chia~Michael Yeh, Yan Zhu,
+  Shaghayegh Gharghabi, Chotirat~Ann Ratanamahatana, and Eamonn Keogh.
+\newblock The {UCR} time series archive.
+\newblock \emph{IEEE/CAA Journal of Automatica Sinica}, 6\penalty0
+  (6):\penalty0 1293--1305, 2019.
+
+\bibitem[de~Chazal et~al.(2004)de~Chazal, O'Dwyer, and Reilly]{dechazal2004}
+Philip de~Chazal, Maria O'Dwyer, and Richard~B. Reilly.
+\newblock Automatic classification of heartbeats using {ECG} morphology and
+  heartbeat interval features.
+\newblock \emph{IEEE Transactions on Biomedical Engineering}, 51\penalty0
+  (7):\penalty0 1196--1206, 2004.
+
+\bibitem[Dem{\v s}ar(2006)]{demsar2006}
+Janez Dem{\v s}ar.
+\newblock Statistical comparisons of classifiers over multiple data sets.
+\newblock \emph{Journal of Machine Learning Research}, 7:\penalty0 1--30, 2006.
+
+\bibitem[Fraser and Swinney(1986)]{fraserswinney1986}
+Andrew~M. Fraser and Harry~L. Swinney.
+\newblock Independent coordinates for strange attractors from mutual
+  information.
+\newblock \emph{Physical Review A}, 33\penalty0 (2):\penalty0 1134--1140, 1986.
+
+\bibitem[Graf et~al.(2025)Graf, Pellizzoni, Uray, Huber, and Kwitt]{graf2025}
+Florian Graf, Philip Pellizzoni, Martin Uray, Stefan Huber, and Roland Kwitt.
+\newblock The flood complex: Large-scale persistent homology on millions of
+  points.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2025.
+\newblock arXiv:2509.22432.
+
+\bibitem[Hensel et~al.(2021)Hensel, Moor, and Rieck]{hensel2021}
+Felix Hensel, Michael Moor, and Bastian Rieck.
+\newblock A survey of topological machine learning methods.
+\newblock \emph{Frontiers in Artificial Intelligence}, 4:\penalty0 681108,
+  2021.
+
+\bibitem[Hofer et~al.(2017)Hofer, Kwitt, Niethammer, and Uhl]{hofer2017}
+Christoph Hofer, Roland Kwitt, Marc Niethammer, and Andreas Uhl.
+\newblock Deep learning with topological signatures.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2017.
+
+\bibitem[Kennel et~al.(1992)Kennel, Brown, and Abarbanel]{kennel1992}
+Matthew~B. Kennel, Reggie Brown, and Henry D.~I. Abarbanel.
+\newblock Determining embedding dimension for phase-space reconstruction using
+  a geometrical construction.
+\newblock \emph{Physical Review A}, 45\penalty0 (6):\penalty0 3403--3411, 1992.
+
+\bibitem[LeCun et~al.(1998)LeCun, Bottou, Bengio, and Haffner]{lecun1998}
+Yann LeCun, L{\'e}on Bottou, Yoshua Bengio, and Patrick Haffner.
+\newblock Gradient-based learning applied to document recognition.
+\newblock \emph{Proceedings of the IEEE}, 86\penalty0 (11):\penalty0
+  2278--2324, 1998.
+
+\bibitem[Leray(1945)]{leray1945}
+Jean Leray.
+\newblock Sur la forme des espaces topologiques et sur les points fixes des
+  repr{\'e}sentations.
+\newblock \emph{Journal de Math{\'e}matiques Pures et Appliqu{\'e}es},
+  24:\penalty0 95--167, 1945.
+
+\bibitem[Maria et~al.(2014)Maria, Boissonnat, Glisse, and Yvinec]{maria2014}
+Cl{\'e}ment Maria, Jean-Daniel Boissonnat, Marc Glisse, and Monique Yvinec.
+\newblock The {GUDHI} library: Simplicial complexes and persistent homology.
+\newblock In \emph{Mathematical Software -- ICMS 2014}, volume 8592 of
+  \emph{Lecture Notes in Computer Science}, pages 167--174. Springer, 2014.
+
+\bibitem[Nadeau and Bengio(2003)]{nadeau2003}
+Claude Nadeau and Yoshua Bengio.
+\newblock Inference for the generalization error.
+\newblock \emph{Machine Learning}, 52\penalty0 (3):\penalty0 239--281, 2003.
+
+\bibitem[Ojala et~al.(2002)Ojala, Pietik{\"a}inen, and
+  M{\"a}enp{\"a}{\"a}]{ojala2002}
+Timo Ojala, Matti Pietik{\"a}inen, and Topi M{\"a}enp{\"a}{\"a}.
+\newblock Multiresolution gray-scale and rotation invariant texture
+  classification with local binary patterns.
+\newblock \emph{IEEE Transactions on Pattern Analysis and Machine
+  Intelligence}, 24\penalty0 (7):\penalty0 971--987, 2002.
+
+\bibitem[Perea and Harer(2015)]{perea2015}
+Jose~A. Perea and John Harer.
+\newblock Sliding windows and persistence: An application of topological
+  methods to signal analysis.
+\newblock \emph{Foundations of Computational Mathematics}, 15\penalty0
+  (3):\penalty0 799--838, 2015.
+
+\bibitem[Perea et~al.(2023)Perea, Munch, and Khasawneh]{perea2022}
+Jose~A. Perea, Elizabeth Munch, and Firas Khasawneh.
+\newblock Approximating continuous functions on persistence diagrams using
+  template functions.
+\newblock \emph{Foundations of Computational Mathematics}, 23\penalty0
+  (4):\penalty0 1215--1272, 2023.
+
+\bibitem[Rucco et~al.(2016)Rucco, Castiglione, Merelli, and Pettini]{rucco2016}
+Matteo Rucco, Filippo Castiglione, Emanuela Merelli, and Marco Pettini.
+\newblock Characterisation of the idiotypic immune network through persistent
+  entropy.
+\newblock In \emph{Proceedings of ECCS 2014}, Springer Proceedings in
+  Complexity, pages 117--128. Springer, 2016.
+
+\bibitem[Somasundaram et~al.(2021)Somasundaram, Brown, Litzler, Scott, and
+  Wadhwa]{somasundaram2021}
+Eric~V. Somasundaram, Scott~E. Brown, Anna Litzler, Jacob~G. Scott, and
+  Raunak~R. Wadhwa.
+\newblock Benchmarking {R} packages for calculation of persistent homology.
+\newblock \emph{The R Journal}, 13\penalty0 (1):\penalty0 184--193, 2021.
+
+\bibitem[Sulowska(2026)]{sulowska2026}
+Dominika Sulowska.
+\newblock Comparative evaluation of persistence diagram vectorisation methods
+  in classification tasks.
+\newblock \emph{Advances in Science and Technology Research Journal},
+  20\penalty0 (7):\penalty0 54--70, 2026.
+\newblock \doi{10.12913/22998624/218660}.
+
+\bibitem[Takens(1981)]{takens1981}
+Floris Takens.
+\newblock Detecting strange attractors in turbulence.
+\newblock In \emph{Dynamical Systems and Turbulence}, volume 898 of
+  \emph{Lecture Notes in Mathematics}, pages 366--381. Springer, 1981.
+
+\bibitem[Tauzin et~al.(2021)Tauzin, Lupo, Tunstall, P{\'e}rez, Caorsi,
+  Medina-Mardones, Dassatti, and Hess]{tauzin2021}
+Guillaume Tauzin, Umberto Lupo, Lewis Tunstall, Juli{\'a}n~Burella P{\'e}rez,
+  Marco Caorsi, Anibal Medina-Mardones, Alberto Dassatti, and Kathryn Hess.
+\newblock giotto-tda: A topological data analysis toolkit for machine learning.
+\newblock \emph{Journal of Machine Learning Research}, 22\penalty0
+  (39):\penalty0 1--6, 2021.
+
+\bibitem[Telyatnikov et~al.(2024)Telyatnikov, Bern{\'a}rdez, Montagna, Hajij,
+  Carrasco, Vasylenko, et~al.]{telyatnikov2024}
+Lev Telyatnikov, Guillermo Bern{\'a}rdez, Marco Montagna, Mustafa Hajij, Sergio
+  Carrasco, Mariia Vasylenko, et~al.
+\newblock Topobench: A framework for benchmarking topological deep learning.
+\newblock In \emph{Advances in Neural Information Processing Systems, Datasets
+  and Benchmarks Track}, 2024.
+\newblock arXiv:2406.06642.
+
+\bibitem[Turkes et~al.(2022)Turkes, Mont{\'u}far, and Otter]{turkes2022}
+Rolverd Turkes, Guido Mont{\'u}far, and Nina Otter.
+\newblock On the effectiveness of persistent homology.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2022.
+
+\bibitem[Umeda(2017)]{umed2017}
+Yuichi Umeda.
+\newblock Time series classification via topological data analysis.
+\newblock \emph{Transactions of the Japanese Society for Artificial
+  Intelligence}, 32\penalty0 (3), 2017.
+
+\bibitem[Wu et~al.(2015)Wu, Song, Khosla, Yu, Zhang, Tang, and Xiao]{wu2015}
+Zhirong Wu, Shuran Song, Aditya Khosla, Fisher Yu, Linguang Zhang, Xiaoou Tang,
+  and Jianxiong Xiao.
+\newblock 3d {ShapeNets}: A deep representation for volumetric shapes.
+\newblock In \emph{Proceedings of the IEEE Conference on Computer Vision and
+  Pattern Recognition (CVPR)}, pages 1912--1920, 2015.
+
+\bibitem[Xiao et~al.(2017)Xiao, Rasul, and Vollgraf]{xiao2017}
+Han Xiao, Kashif Rasul, and Roland Vollgraf.
+\newblock Fashion-{MNIST}: A novel image dataset for benchmarking machine
+  learning algorithms, 2017.
+\newblock arXiv:1708.07747.
+
+\end{thebibliography}
